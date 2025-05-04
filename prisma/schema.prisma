@@ -1,0 +1,113 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Specifies the Prisma Client generator settings
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Specifies the database connection details
+datasource db {
+  provider = "postgresql" // Using PostgreSQL database
+  url      = env("DATABASE_URL") // Loads the connection URL from the .env file
+}
+
+
+// --- Enums ---
+// Defines allowed roles for users
+enum UserRole {
+  JOB_SEEKER
+  EMPLOYER
+  ADMIN
+  // REFERRER // To be added later if needed for V2
+}
+
+// Defines possible statuses for a job posting
+enum JobStatus {
+  PENDING   // Submitted by employer, awaiting admin approval
+  APPROVED  // Approved by admin, visible to seekers
+  REJECTED  // Rejected by admin
+  ARCHIVED  // Old/filled jobs, no longer active
+}
+
+// Defines possible statuses for a job application
+enum ApplicationStatus {
+  APPLIED      // Initial status when a seeker applies
+  VIEWED       // Employer/Admin has viewed the application
+  INTERVIEWING // Candidate is in the interview process
+  OFFERED      // Job offer extended
+  HIRED        // Candidate accepted the offer
+  REJECTED     // Application rejected
+}
+
+
+// --- Models ---
+
+// Represents a user in the system
+model User {
+  id            String     @id @default(cuid()) // Unique identifier (uses CUID)
+  role          UserRole                       // User's role (Job Seeker, Employer, Admin)
+  name          String?                        // Optional: User's full name
+  email         String     @unique               // User's email address (must be unique)
+  phone         String?    @unique               // Optional: User's phone number (must be unique if provided)
+  linkedin      String?    @unique               // Optional: Link to LinkedIn profile (must be unique if provided)
+  resumeUrl     String?    @map("resume_url")    // Optional: URL to the user's stored resume file (likely added in V1/V2)
+  passwordHash  String     @map("password_hash") // Stores the securely hashed password
+
+  createdAt     DateTime   @default(now()) @map("created_at") // Timestamp when the user was created
+  updatedAt     DateTime   @updatedAt @map("updated_at")      // Timestamp when the user was last updated
+
+  // --- Relations ---
+  // A user (if EMPLOYER) can post multiple jobs
+  jobsPosted    Job[]      @relation("EmployerJobs")
+  // A user (if JOB_SEEKER) can submit multiple applications
+  applications  Application[] @relation("SeekerApplications")
+
+  @@map("users") // Explicitly map this model to the 'users' table in the database
+}
+
+// Represents a job posting
+model Job {
+  id            String     @id @default(cuid()) // Unique identifier for the job
+  employerId    String     @map("employer_id")   // Foreign key linking to the User who posted the job
+  title         String                         // Job title
+  description   String     @db.Text              // Job description (using TEXT type for potentially long content)
+  location      String?                        // Optional: Job location (e.g., "New York, NY", "Remote")
+  remote        Boolean    @default(false)       // Is the job remote? Defaults to false
+  salaryMin     Float?     @map("salary_min")    // Optional: Minimum salary for the role
+  salaryMax     Float?     @map("salary_max")    // Optional: Maximum salary for the role
+  status        JobStatus  @default(PENDING)     // Current status of the job posting (defaults to PENDING)
+
+  createdAt     DateTime   @default(now()) @map("created_at") // Timestamp when the job was created
+  updatedAt     DateTime   @updatedAt @map("updated_at")      // Timestamp when the job was last updated
+
+  // --- Relations ---
+  // The User who posted this job
+  employer      User       @relation("EmployerJobs", fields: [employerId], references: [id], onDelete: Cascade) // Link back to the User model. onDelete: Cascade means if the employer User is deleted, their jobs are also deleted.
+  // All applications submitted for this job
+  applications  Application[] @relation("JobApplications")
+
+  @@map("jobs") // Explicitly map this model to the 'jobs' table in the database
+}
+
+// Represents a job application submitted by a Job Seeker for a Job
+model Application {
+  id            String     @id @default(cuid())   // Unique identifier for the application
+  jobId         String     @map("job_id")        // Foreign key linking to the Job being applied for
+  seekerId      String     @map("seeker_id")      // Foreign key linking to the User (Job Seeker) who applied
+  // Store submitted form data (e.g., maybe name/email if different from profile, cover letter snippet)
+  // or potentially parsed resume info later. Using Json type for flexibility.
+  resumeData    Json?      @map("resume_data")
+  status        ApplicationStatus @default(APPLIED) // Current status of the application (defaults to APPLIED)
+
+  appliedAt     DateTime   @default(now()) @map("applied_at") // Timestamp when the application was submitted
+  updatedAt     DateTime   @updatedAt @map("updated_at")      // Timestamp when the application was last updated
+
+  // --- Relations ---
+  // The Job this application is for
+  job           Job        @relation("JobApplications", fields: [jobId], references: [id], onDelete: Cascade) // Link back to the Job model. onDelete: Cascade means if the Job is deleted, applications for it are also deleted.
+  // The User (Job Seeker) who submitted this application
+  seeker        User       @relation("SeekerApplications", fields: [seekerId], references: [id], onDelete: Cascade) // Link back to the User model. onDelete: Cascade means if the applicant User is deleted, their applications are also deleted.
+
+  @@map("applications") // Explicitly map this model to the 'applications' table in the database
+}
