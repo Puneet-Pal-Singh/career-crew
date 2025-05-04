@@ -1,0 +1,98 @@
+# .github/workflows/ci.yml
+
+# Name of the workflow as it will appear in the GitHub Actions tab
+name: Node.js CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push events but only for the main and develop branches
+  push:
+    branches: [ main, develop ] # Adjust branch names if needed
+
+  # Triggers the workflow on pull request events targeting the main and develop branches
+  pull_request:
+    branches: [ main, develop ] # Adjust branch names if needed
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # Job to run linters
+  lint:
+    name: Run Linters # Name for the job shown in GitHub UI
+    runs-on: ubuntu-latest # Use the latest Ubuntu runner
+
+    steps:
+      # Step 1: Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v4 # Use the standard checkout action
+
+      # Step 2: Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x' # Use the same major Node version as your Dockerfile
+          cache: 'npm' # Enable caching for npm dependencies
+
+      # Step 3: Install dependencies securely using package-lock.json
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 4: Run the lint script defined in package.json
+      - name: Run ESLint
+        run: npm run lint
+
+  # Job to run TypeScript type checking
+  typecheck:
+    name: Type Check # Name for the job shown in GitHub UI
+    runs-on: ubuntu-latest # Use the latest Ubuntu runner
+
+    steps:
+      # Step 1: Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x' # Use the same major Node version
+          cache: 'npm' # Enable caching for npm dependencies
+
+      # Step 3: Install dependencies securely
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 4: Run TypeScript compiler to check types without emitting files
+      # Ensure 'typescript' is a devDependency in your package.json
+      - name: Run TypeScript Check
+        run: npx tsc --noEmit
+
+  # Job to build the Next.js application
+  build:
+    name: Build Project # Name for the job shown in GitHub UI
+    runs-on: ubuntu-latest # Use the latest Ubuntu runner
+
+    steps:
+      # Step 1: Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x' # Use the same major Node version
+          cache: 'npm' # Enable caching for npm dependencies
+
+      # Step 3: Install dependencies securely
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 4: Run the build script defined in package.json
+      - name: Run Next.js Build
+        run: npm run build
+        # Note: This build might require environment variables in the future.
+        # For now, we assume the basic build doesn't need DATABASE_URL etc.
+        # If it does, you'd need to pass secrets/env vars here.
