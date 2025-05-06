@@ -12,6 +12,7 @@ services:
       target: development # Explicitly use the 'development' stage from Dockerfile
     ports:
       - "3000:3000" # Map host port 3000 to container port 3000
+      - "5555:5555"
     volumes:
       # Mount the entire project directory into the container's /app directory
       # This enables hot-reloading for code changes.
