@@ -26,7 +26,7 @@ export async function middleware(request: NextRequest) {
 
   // Define protected paths
   // Add paths that should require authentication here
-  const protectedPaths = ['/dashboard', '/admin']; // Example: Add more specific paths if needed
+  const protectedPaths = ['/dashboard', '/admin', '/employer-dashboard']; // Example: Add more specific paths if needed
 
   // Check if the current path requires authentication
   const requiresAuth = protectedPaths.some(path => pathname.startsWith(path));
