@@ -22,27 +22,27 @@ const config: Config = {
         // Text: Light mode #111/#444; Dark mode #E0E0E0/#A0A0A0.
         colors: {
           background: {
-            light: '#FFFFFF',
-            dark: '#1E1E1E',
+          light: '#FFFFFF',
+          dark: '#111111', // CHANGED HERE - Vercel-like deep black/dark gray
           },
-          surface: {
+          surface: { // Surface for cards, modals etc.
             light: '#F7F7F8',
-            dark: '#2A2A2A',
+            dark: '#1E1E1E', // CHANGED HERE - Making this the previous background color, or keep #2A2A2A. Let's try #1E1E1E for slightly less contrast between bg and surface first.
+                            // If you want more separation like Vercel, #2A2A2A is also good.
           },
           primary: {
-            DEFAULT: '#64FFDA', // Your primary accent
-            // You can add shades if needed: e.g., light, dark
+            DEFAULT: '#64FFDA',
           },
           secondary: {
-            DEFAULT: '#A259FF', // Your secondary accent
+            DEFAULT: '#A259FF',
           },
           content: { // For main text content
             light: '#111111',
-            dark: '#E0E0E0',
+            dark: '#E0E0E0', // This should still provide good contrast on #111111
           },
           subtle: { // For less prominent text
-              light: '#444444',
-              dark: '#A0A0A0',
+            light: '#444444',
+            dark: '#A0A0A0', // This should also be fine
           }
         },
       },
