@@ -22,13 +22,12 @@ const config: Config = {
         // Text: Light mode #111/#444; Dark mode #E0E0E0/#A0A0A0.
         colors: {
           background: {
-          light: '#FFFFFF',
-          dark: '#111111', // CHANGED HERE - Vercel-like deep black/dark gray
+            light: '#FFFFFF',
+            dark: '#0A0A0A', // CHANGED: "Z black" - very dark, near black
           },
-          surface: { // Surface for cards, modals etc.
-            light: '#F7F7F8',
-            dark: '#1E1E1E', // CHANGED HERE - Making this the previous background color, or keep #2A2A2A. Let's try #1E1E1E for slightly less contrast between bg and surface first.
-                            // If you want more separation like Vercel, #2A2A2A is also good.
+          surface: {
+            light: '#F7F7F8', // Light mode surface for cards
+            dark: '#1C1C1C', // CHANGED: Subtle dark grey for cards on the Z black background
           },
           primary: {
             DEFAULT: '#64FFDA',
@@ -36,13 +35,18 @@ const config: Config = {
           secondary: {
             DEFAULT: '#A259FF',
           },
-          content: { // For main text content
+          content: {
             light: '#111111',
-            dark: '#E0E0E0', // This should still provide good contrast on #111111
+            dark: '#E0E0E0', // Text on dark background
           },
-          subtle: { // For less prominent text
+          subtle: {
             light: '#444444',
-            dark: '#A0A0A0', // This should also be fine
+            dark: '#A0A0A0', // Lighter text on dark background
+          },
+          // Add a border color for dark mode, often slightly lighter than surface
+          borderDark: {
+            DEFAULT: '#2D2D2D', // For subtle borders on dark elements
+            hover: '#3D3D3D'
           }
         },
       },
