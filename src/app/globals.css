@@ -8,25 +8,34 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     @apply scroll-smooth motion-safe:scroll-smooth;
+    /* Color scheme preference for scrollbars etc. */
+    color-scheme: light; /* Default to light */
+  }
+  html.dark {
+    color-scheme: dark;
   }
 
   body {
-    @apply font-sans; /* This should now work */
-    @apply bg-background-light text-content-light dark:bg-background-dark dark:text-content-dark;
+    @apply font-sans;
+    /* Default to light mode colors */
+    @apply bg-background-light text-content-light;
+    /* Dark mode colors are applied via html.dark */
+    @apply dark:bg-background-dark dark:text-content-dark;
     @apply transition-colors duration-300 ease-in-out;
   }
 
   a {
-    @apply text-inherit no-underline;
-    @apply hover:text-primary dark:hover:text-primary;
-    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:rounded-sm;
+    /* Default link color for light mode */
+    @apply text-primary hover:opacity-80 dark:text-primary-dark dark:hover:opacity-80;
+    @apply no-underline;
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 dark:focus-visible:ring-primary-dark/60 focus-visible:rounded-sm;
     @apply transition-colors duration-150 ease-in-out;
   }
 
   *,
   *::before,
   *::after {
-    @apply box-border border-surface-light dark:border-surface-dark;
+    @apply box-border border-border-light dark:border-border-dark;
   }
 
   img,
@@ -39,6 +48,7 @@
     @apply outline-none;
   }
 
+  /* Default heading styles using new content colors */
   h1, h2, h3, h4, h5, h6 {
     @apply font-display text-content-light dark:text-content-dark;
   }
@@ -48,4 +58,18 @@
   .text-balance {
     text-wrap: balance;
   }
+  /* Example gradient utility class */
+  .bg-gradient-animated {
+    @apply bg-gradient-accent-flow dark:bg-gradient-accent-flow-dark;
+    background-size: 200% auto; /* For animation */
+    /* animation: gradientShift 5s ease infinite; */ /* We'll add animation later */
+  }
 }
+
+/*
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+*/

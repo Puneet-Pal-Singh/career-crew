@@ -1,78 +1,91 @@
 // src/components/layout/Header.tsx
-'use client'; // May need client interactivity later for auth state, theme toggle
+'use client'; // Needs to be a client component for scroll effects
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import ThemeToggleButton from '@/components/theme/ThemeToggleButton'; // We'll create this later
-
-// Define a type for navigation links if you want more structure
-interface NavLink {
-  href: string;
-  label: string;
-}
-
-const navLinks: NavLink[] = [
-  { href: '/jobs', label: 'Browse Jobs' },
-  // { href: '/post-a-job', label: 'Post a Job' }, // Conditional later
-  // { href: '/dashboard', label: 'Dashboard' }, // Conditional later
-];
+import { useState, useEffect } from 'react';
+import { Menu, X } from 'lucide-react'; // Assuming Menu and X for mobile
+// import { useTheme } from 'next-themes';
+import ThemeToggleButton from '@/components/theme/ThemeToggleButton'; // Reuse existing
 
 export default function Header() {
-  const pathname = usePathname();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // const { theme, setTheme } = useTheme(); // Already in ThemeToggleButton
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20); // Change background after scrolling 20px
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const headerBaseClasses = "fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out";
+  const headerScrolledClasses = "bg-surface-light/80 dark:bg-surface-dark/80 backdrop-blur-md shadow-md";
+  const headerTopClasses = "bg-transparent";
+
+  const navLinkClasses = "text-sm font-medium text-content-light hover:text-primary dark:text-content-dark dark:hover:text-primary-dark transition-colors px-3 py-2 rounded-md";
+  // const navLinkActiveClasses = "text-primary dark:text-primary-dark"; // Add logic for active link later
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-200 dark:border-gray-700 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+    <header className={`${headerBaseClasses} ${isScrolled ? headerScrolledClasses : headerTopClasses}`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="text-2xl font-bold font-display text-primary">
-            CareerCrew
+          <Link href="/" className="flex-shrink-0">
+            <span className={`font-display text-2xl font-bold ${isScrolled || mobileMenuOpen ? 'text-content-light dark:text-content-dark' : 'text-content-light dark:text-content-dark'}`}>
+              Career<span className={isScrolled || mobileMenuOpen ? "text-primary dark:text-primary-dark" : "text-primary dark:text-primary-dark"}>Crew</span>
+            </span>
+            {/* Or an <Image /> logo */}
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8 items-center">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  pathname === link.href
-                    ? 'text-primary dark:text-primary'
-                    : 'text-content-light dark:text-content-dark hover:text-subtle-light dark:hover:text-subtle-dark'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-            {/* Placeholder for conditional links */}
-            <Link
-              href="/login"
-              className="text-sm font-medium text-content-light dark:text-content-dark hover:text-primary"
-            >
-              Login
-            </Link>
+          <nav className="hidden md:flex md:items-center md:space-x-2 lg:space-x-4">
+            <Link href="/jobs" className={navLinkClasses}>Browse Jobs</Link>
+            {/* Add conditional links for Employer/Admin Dashboard if logged in */}
+            {/* <Link href="/dashboard/employer" className={navLinkClasses}>Post a Job</Link> */}
+            {/* <Link href="/login" className={navLinkClasses}>Login</Link> */}
+            {/* <Link href="/register" className={`${navLinkClasses} bg-primary text-white dark:bg-primary-dark dark:text-background-dark px-4 py-2 rounded-md hover:bg-primary/90 dark:hover:bg-primary-dark/90`}>Sign Up</Link> */}
+             {/* Placeholder for auth links - to be implemented fully later */}
+            <Link href="/login" className={navLinkClasses}>Login</Link>
             <Link
               href="/register"
-              className="text-sm font-medium px-4 py-2 border border-primary text-primary rounded-md hover:bg-primary hover:text-background-dark transition-colors"
+              className="ml-4 inline-flex items-center justify-center rounded-md border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:bg-primary-dark dark:text-background-dark dark:hover:bg-primary-dark/90 dark:focus:ring-offset-background-dark"
             >
               Sign Up
             </Link>
-            <ThemeToggleButton />
           </nav>
 
-          {/* Mobile Menu Button (placeholder for future implementation) */}
-          <div className="md:hidden">
+          {/* Theme Toggle */}
+          <div className="hidden md:block">
             <ThemeToggleButton />
-            <button className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-primary">
-              <span className="sr-only">Open menu</span>
-              {/* Icon for menu - e.g., Hamburger icon */}
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-              </svg>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden flex items-center">
+            <ThemeToggleButton /> {/* Can also be inside mobile menu */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className={`ml-2 p-2 rounded-md ${isScrolled || mobileMenuOpen ? 'text-content-light dark:text-content-dark' : 'text-content-light dark:text-content-dark'} hover:bg-surface-light/50 dark:hover:bg-surface-dark/50 focus:outline-none`}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className={`md:hidden absolute top-16 left-0 right-0 shadow-lg ${headerScrolledClasses} pb-4`}> {/* Ensure background matches scrolled state */}
+          <nav className="flex flex-col space-y-2 px-4 pt-2">
+            <Link href="/jobs" className={navLinkClasses} onClick={() => setMobileMenuOpen(false)}>Browse Jobs</Link>
+            {/* <Link href="/dashboard/employer" className={navLinkClasses} onClick={() => setMobileMenuOpen(false)}>Post a Job</Link> */}
+            <Link href="/login" className={navLinkClasses} onClick={() => setMobileMenuOpen(false)}>Login</Link>
+            <Link href="/register" className={`${navLinkClasses} bg-primary text-white dark:bg-primary-dark dark:text-background-dark px-4 py-2 rounded-md hover:bg-primary/90 dark:hover:bg-primary-dark/90 text-center`} onClick={() => setMobileMenuOpen(false)}>Sign Up</Link>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
