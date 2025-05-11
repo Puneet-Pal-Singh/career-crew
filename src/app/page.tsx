@@ -1,7 +1,8 @@
 // src/app/page.tsx
 import AnimatedHeroSection from '@/components/landing/AnimatedHeroSection';
 import AnimatedHowItWorksSection from '@/components/landing/AnimatedHowItWorksSection';
-import FeaturesSection from '@/components/landing/FeaturesSection'; // NEW (or AnimatedFeaturesSection)
+// import FeaturesSection from '@/components/landing/FeaturesSection'; // NEW (or AnimatedFeaturesSection)
+import AnimatedFeaturesSection from '@/components/landing/AnimatedFeaturesSection';
 import FeaturedCompaniesSection from '@/components/landing/FeaturedCompaniesSection'; // NEW
 import AnimatedTestimonialsSection from '@/components/landing/AnimatedTestimonialsSection';
 import RecentJobsSection from '@/components/landing/RecentJobsSection'; // NEW
@@ -36,8 +37,8 @@ export default async function HomePage() {
     <>
       <AnimatedHeroSection />
       <AnimatedHowItWorksSection steps={howItWorksSteps} />
-      <FeaturesSection features={features} /> 
-      {/* Or <AnimatedFeaturesSection features={features} /> if it has top-level animations */}
+      {/* <FeaturesSection features={features} />  */}
+      <AnimatedFeaturesSection features={features} /> {/* NEW animated component*/}
       <FeaturedCompaniesSection companies={featuredCompanies} />
       <AnimatedTestimonialsSection testimonials={testimonials} />
       <RecentJobsSection jobs={recentJobs} />
