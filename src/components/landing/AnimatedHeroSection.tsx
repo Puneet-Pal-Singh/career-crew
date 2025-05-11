@@ -8,30 +8,34 @@ import AnimatedGradientBackground from '@/components/ui/AnimatedGradientBackgrou
 
 export default function AnimatedHeroSection() {
   return (
-    // MODIFIED: Added min-h-screen and flex to center content vertically
     <section 
-      className="relative overflow-hidden flex flex-col justify-center items-center text-center min-h-screen py-16 md:py-20"
-      // py-16/20 provides padding if content is taller than screen, but min-h-screen ensures it's at least full height
+      className="relative overflow-hidden flex flex-col justify-center items-center text-center min-h-screen pt-20 md:pt-24 pb-16 md:pb-20"
     >
-      <AnimatedGradientBackground className="animated-aurora-bg" />
+      {/* Pass isFullScreen={true} if this gradient is meant to be for the viewport background */}
+      {/* For a section-specific background, isFullScreen={false} is correct. */}
+      {/* Given it's for the hero and we want full coverage, true might be better if it's intended to be the very first visual layer */}
+      {/* However, if AnimatedHeroSection IS the first visual layer, then its internal absolute positioning is fine. */}
+      {/* The key is the sizing of the orbs. Let's stick with section-relative for now and focus on orb size. */}
+      <AnimatedGradientBackground 
+        className="hero-aurora-bg" // Unique className for targeting styles
+        isHeroBackground={true} 
+      /> {/* isFullScreen={false} (default) for section-relative bg */}
       
-      <div className="container mx-auto px-4 relative z-10"> {/* Max width for content */}
+      <div className="container mx-auto px-4 relative z-10">
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          // Adjusted text sizes for potentially larger hero display
           className="font-display text-5xl font-bold tracking-tight text-content-light dark:text-content-dark sm:text-6xl md:text-7xl lg:text-8xl"
         >
           Find Your <span className="text-primary dark:text-primary-dark">Dream Team</span> or
-          <br className="hidden md:block" /> {/* md:block for better control on when it breaks */}
+          <br className="hidden md:block" />
           Your Next <span className="text-secondary dark:text-secondary-dark">Big Opportunity</span>.
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          // Adjusted text size and max-width
           className="mt-6 text-lg md:text-xl leading-relaxed text-subtle-light dark:text-subtle-dark max-w-3xl mx-auto"
         >
           CareerCrew Consulting connects top talent with innovative companies.
@@ -45,7 +49,6 @@ export default function AnimatedHeroSection() {
         >
           <Link
             href="/jobs"
-            // Slightly larger buttons
             className="w-full sm:w-auto rounded-lg bg-primary dark:bg-primary-dark px-10 py-4 text-base md:text-lg font-semibold text-white dark:text-gray-900 shadow-xl hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all duration-150 transform hover:scale-105"
           >
             Browse Jobs
@@ -61,5 +64,3 @@ export default function AnimatedHeroSection() {
     </section>
   );
 }
-
-// `'` can be escaped with `&apos;`,
