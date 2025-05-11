@@ -1,6 +1,4 @@
 // src/lib/data/landingContent.ts
-import { Briefcase, Search as SearchIconForFeatures, Zap, Target } from 'lucide-react';
-import type { LucideIcon as LucideIconType } from 'lucide-react';
 
 // Testimonial type
 export interface TestimonialData {
@@ -20,9 +18,11 @@ export interface HowItWorksStepData {
 
 // Feature type
 export interface FeatureData {
-  icon: LucideIconType; // Keep icon component for direct use if FeatureItem is server-rendered within FeaturesSection
+  iconName: 'SearchIconForFeatures' | 'Briefcase' | 'Target' | 'Zap' | string; // Allow specific names or a generic string for flexibility
   title: string;
   description: string;
+  // Optional: Add a field for a larger, custom illustration URL if you plan to use those
+  illustrationUrl?: string; 
 }
 
 // Featured Company type
@@ -34,12 +34,11 @@ export interface FeaturedCompanyData {
 // --- Data Definitions ---
 
 export async function getFeaturesData(): Promise<FeatureData[]> {
-  // This could also fetch from a CMS or API in the future
   return [
-    { icon: SearchIconForFeatures, title: 'Advanced Job Search', description: 'Easily find relevant job openings with our powerful search filters and intuitive interface.' },
-    { icon: Briefcase, title: 'Effortless Applications', description: 'Apply to jobs quickly with a streamlined process, getting your profile in front of employers faster.' },
-    { icon: Target, title: 'Targeted Connections', description: 'Directly connect with companies looking for talent like yours. Build your network and find your fit.' },
-    { icon: Zap, title: 'Career Growth Insights', description: 'Access resources and insights to help you navigate your career path and achieve your professional goals.' },
+    { iconName: 'SearchIconForFeatures', title: 'Advanced Job Search', description: 'Easily find relevant job openings with our powerful search filters and intuitive interface.' },
+    { iconName: 'Briefcase', title: 'Effortless Applications', description: 'Apply to jobs quickly with a streamlined process, getting your profile in front of employers faster.' },
+    { iconName: 'Target', title: 'Targeted Connections', description: 'Directly connect with companies looking for talent like yours. Build your network and find your fit.' },
+    { iconName: 'Zap', title: 'Career Growth Insights', description: 'Access resources and insights to help you navigate your career path and achieve your professional goals.' },
   ];
 }
 
