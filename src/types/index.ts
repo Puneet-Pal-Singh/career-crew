@@ -11,4 +11,5 @@ export interface JobCardData {
   salary?: string | null; // e.g., "$100k - $120k" or "Competitive"
   postedDate: string; // e.g., "Posted 2 days ago", "2023-10-26"
   type?: string; // e.g., "Full-time", "Contract", "Part-time"
+  tags?: string[]; // NEWLY ADDED: Optional array of strings for tags
 }
