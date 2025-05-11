@@ -4,28 +4,41 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Light Mode Color Scheme & RGB Variables */
+    color-scheme: light;
+    /* Define RGB versions of your theme colors here for use in box-shadows, etc. */
+    /* Ensure these RGB values match your hex codes in tailwind.config.ts */
+    --color-primary-rgb: 42, 111, 255;      /* #2A6FFF */
+    --color-secondary-rgb: 255, 140, 42;    /* #FF8C2A */
+    --color-accent1-rgb: 42, 232, 255;     /* #2AE8FF */
+    /* Add others as needed */
+  }
+
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     @apply scroll-smooth motion-safe:scroll-smooth;
-    /* Color scheme preference for scrollbars etc. */
-    color-scheme: light; /* Default to light */
   }
+
   html.dark {
+    /* Dark Mode Color Scheme & RGB Variables */
     color-scheme: dark;
+    /* Override RGB variables for dark mode */
+    --color-primary-rgb: 90, 159, 255;     /* #5A9FFF (primary-dark) */
+    --color-secondary-rgb: 255, 167, 90;   /* #FFA75A (secondary-dark) */
+    --color-accent1-rgb: 90, 240, 255;    /* #5AF0FF (accent1-dark) */
+    /* Add others as needed */
   }
 
   body {
     @apply font-sans;
-    /* Default to light mode colors */
     @apply bg-background-light text-content-light;
-    /* Dark mode colors are applied via html.dark */
     @apply dark:bg-background-dark dark:text-content-dark;
     @apply transition-colors duration-300 ease-in-out;
   }
 
   a {
-    /* Default link color for light mode */
     @apply text-primary hover:opacity-80 dark:text-primary-dark dark:hover:opacity-80;
     @apply no-underline;
     @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 dark:focus-visible:ring-primary-dark/60 focus-visible:rounded-sm;
@@ -48,7 +61,6 @@
     @apply outline-none;
   }
 
-  /* Default heading styles using new content colors */
   h1, h2, h3, h4, h5, h6 {
     @apply font-display text-content-light dark:text-content-dark;
   }
@@ -58,11 +70,10 @@
   .text-balance {
     text-wrap: balance;
   }
-  /* Example gradient utility class */
   .bg-gradient-animated {
-    @apply bg-gradient-accent-flow dark:bg-gradient-accent-flow-dark;
-    background-size: 200% auto; /* For animation */
-    /* animation: gradientShift 5s ease infinite; */ /* We'll add animation later */
+    @apply bg-gradient-accent-flow dark:bg-gradient-accent-flow-dark; /* Assumes these are defined in tailwind.config.ts */
+    background-size: 200% auto;
+    /* animation: gradientShift 5s ease infinite; */
   }
 }
 
