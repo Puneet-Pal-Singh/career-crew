@@ -15,44 +15,43 @@ const config: Config = {
         display: ['var(--font-geist-sans)', 'var(--font-inter)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       colors: {
-        // Light Mode Palette
+        // Your existing color palette...
         'background-light': '#F9FAFB',
         'surface-light': '#FFFFFF',
         'content-light': '#1A2B42',
         'subtle-light': '#5A6B82',
-        'primary': '#2A6FFF', // Main primary
-        'secondary': '#FF8C2A',
+        'primary': '#2A6FFF',
+        'secondary': '#FF8C2A', // Warm Orange (RGB: 255, 140, 42)
         'accent1': '#2AE8FF',
-        'success': '#34D399',
         'warning': '#FBBF24',
+        'success': '#34D399',
         'danger': '#F87171',
-        'border-light': '#E5E7EB', // For subtle borders in light mode
+        'border-light': '#E5E7EB',
 
-        // Dark Mode Palette
         'background-dark': '#1A202C',
         'surface-dark': '#2D3748',
         'content-dark': '#E2E8F0',
         'subtle-dark': '#A0AEC0',
-        'primary-dark': '#5A9FFF', // Primary for dark mode
-        'secondary-dark': '#FFA75A',
+        'primary-dark': '#5A9FFF',
+        'secondary-dark': '#FFA75A', // Lighter Orange (RGB: 255, 167, 90)
         'accent1-dark': '#5AF0FF',
-        'success-dark': '#68D391',
         'warning-dark': '#FCD34D',
+        'success-dark': '#68D391',
         'danger-dark': '#FC8181',
-        'border-dark': '#4A5568', // For subtle borders in dark mode
+        'border-dark': '#4A5568',
       },
-      // Example for gradients (can be defined as utilities or directly)
       backgroundImage: {
-        'gradient-primary-secondary': 'linear-gradient(to right, var(--color-primary), var(--color-secondary))',
-        'gradient-accent-flow': 'linear-gradient(to right, var(--color-primary), var(--color-accent1), var(--color-secondary))',
-        // Dark mode versions
-        'gradient-primary-secondary-dark': 'linear-gradient(to right, var(--color-primary-dark), var(--color-secondary-dark))',
-        'gradient-accent-flow-dark': 'linear-gradient(to right, var(--color-primary-dark), var(--color-accent1-dark), var(--color-secondary-dark))',
+        // Previous gradients can remain if used elsewhere
+        // ...
+
+        // NEW: Header Subtle Orange Hues (using RGBA for opacity)
+        // 'header-subtle-orange-hue-light': 'linear-gradient(90deg, rgba(255,140,42,0.04) 0%, rgba(255,160,80,0.02) 100%)',
+        // 'header-subtle-orange-hue-dark': 'linear-gradient(90deg, rgba(255,167,90,0.06) 0%, rgba(255,178,107,0.04) 100%)',
       }
     },
   },
   plugins: [
-    // You might consider adding require('@tailwindcss/forms') if not already for better form styling
+    // require('@tailwindcss/forms'),
   ],
 };
 
