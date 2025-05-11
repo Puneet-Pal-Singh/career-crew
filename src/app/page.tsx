@@ -9,6 +9,7 @@ import AnimatedTestimonialsSection from '@/components/landing/AnimatedTestimonia
 // import RecentJobsSection from '@/components/landing/RecentJobsSection'; // OLD
 import AnimatedRecentJobsSection from '@/components/landing/AnimatedRecentJobsSection'; // NEW
 import AnimatedFinalCTASection from '@/components/landing/AnimatedFinalCTASection';
+import AnimatedStatsSection from '@/components/landing/AnimatedStatsSection'; // NEW
 
 // Data fetching functions (can be in this file or moved to a lib/data.ts file)
 import { getRecentJobsData } from '@/lib/data/jobs'; // Example: moved data fetching
@@ -39,14 +40,11 @@ export default async function HomePage() {
     <>
       <AnimatedHeroSection />
       <AnimatedHowItWorksSection steps={howItWorksSteps} />
-      {/* <FeaturesSection features={features} />  */} {/* OLD */}
-      <AnimatedFeaturesSection features={features} /> {/* NEW animated component*/}
-      {/* <FeaturedCompaniesSection companies={featuredCompanies} /> */}  {/* OLD */}
-      <AnimatedFeaturedCompanies companies={featuredCompanies} /> {/* NEW animated component*/}
-      {/* <TestimonialsSection testimonials={testimonials} /> */}  {/* OLD */}
-      <AnimatedTestimonialsSection testimonials={testimonials} /> {/* NEW animated component*/}
-      {/* <RecentJobsSection jobs={recentJobs} /> */} {/* OLD */}
-      <AnimatedRecentJobsSection jobs={recentJobs} /> {/* USE NEW COMPONENT */}
+      <AnimatedFeaturesSection features={features} /> 
+      <AnimatedStatsSection /> 
+      <AnimatedFeaturedCompanies companies={featuredCompanies} /> 
+      <AnimatedTestimonialsSection testimonials={testimonials} /> 
+      <AnimatedRecentJobsSection jobs={recentJobs} /> 
       <AnimatedFinalCTASection /> 
       
       {/* TODO: Add new sections planned: */}
