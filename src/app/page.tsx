@@ -1,9 +1,10 @@
 // src/app/page.tsx
 import AnimatedHeroSection from '@/components/landing/AnimatedHeroSection';
 import AnimatedHowItWorksSection from '@/components/landing/AnimatedHowItWorksSection';
-// import FeaturesSection from '@/components/landing/FeaturesSection'; // NEW (or AnimatedFeaturesSection)
+// import FeaturesSection from '@/components/landing/FeaturesSection'; // OLD (or AnimatedFeaturesSection)
 import AnimatedFeaturesSection from '@/components/landing/AnimatedFeaturesSection';
-import FeaturedCompaniesSection from '@/components/landing/FeaturedCompaniesSection'; // NEW
+// import FeaturedCompaniesSection from '@/components/landing/FeaturedCompaniesSection'; // OLD
+import AnimatedFeaturedCompanies from '@/components/landing/AnimatedFeaturedCompanies'; // NEW
 import AnimatedTestimonialsSection from '@/components/landing/AnimatedTestimonialsSection';
 import RecentJobsSection from '@/components/landing/RecentJobsSection'; // NEW
 import AnimatedFinalCTASection from '@/components/landing/AnimatedFinalCTASection';
@@ -37,12 +38,14 @@ export default async function HomePage() {
     <>
       <AnimatedHeroSection />
       <AnimatedHowItWorksSection steps={howItWorksSteps} />
-      {/* <FeaturesSection features={features} />  */}
+      {/* <FeaturesSection features={features} />  */} {/* OLD */}
       <AnimatedFeaturesSection features={features} /> {/* NEW animated component*/}
-      <FeaturedCompaniesSection companies={featuredCompanies} />
-      <AnimatedTestimonialsSection testimonials={testimonials} />
+      {/* <FeaturedCompaniesSection companies={featuredCompanies} /> */}  {/* OLD */}
+      <AnimatedFeaturedCompanies companies={featuredCompanies} /> {/* NEW animated component*/}
+      {/* <TestimonialsSection testimonials={testimonials} /> */}  {/* OLD */}
+      <AnimatedTestimonialsSection testimonials={testimonials} /> {/* NEW animated component*/}
       <RecentJobsSection jobs={recentJobs} />
-      <AnimatedFinalCTASection />
+      <AnimatedFinalCTASection /> 
       
       {/* TODO: Add new sections planned: */}
       {/* <StatsSection /> */}
