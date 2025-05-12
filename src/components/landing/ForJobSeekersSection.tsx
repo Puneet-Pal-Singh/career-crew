@@ -4,7 +4,7 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Search, UserPlus, BellRing } from 'lucide-react'; // Example icons
+import { ArrowRight, Search, UserPlus, BellRing } from 'lucide-react';
 
 const benefits = [
   { 
@@ -22,34 +22,58 @@ const benefits = [
     title: "Personalized Job Alerts", 
     description: "Never miss out. Get notified about new roles that match your skills and preferences." 
   },
-  // { 
-  //   icon: TrendingUp, 
-  //   title: "Career Growth Resources", 
-  //   description: "Access insights and tools to help you advance your career and achieve your goals." 
-  // },
 ];
 
 export default function ForJobSeekersSection() {
   const sectionVariants = {
     hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.2, delayChildren: 0.1 } },
+    visible: { opacity: 1, transition: { staggerChildren: 0.15, delayChildren: 0.1 } },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } },
+    hidden: { opacity: 0, y: 25 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+  };
+
+  const visualVariants = {
+    hidden: { opacity: 0, scale: 0.85 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.6, delay: 0.2, ease: 'easeOut' } },
   };
 
   return (
     <section 
       id="for-job-seekers" 
-      className="py-20 md:py-28 lg:py-32 bg-gradient-to-br from-primary/5 via-accent1/5 to-background-light dark:from-primary-dark/5 dark:via-accent1-dark/5 dark:to-background-dark relative overflow-hidden"
-      // Example of a soft, optimistic gradient
+      className="py-16 sm:py-20 md:py-28 lg:py-32 bg-gradient-to-br from-primary/10 via-accent1/5 to-background-light dark:from-primary-dark/10 dark:via-accent1-dark/5 dark:to-background-dark relative overflow-hidden"
     >
+      <div 
+        aria-hidden="true"
+        className="absolute inset-y-0 left-0 w-full sm:w-3/5 md:w-1/2 lg:w-2/5 xl:w-1/3 
+                   bg-gradient-to-r from-primary/[.07] via-primary/[.02] to-transparent 
+                   dark:from-primary-dark/[.07] dark:via-primary-dark/[.02] dark:to-transparent 
+                   -z-10 opacity-80 dark:opacity-60 pointer-events-none"
+      />
+
       <div className="container mx-auto px-4">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Text Content Column */}
+        <div className="flex flex-col lg:grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+          
+          <motion.div 
+            className="w-full max-w-md lg:max-w-none mx-auto lg:order-2 flex items-center justify-center mb-8 lg:mb-0" 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={visualVariants}
+          >
+            <Image
+              src="/illustrations/job-seeker-focus.svg" 
+              alt="Job seeker actively finding opportunities"
+              width={480}
+              height={480}
+              className="object-contain rounded-lg w-full h-auto max-h-[300px] sm:max-h-[350px] md:max-h-[400px] lg:max-h-none" 
+            />
+          </motion.div>
+
           <motion.div
+            className="lg:order-1 text-center lg:text-left" 
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
@@ -62,27 +86,32 @@ export default function ForJobSeekersSection() {
               For Job Seekers
             </motion.p>
             <motion.h2 
-              className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-content-light dark:text-content-dark mb-6"
+              className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-content-light dark:text-content-dark mb-5 md:mb-6"
               variants={itemVariants}
             >
               Find Your <span className="text-secondary dark:text-secondary-dark">Next Big</span> Opportunity.
             </motion.h2>
             <motion.p 
-              className="text-lg sm:text-xl text-subtle-light dark:text-subtle-dark mb-8 leading-relaxed"
+              className="text-base sm:text-lg text-subtle-light dark:text-subtle-dark mb-6 md:mb-8 leading-relaxed"
               variants={itemVariants}
             >
               CareerCrew empowers you to discover exciting roles, simplify your job search, and take control of your professional journey.
             </motion.p>
             
-            <div className="space-y-5 mb-10">
+            <div className="space-y-5 mb-8 md:mb-10">
               {benefits.map((benefit) => (
-                <motion.div key={benefit.title} className="flex items-start space-x-4" variants={itemVariants}>
+                <motion.div 
+                  key={benefit.title} 
+                  className="flex items-start space-x-3 sm:space-x-4 text-left" 
+                  variants={itemVariants}
+                >
                   <div className="flex-shrink-0 mt-1 p-2.5 bg-primary/10 dark:bg-primary-dark/15 text-primary dark:text-primary-dark rounded-lg">
-                    <benefit.icon size={22} strokeWidth={2} />
+                    {/* CORRECTED ICON SIZING */}
+                    <benefit.icon size={22} strokeWidth={2} /> 
                   </div>
                   <div>
-                    <h4 className="text-lg font-semibold text-content-light dark:text-content-dark">{benefit.title}</h4>
-                    <p className="text-sm text-subtle-light dark:text-subtle-dark">{benefit.description}</p>
+                    <h4 className="text-md sm:text-lg font-semibold text-content-light dark:text-content-dark">{benefit.title}</h4>
+                    <p className="text-xs sm:text-sm text-subtle-light dark:text-subtle-dark">{benefit.description}</p>
                   </div>
                 </motion.div>
               ))}
@@ -91,33 +120,13 @@ export default function ForJobSeekersSection() {
             <motion.div variants={itemVariants}>
               <Link
                 href="/jobs"
-                className="group rounded-lg bg-primary dark:bg-primary-dark px-8 py-4 text-base md:text-lg font-semibold text-white dark:text-gray-900 shadow-lg hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all duration-150 transform hover:scale-105 inline-flex items-center gap-2"
+                className="group rounded-lg bg-primary dark:bg-primary-dark px-7 py-3.5 sm:px-8 sm:py-4 text-sm sm:text-base md:text-lg font-semibold text-white dark:text-gray-900 shadow-lg hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all duration-150 transform hover:scale-105 inline-flex items-center gap-2"
               >
-                Browse Open Roles <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
+                Browse Open Roles 
+                {/* CORRECTED ICON SIZING */}
+                <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" /> 
               </Link>
             </motion.div>
-          </motion.div>
-
-          {/* Visual Column (Placeholder - replace with a compelling image/illustration) */}
-          <motion.div 
-            className="hidden lg:flex items-center justify-center"
-            initial={{ opacity: 0, scale: 0.8 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.7, delay: 0.3, ease: 'easeOut' }}
-          >
-            <Image
-              src="/illustrations/job-seeker-focus.svg" // CREATE THIS ILLUSTRATION/IMAGE
-              alt="Job seeker finding opportunities"
-              width={500}
-              height={500}
-              className="object-contain rounded-lg" 
-              // Example: max-w-md lg:max-w-lg
-            />
-            {/* Or a more abstract visual */}
-            {/* <div className="w-full h-[400px] bg-gradient-to-tr from-accent1 to-secondary rounded-xl shadow-2xl flex items-center justify-center">
-              <TrendingUp size={100} className="text-white opacity-30" />
-            </div> */}
           </motion.div>
         </div>
       </div>
