@@ -1,0 +1,13 @@
+<svg width="500" height="500" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="employerGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FFA75A;stop-opacity:1" /> {/* secondary-dark */}
+      <stop offset="100%" style="stop-color:#FF8C2A;stop-opacity:1" /> {/* secondary */}
+    </linearGradient>
+  </defs>
+  <circle cx="30" cy="30" r="15" fill="url(#employerGrad)" opacity="0.7"/>
+  <circle cx="70" cy="30" r="15" fill="url(#employerGrad)" opacity="0.7"/>
+  <circle cx="50" cy="65" r="20" fill="url(#employerGrad)" opacity="0.9"/>
+  <line x1="38" y1="42" x2="50" y2="55" stroke="#FFFFFF" stroke-width="2" opacity="0.5"/>
+  <line x1="62" y1="42" x2="50" y2="55" stroke="#FFFFFF" stroke-width="2" opacity="0.5"/>
+</svg>
