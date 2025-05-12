@@ -11,6 +11,8 @@ import AnimatedRecentJobsSection from '@/components/landing/AnimatedRecentJobsSe
 import AnimatedFinalCTASection from '@/components/landing/AnimatedFinalCTASection';
 import AnimatedStatsSection from '@/components/landing/AnimatedStatsSection'; // NEW
 import AnimatedBlogPreviewSection from '@/components/landing/AnimatedBlogPreviewSection'; // NEW
+import ForJobSeekersSection from '@/components/landing/ForJobSeekersSection'; // NEW
+import ForEmployersSection from '@/components/landing/ForEmployersSection';   // NEW
 
 // Data fetching functions (can be in this file or moved to a lib/data.ts file)
 import { getRecentJobsData } from '@/lib/data/jobs'; // Example: moved data fetching
@@ -46,15 +48,13 @@ export default async function HomePage() {
       <AnimatedHowItWorksSection steps={howItWorksSteps} />
       <AnimatedFeaturesSection features={features} /> 
       <AnimatedStatsSection /> 
+      <ForJobSeekersSection /> {/* ADD NEW SECTION */}
+      <ForEmployersSection />  {/* ADD NEW SECTION */}
       <AnimatedFeaturedCompanies companies={featuredCompanies} /> 
       <AnimatedTestimonialsSection testimonials={testimonials} /> 
       <AnimatedRecentJobsSection jobs={recentJobs} /> 
       <AnimatedBlogPreviewSection posts={blogPosts} />
       <AnimatedFinalCTASection /> 
-      
-      {/* TODO: Add new sections planned: */}
-      {/* <ForJobSeekersSection /> */}
-      {/* <ForEmployersSection /> */}
     </>
   );
 }
