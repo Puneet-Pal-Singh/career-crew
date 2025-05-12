@@ -3,50 +3,65 @@
 
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-// You'll need icons. Example using simple text, replace with SVG icons.
-// For example, react-icons: npm install react-icons
-// import { SunIcon, MoonIcon } from '@heroicons/react/24/outline'; // or from react-icons
+import { Sun, Moon } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-export default function ThemeToggleButton() {
+interface ThemeToggleButtonProps {
+  className?: string;
+  iconColorClass?: string; // Prop to control icon color
+}
+
+export default function ThemeToggleButton({ className = '', iconColorClass }: ThemeToggleButtonProps) {
   const [mounted, setMounted] = useState(false);
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
 
-  // useEffect only runs on the client, so now we can show the UI
   useEffect(() => {
     setMounted(true);
   }, []);
 
   if (!mounted) {
-    // Render a placeholder or nothing on the server to avoid hydration mismatch
-    return <div className="w-10 h-10"></div>; // Placeholder to maintain layout space
+    // Render a placeholder or null on the server to avoid hydration mismatch
+    // as theme is only known on client
+    return <div className={`w-9 h-9 rounded-md ${className}`} />; // Placeholder to maintain layout space
   }
 
-  const toggleTheme = () => {
-    // If system is current, and resolved is dark, next should be light.
-    // If system is current, and resolved is light, next should be dark.
-    // Otherwise, toggle between light and dark directly.
-    if (theme === 'system') {
-      setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
-    } else {
-      setTheme(theme === 'dark' ? 'light' : 'dark');
-    }
-  };
+  const isCurrentlyDark = resolvedTheme === 'dark';
+
+  // Determine icon color: use prop if provided, otherwise default
+  const currentIconColor = iconColorClass 
+    ? iconColorClass 
+    : 'text-content-light dark:text-content-dark'; // Default if prop not passed
 
   return (
     <button
-      aria-label="Toggle Dark Mode"
+      aria-label="Toggle dark mode"
       type="button"
-      className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-      onClick={toggleTheme}
+      className={`p-2 rounded-md hover:bg-black/5 dark:hover:bg-white/10 transition-colors ${currentIconColor} ${className}`}
+      onClick={() => setTheme(isCurrentlyDark ? 'light' : 'dark')}
     >
-      {/* Replace with actual SVG icons */}
-      {resolvedTheme === 'dark' ? (
-        // <SunIcon className="h-6 w-6 text-yellow-400" />
-        <span className="text-yellow-400">☀️</span>
-      ) : (
-        // <MoonIcon className="h-6 w-6 text-gray-600" />
-        <span className="text-gray-600">🌙</span>
-      )}
+      <AnimatePresence mode="wait" initial={false}>
+        {isCurrentlyDark ? (
+          <motion.div
+            key="moon"
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 20, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Moon className="w-5 h-5" />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="sun"
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 20, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Sun className="w-5 h-5" />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </button>
   );
 }
