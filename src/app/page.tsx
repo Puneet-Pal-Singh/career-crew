@@ -14,8 +14,10 @@ import AnimatedBlogPreviewSection from '@/components/landing/AnimatedBlogPreview
 import ForJobSeekersSection from '@/components/landing/ForJobSeekersSection'; // NEW
 import ForEmployersSection from '@/components/landing/ForEmployersSection';   // NEW
 
-// Data fetching functions (can be in this file or moved to a lib/data.ts file)
-import { getRecentJobsData } from '@/lib/data/jobs'; // Example: moved data fetching
+// Data fetching functions
+// import { getRecentJobsData } from '@/lib/data/jobs'; // Old API fetch
+import { getRecentJobsDataDirectly } from '@/lib/data/jobs'; // NEW direct DB fetch
+
 import { 
   getFeaturesData, 
   getHowItWorksStepsData, 
@@ -23,6 +25,8 @@ import {
   getTestimonialsData,
   getBlogPreviewData 
 } from '@/lib/data/landingContent'; // Example: moved data fetching
+
+// export const dynamic = 'force-dynamic'; // Or 'auto' if Next.js can infer correctly
 
 export default async function HomePage() {
   // Fetch all necessary data concurrently
@@ -34,7 +38,8 @@ export default async function HomePage() {
     testimonials,
     blogPosts
   ] = await Promise.all([
-    getRecentJobsData(),
+    // getRecentJobsData(),
+    getRecentJobsDataDirectly(),
     getFeaturesData(),
     getHowItWorksStepsData(),
     getFeaturedCompaniesData(),
