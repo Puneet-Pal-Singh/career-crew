@@ -4,7 +4,7 @@ import React from 'react';
 
 interface AnimatedGradientBackgroundProps {
   className?: string;
-  isHeroBackground?: boolean;
+  isHeroBackground?: boolean; // To control fixed vs absolute positioning
 }
 
 export default function AnimatedGradientBackground({
@@ -16,7 +16,7 @@ export default function AnimatedGradientBackground({
     ? "fixed inset-0 w-screen h-screen overflow-hidden -z-10"
     : "absolute inset-0 overflow-hidden -z-10";
 
-  // Define colors directly here to simplify and ensure they are always available
+  // Define colors directly here
   const primaryLight = '#2A6FFF';
   const secondaryLight = '#FF8C2A';
   const accent1Light = '#2AE8FF';
@@ -27,81 +27,87 @@ export default function AnimatedGradientBackground({
   return (
     <div className={`${containerClasses} ${className}`}>
       <style jsx global>{`
-        /* 
-          The key for extreme aspect ratios is ensuring the orbs are always 
-          larger than the LONGEST possible dimension the viewport might stretch to
-          AND that their radial gradients extend very far.
-        */
         .${className} > div { /* Target direct children divs (the orbs) */
           content: "";
           position: absolute;
           border-radius: 50%;
           will-change: transform, opacity, background-image;
-          /* Make orbs incredibly large, min 200% of longest screen edge */
-          width: 300vmax; 
-          height: 300vmax;
-          /* Ensure gradient core is solid for a good portion */
-          /* Opacity and blur are critical for appearance */
-          filter: blur(100px) opacity(0.5); /* Start with a more visible setup */
+          width: 250vmax; /* Keep them very large */
+          height: 250vmax;
+          /* VIBRANCY ADJUSTMENT: Increased base opacity, ensure blur isn't excessive */
+          filter: blur(80px) opacity(0.65); /* Base opacity higher */
         }
 
-        /* Light Mode Orbs */
+        /* Light Mode Orbs - More saturated gradient stops */
         html:not(.dark) .${className} .orb1 {
-          background-image: radial-gradient(circle, ${primaryLight} 20%, transparent 70%);
-          top: -100vmax; left: -100vmax; /* Positioned to cover top-leftish */
-          animation: moveOrb1 35s ease-in-out infinite alternate;
+          /* Color is solid for longer (e.g., 30%) before starting to fade (to transparent at 70%) */
+          background-image: radial-gradient(circle, ${primaryLight} 30%, transparent 70%);
+          top: -80vmax; left: -90vmax;
+          animation: moveOrbL1 30s ease-in-out infinite alternate;
         }
         html:not(.dark) .${className} .orb2 {
-          background-image: radial-gradient(circle, ${accent1Light} 20%, transparent 70%);
-          bottom: -120vmax; right: -130vmax; /* Positioned to cover bottom-rightish */
-          animation: moveOrb2 40s ease-in-out infinite alternate 0.7s;
+          background-image: radial-gradient(circle, ${accent1Light} 30%, transparent 70%);
+          bottom: -100vmax; right: -110vmax;
+          animation: moveOrbL2 35s ease-in-out infinite alternate 0.7s;
         }
         html:not(.dark) .${className} .orb3 {
-          background-image: radial-gradient(circle, ${secondaryLight} 20%, transparent 70%);
-          top: -50vmax; right: -150vmax; /* Positioned to cover top-rightish */
-          animation: moveOrb3 45s ease-in-out infinite alternate 1.2s;
+          background-image: radial-gradient(circle, ${secondaryLight} 30%, transparent 70%);
+          top: -40vmax; right: -120vmax; 
+          animation: moveOrbL3 40s ease-in-out infinite alternate 1.2s;
         }
 
-        /* Dark Mode Orbs */
+        /* Dark Mode Orbs - Similarly adjusted for vibrancy */
         html.dark .${className} > div {
-            filter: blur(120px) opacity(0.45);
+            filter: blur(90px) opacity(0.6); /* Slightly different params for dark if needed */
         }
         html.dark .${className} .orb1 {
-          background-image: radial-gradient(circle, ${primaryDark} 20%, transparent 70%);
-          animation-name: moveOrb1Dark; /* Can use different animation paths if desired */
+          background-image: radial-gradient(circle, ${primaryDark} 30%, transparent 70%);
+          animation-name: moveOrbD1;
         }
         html.dark .${className} .orb2 {
-          background-image: radial-gradient(circle, ${accent1Dark} 20%, transparent 70%);
-           animation-name: moveOrb2Dark;
+          background-image: radial-gradient(circle, ${accent1Dark} 30%, transparent 70%);
+          animation-name: moveOrbD2;
         }
         html.dark .${className} .orb3 {
-          background-image: radial-gradient(circle, ${secondaryDark} 20%, transparent 70%);
-           animation-name: moveOrb3Dark;
+          background-image: radial-gradient(circle, ${secondaryDark} 30%, transparent 70%);
+          animation-name: moveOrbD3;
         }
         
-        /* Animations - ensure they move across potential viewport area */
-        @keyframes moveOrb1 {
-          0%   { transform: translate(0, 0) scale(1); opacity: 0.5; }
-          50%  { transform: translate(100vmax, 80vmax) scale(1.3); opacity: 0.7; }
-          100% { transform: translate(20vmax, 30vmax) scale(0.9); opacity: 0.55; }
+        /* Animations - Ensure opacity values in keyframes don't dip too low */
+        /* Light Mode Keyframes */
+        @keyframes moveOrbL1 {
+          0%   { transform: translate(0, 0) scale(1); opacity: 0.6; } /* Maintain decent opacity */
+          50%  { transform: translate(80vmax, 70vmax) scale(1.25); opacity: 0.8; } /* Higher peak opacity */
+          100% { transform: translate(10vmax, 20vmax) scale(0.9); opacity: 0.65; } /* Maintain decent opacity */
         }
-        @keyframes moveOrb2 {
-          0%   { transform: translate(0, 0) scale(1); opacity: 0.45; }
-          50%  { transform: translate(-90vmax, -110vmax) scale(1.2); opacity: 0.65; }
-          100% { transform: translate(-30vmax, -40vmax) scale(0.95); opacity: 0.5; }
+        @keyframes moveOrbL2 {
+          0%   { transform: translate(0, 0) scale(1); opacity: 0.55; }
+          50%  { transform: translate(-70vmax, -90vmax) scale(1.2); opacity: 0.75; }
+          100% { transform: translate(-20vmax, -30vmax) scale(0.95); opacity: 0.6; }
         }
-        @keyframes moveOrb3 {
-          0%   { transform: translate(0,0) scale(1) rotate(0deg); opacity: 0.5; }
-          50%  { transform: translate(-120vmax, 70vmax) scale(1.15) rotate(15deg); opacity: 0.6; }
-          100% { transform: translate(-50vmax, 10vmax) scale(0.9) rotate(-10deg); opacity: 0.5; }
+        @keyframes moveOrbL3 {
+          0%   { transform: translate(0,0) scale(1) rotate(0deg); opacity: 0.6; }
+          50%  { transform: translate(-100vmax, 60vmax) scale(1.15) rotate(10deg); opacity: 0.7; }
+          100% { transform: translate(-40vmax, 5vmax) scale(0.9); opacity: 0.65; }
         }
-        /* Dark mode animations can be copies or variations */
-        @keyframes moveOrb1Dark { /* ... similar to moveOrb1 ... */ 0% {transform: translate(0,0) scale(1);opacity: .5;} 50% {transform: translate(100vmax,80vmax) scale(1.3);opacity: .7;} 100% {transform: translate(20vmax,30vmax) scale(.9);opacity: .55;} }
-        @keyframes moveOrb2Dark { /* ... similar to moveOrb2 ... */ 0% {transform: translate(0,0) scale(1);opacity: .45;} 50% {transform: translate(-90vmax,-110vmax) scale(1.2);opacity: .65;} 100% {transform: translate(-30vmax,-40vmax) scale(.95);opacity: .5;} }
-        @keyframes moveOrb3Dark { /* ... similar to moveOrb3 ... */ 0% {transform: translate(0,0) scale(1) rotate(0deg);opacity: .5;} 50% {transform: translate(-120vmax,70vmax) scale(1.15) rotate(15deg);opacity: .6;} 100% {transform: translate(-50vmax,10vmax) scale(.9) rotate(-10deg);opacity: .5;} }
 
+        /* Dark Mode Keyframes (can be similar or adjusted) */
+        @keyframes moveOrbD1 {
+          0%   { transform: translate(0, 0) scale(1); opacity: 0.55; }
+          50%  { transform: translate(85vmax, 75vmax) scale(1.25); opacity: 0.75; }
+          100% { transform: translate(15vmax, 25vmax) scale(0.9); opacity: 0.6; }
+        }
+        @keyframes moveOrbD2 {
+          0%   { transform: translate(0, 0) scale(1); opacity: 0.5; }
+          50%  { transform: translate(-75vmax, -95vmax) scale(1.2); opacity: 0.7; }
+          100% { transform: translate(-25vmax, -35vmax) scale(0.95); opacity: 0.55; }
+        }
+        @keyframes moveOrbD3 {
+          0%   { transform: translate(0,0) scale(1) rotate(0deg); opacity: 0.55; }
+          50%  { transform: translate(-105vmax, 65vmax) scale(1.15) rotate(-5deg); opacity: 0.65; }
+          100% { transform: translate(-45vmax, 0vmax) scale(0.9) rotate(5deg); opacity: 0.6; }
+        }
       `}</style>
-      {/* Explicitly create three div elements for the orbs */}
       <div className="orb1"></div>
       <div className="orb2"></div>
       <div className="orb3"></div>

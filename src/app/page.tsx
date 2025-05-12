@@ -10,6 +10,7 @@ import AnimatedTestimonialsSection from '@/components/landing/AnimatedTestimonia
 import AnimatedRecentJobsSection from '@/components/landing/AnimatedRecentJobsSection'; // NEW
 import AnimatedFinalCTASection from '@/components/landing/AnimatedFinalCTASection';
 import AnimatedStatsSection from '@/components/landing/AnimatedStatsSection'; // NEW
+import AnimatedBlogPreviewSection from '@/components/landing/AnimatedBlogPreviewSection'; // NEW
 
 // Data fetching functions (can be in this file or moved to a lib/data.ts file)
 import { getRecentJobsData } from '@/lib/data/jobs'; // Example: moved data fetching
@@ -17,7 +18,8 @@ import {
   getFeaturesData, 
   getHowItWorksStepsData, 
   getFeaturedCompaniesData, 
-  getTestimonialsData 
+  getTestimonialsData,
+  getBlogPreviewData 
 } from '@/lib/data/landingContent'; // Example: moved data fetching
 
 export default async function HomePage() {
@@ -27,13 +29,15 @@ export default async function HomePage() {
     features,
     howItWorksSteps,
     featuredCompanies,
-    testimonials
+    testimonials,
+    blogPosts
   ] = await Promise.all([
     getRecentJobsData(),
     getFeaturesData(),
     getHowItWorksStepsData(),
     getFeaturedCompaniesData(),
-    getTestimonialsData()
+    getTestimonialsData(),
+    getBlogPreviewData() 
   ]);
 
   return (
@@ -45,11 +49,10 @@ export default async function HomePage() {
       <AnimatedFeaturedCompanies companies={featuredCompanies} /> 
       <AnimatedTestimonialsSection testimonials={testimonials} /> 
       <AnimatedRecentJobsSection jobs={recentJobs} /> 
+      <AnimatedBlogPreviewSection posts={blogPosts} />
       <AnimatedFinalCTASection /> 
       
       {/* TODO: Add new sections planned: */}
-      {/* <StatsSection /> */}
-      {/* <BlogPreviewSection /> */}
       {/* <ForJobSeekersSection /> */}
       {/* <ForEmployersSection /> */}
     </>
