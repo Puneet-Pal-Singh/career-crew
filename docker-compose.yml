@@ -1,51 +1,42 @@
 # docker-compose.yml
 
 services:
-  # Next.js Application Service
   app:
     container_name: careercrew_app
     build:
       context: . 
       dockerfile: Dockerfile
-      # target: development # Only if you have multi-stage Dockerfile and want to specify a stage
+      # If your Dockerfile's last stage is 'development', you don't strictly need target here.
+      # But if you want to be explicit:
+      # target: development 
     ports:
       - "3000:3000" 
-      # If you want Prisma Studio accessible via the app container, you'd map its port too,
-      # but often it's run as a separate command or not needed in basic compose.
-      # If you expose Prisma Studio via 'npm run studio' in your app, and it runs on 5555:
-      # - "5555:5555" 
     volumes:
-      - .:/app # Mount for hot-reloading
-      - /app/node_modules # Isolate container node_modules
-      - /app/.next # Persist Next.js build cache
+      - .:/app 
+      - /app/node_modules 
+      - /app/.next 
     env_file:
-      - .env # Loads general variables like POSTGRES_USER, JWT_SECRET, NEXT_PUBLIC_APP_URL etc.
+      - .env 
     environment:
-      # This DATABASE_URL is specific to the 'app' container and overrides any from .env
-      # It uses the service name 'db' and internal port '5432'.
-      # It substitutes ${POSTGRES_USER}, etc., from the .env file (or shell environment).
+      # This DATABASE_URL is specific to the 'app' container
       DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public"
-      # NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL} # Already loaded via env_file
-      # JWT_SECRET: ${JWT_SECRET} # Already loaded via env_file
     depends_on:
       db:
-        condition: service_healthy # Wait for DB to be healthy before app starts
+        condition: service_healthy 
     restart: unless-stopped
     networks:
       - careercrew_network
+    # Command to apply migrations and then start the dev server
+    command: sh -c "echo 'Attempting to apply migrations...' && npx prisma migrate deploy && echo 'Migrations applied (or no changes). Starting dev server...' && npm run dev"
 
-  # PostgreSQL Database Service
   db:
     container_name: careercrew_db
     image: postgres:15-alpine 
     ports:
-      # Map host port 5433 to container's internal port 5432
-      # This allows 'npx prisma migrate dev' from host to connect via localhost:5433
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      # These values will be taken from your .env file (or shell environment)
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
@@ -53,18 +44,15 @@ services:
     networks:
       - careercrew_network
     healthcheck:
-      # Uses the credentials loaded from .env to check if DB is ready
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 20s # Give Postgres some time to initialize on first start
+      start_period: 20s
 
-# Define Networks
 networks:
   careercrew_network:
     driver: bridge 
 
-# Define Named Volumes
 volumes:
-  postgres_data: # Persists database data across container restarts/recreations
+  postgres_data:
