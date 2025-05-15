@@ -44,11 +44,11 @@ export default function Header() {
 
   const handleSignOut = async () => {
     closeMobileMenu(); // Close mobile menu if open
-    const { error } = await signOut();
-    if (!error) {
+    try {
+      await signOut();
       router.push('/'); // Redirect to homepage after sign out
-    } else {
-      console.error('Error signing out:', error.message);
+    } catch (error) {
+      console.error('Error signing out:', error);
       // Optionally show an error message to the user
     }
   };

@@ -1,39 +1,20 @@
 // src/contexts/AuthContext.tsx
 "use client";
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
-import {
-  AuthChangeEvent,
-  AuthError,
-  AuthResponse,
-  AuthTokenResponsePassword,
-  Session,
-  User,
-  SignInWithPasswordCredentials,
-  SignUpWithPasswordCredentials,
-  Subscription,
-} from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabaseClient";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { AuthChangeEvent, AuthError, AuthResponse, AuthTokenResponsePassword, Session, User, SignInWithPasswordCredentials, SignUpWithPasswordCredentials, Subscription } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabaseClient"; // Our browser client
+import { useRouter } from "next/navigation"; // For potential redirects triggered by context
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  isLoading: boolean;
+  isLoading: boolean; // For signIn/signUp actions
   error: AuthError | null;
-  signIn: (
-    credentials: SignInWithPasswordCredentials
-  ) => Promise<AuthTokenResponsePassword>;
-  signUp: (
-    credentials: SignUpWithPasswordCredentials
-  ) => Promise<AuthResponse>;
-  signOut: () => Promise<{ error: AuthError | null }>;
-  isInitialized: boolean;
+  isInitialized: boolean; // True after initial session check
+  signIn: (credentials: SignInWithPasswordCredentials) => Promise<AuthTokenResponsePassword>;
+  signUp: (credentials: SignUpWithPasswordCredentials) => Promise<AuthResponse>;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,123 +23,110 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoadingAction, setIsLoadingAction] = useState<boolean>(false);
-  const [error, setError] = useState<AuthError | null>(null);
+  const [authError, setAuthError] = useState<AuthError | null>(null);
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
+  const router = useRouter();
 
   useEffect(() => {
-    let listenerSubscription: Subscription | undefined;
+    console.log("AuthContext: Initializing...");
+    let authListenerSubscription: Subscription | null = null;
 
-    const getInitialSession = async () => {
-      try {
-        const {
-          data: { session: initialSession },
-          error: initialError,
-        } = await supabase.auth.getSession();
+    async function initializeSession() {
+      const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+      console.log("AuthContext: Initial session fetched. Has session:", !!initialSession, "Error:", error?.message);
+      setSession(initialSession);
+      setUser(initialSession?.user ?? null);
+      setIsInitialized(true); // Mark as initialized after first check
 
-        if (initialError) {
-          console.error("Error getting initial session:", initialError);
-          setError(initialError);
+      // Listen for auth state changes AFTER initial check
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (_event: AuthChangeEvent, currentSession: Session | null) => {
+          console.log("AuthContext: onAuthStateChange - Event:", _event, "Session:", !!currentSession, "User:", currentSession?.user?.id);
+          setSession(currentSession);
+          setUser(currentSession?.user ?? null);
+          setAuthError(null); // Clear previous errors on state change
+
+          // Handle redirects based on auth state changes from here if desired
+          // This ensures redirects happen *after* the cookie is likely set/cleared by Supabase client
+          if (_event === "SIGNED_IN" && currentSession) {
+             // Consider if redirect is needed here or if middleware/page logic is sufficient
+             // router.push('/dashboard'); // Example
+          } else if (_event === "SIGNED_OUT") {
+             // router.push('/login'); // Example
+          }
         }
-        setSession(initialSession);
-        setUser(initialSession?.user ?? null);
-      } catch (e: unknown) {
-         console.error("Unexpected error getting initial session:", e);
-         const message = e instanceof Error ? e.message : "Failed to fetch initial session";
-         const authError = { name: "InitialSessionError", message, status: undefined } as AuthError;
-         setError(authError);
-      } finally {
-        setIsInitialized(true);
-      }
-    };
+      );
+      authListenerSubscription = subscription;
+    }
 
-    getInitialSession();
-
-    const { data: authListenerData } = supabase.auth.onAuthStateChange(
-      async (_event: AuthChangeEvent, newSession: Session | null) => {
-        setSession(newSession);
-        setUser(newSession?.user ?? null);
-        setError(null);
-        
-        if (!isInitialized) {
-            setIsInitialized(true);
-        }
-      }
-    );
-    listenerSubscription = authListenerData.subscription;
-
+    initializeSession();
 
     return () => {
-      listenerSubscription?.unsubscribe();
+      console.log("AuthContext: Unsubscribing auth listener.");
+      authListenerSubscription?.unsubscribe();
     };
-  }, [isInitialized]);
+  }, []); // Run only once on mount
 
   const signIn = async (credentials: SignInWithPasswordCredentials): Promise<AuthTokenResponsePassword> => {
     setIsLoadingAction(true);
-    setError(null);
-    try {
-      const response = await supabase.auth.signInWithPassword(credentials);
-      if (response.error) setError(response.error);
-      return response;
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : "An unexpected error occurred during sign in.";
-      const authError = { name: "SignInError", message, status: undefined } as AuthError;
-      setError(authError);
-      return { data: { user: null, session: null }, error: authError };
-    } finally {
-      setIsLoadingAction(false);
+    setAuthError(null);
+    console.log("AuthContext: Attempting signIn...");
+    const response = await supabase.auth.signInWithPassword(credentials);
+    if (response.error) {
+      console.error("AuthContext: signIn error", response.error.message);
+      setAuthError(response.error);
+    } else {
+      console.log("AuthContext: signIn successful. User:", response.data.user?.id);
+      // onAuthStateChange will update user/session state
     }
+    setIsLoadingAction(false);
+    return response;
   };
 
   const signUp = async (credentials: SignUpWithPasswordCredentials): Promise<AuthResponse> => {
     setIsLoadingAction(true);
-    setError(null);
-    try {
-      const response = await supabase.auth.signUp(credentials);
-      if (response.error) {
-        setError(response.error);
-        return response; // Supabase response object is already correctly shaped
-      }
-      return response; // Success case
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : "An unexpected client-side error occurred during sign up.";
-      const authError = { name: "ClientSignUpError", message, status: undefined } as AuthError;
-      setError(authError);
-      return { 
-        data: { user: null, session: null }, // Correct shape for data on client-side error
-        error: authError 
-      };
-    } finally {
-      setIsLoadingAction(false);
+    setAuthError(null);
+    console.log("AuthContext: Attempting signUp...");
+    const response = await supabase.auth.signUp(credentials);
+    if (response.error) {
+      console.error("AuthContext: signUp error", response.error.message);
+      setAuthError(response.error);
+    } else {
+      console.log("AuthContext: signUp successful. User:", response.data.user?.id, "Session:", !!response.data.session);
+      // onAuthStateChange will update user/session state
+      // If email confirmation is OFF, session will be present.
+      // If ON, session might be null until confirmed.
     }
-  };
-
-  const signOut = async (): Promise<{ error: AuthError | null }> => {
-    setIsLoadingAction(true);
-    setError(null);
-    const { error: signOutError } = await supabase.auth.signOut();
-    if (signOutError) setError(signOutError);
     setIsLoadingAction(false);
-    return { error: signOutError };
+    return response;
   };
 
-  const value = {
-    user,
-    session,
-    isLoading: isLoadingAction,
-    error,
-    signIn,
-    signUp,
-    signOut,
-    isInitialized,
+  const signOut = async (): Promise<void> => {
+    setIsLoadingAction(true);
+    setAuthError(null);
+    console.log("AuthContext: Attempting signOut...");
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("AuthContext: signOut error", error.message);
+      setAuthError(error);
+    } else {
+      console.log("AuthContext: signOut successful.");
+      // onAuthStateChange will clear user/session state
+      // Redirect after sign out can be handled here or in component
+      // router.push('/login'); // Ensure this doesn't cause loops with middleware
+    }
+    setIsLoadingAction(false);
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, session, isLoading: isLoadingAction, error: authError, isInitialized, signIn, signUp, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (context === undefined) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };
