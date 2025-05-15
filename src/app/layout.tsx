@@ -1,15 +1,15 @@
 // src/app/layout.tsx
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { GeistSans } from 'geist/font/sans'; // Correct import for Geist Sans
+import { GeistSans } from 'geist/font/sans';
 import './globals.css';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import ThemeProvider from '@/components/theme/ThemeProvider';
+import { AppProviders } from '@/components/providers/AppProviders'; // Import AppProviders
 
 export const metadata: Metadata = {
-  title: 'CareerCrew Consulting - Find Your Next Opportunity', // Updated title
-  description: 'Connecting top talent with innovative companies. Whether you&apos;re hiring or looking for your next role, we%apso;re here to help you succeed.', // Updated description with escaped apostrophe
+  title: 'CareerCrew Consulting - Find Your Next Opportunity',
+  description: "Connecting top talent with innovative companies. Whether you're hiring or looking for your next role, we're here to help you succeed.",
 };
 
 const inter = Inter({
@@ -18,8 +18,7 @@ const inter = Inter({
 });
 
 // GeistSans from 'geist/font/sans' is directly the font object
-// so 'GeistSans.variable' will provide the CSS variable name.
-// No need to call it as a function here like `GeistSans()`.
+const geistSansVariable = GeistSans.variable; // Get variable name
 
 export default function RootLayout({
   children,
@@ -27,21 +26,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${GeistSans.variable}`.trim()} suppressHydrationWarning>
-      <body className="font-sans bg-background-light dark:bg-background-dark text-content-light dark:text-content-dark min-h-screen flex flex-col antialiased transition-colors duration-300">
-        <ThemeProvider 
-          attribute="class" 
-          defaultTheme="light" // CHANGED: Default to light mode
-          enableSystem={false} // CHANGED: Disable system preference if we force light/dark default, or set to true if you want system to override default ONLY if user hasn't picked
-          disableTransitionOnChange
+    <html lang="en" className={`${inter.variable} ${geistSansVariable}`.trim()} suppressHydrationWarning>
+      <body className="font-sans min-h-screen flex flex-col antialiased">
+        {/* Note: Removed theme-specific classes from body as ThemeProvider/AppProviders handle this via html class */}
+        <AppProviders
+        // Props for ThemeProvider are now set inside AppProviders by default
+        // or can be passed via themeProps if needed for more flexibility
         >
           <Header />
-          {/* MODIFIED: Removed container, padding classes from main. It's now full-width. */}
-          <main className="flex-grow">
-            {children}
-          </main>
+          <main className="flex-grow">{children}</main>
           <Footer />
-        </ThemeProvider>
+        </AppProviders>
       </body>
     </html>
   );
