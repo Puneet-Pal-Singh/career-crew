@@ -7,7 +7,9 @@ import { Menu, X, LogIn, UserPlus, LogOut as LogOutIcon, Search, Briefcase, User
 import ThemeToggleButton from '@/components/theme/ThemeToggleButton';
 import { usePathname, useRouter } from 'next/navigation'; // Added useRouter
 import { motion } from 'framer-motion';
-import { useAuth } from '@/contexts/AuthContext'; // Import useAuth
+// Example usage in a component like Header.tsx
+import { useAuth } from '@/contexts/AuthContext';
+import { useUserProfile } from '@/contexts/UserProfileContext';
 
 // No longer need Mock Auth
 
@@ -18,7 +20,8 @@ export default function Header() {
   const router = useRouter(); // For programmatic navigation
 
   // Use real authentication context
-  const { user, signOut, isLoading: authIsLoading, isInitialized } = useAuth();
+  const { user, signOut, isLoading: authIsLoading, isInitialized } = useAuth(); // For auth status and actions
+  const { userProfile, isLoadingProfile, profileError } = useUserProfile(); // For profile data
   const isAuthenticated = !!user && isInitialized; // User exists and auth context is initialized
 
   useEffect(() => {

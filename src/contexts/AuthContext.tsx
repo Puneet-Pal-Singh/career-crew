@@ -3,15 +3,14 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { AuthChangeEvent, AuthError, AuthResponse, AuthTokenResponsePassword, Session, User, SignInWithPasswordCredentials, SignUpWithPasswordCredentials, Subscription } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabaseClient"; // Our browser client
-import { useRouter } from "next/navigation"; // For potential redirects triggered by context
+import { supabase } from "@/lib/supabaseClient";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  isLoading: boolean; // For signIn/signUp actions
+  isLoading: boolean; // For signIn/signUp/signOut actions
   error: AuthError | null;
-  isInitialized: boolean; // True after initial session check
+  isInitialized: boolean; // True after initial session check by Supabase client
   signIn: (credentials: SignInWithPasswordCredentials) => Promise<AuthTokenResponsePassword>;
   signUp: (credentials: SignUpWithPasswordCredentials) => Promise<AuthResponse>;
   signOut: () => Promise<void>;
@@ -24,61 +23,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoadingAction, setIsLoadingAction] = useState<boolean>(false);
   const [authError, setAuthError] = useState<AuthError | null>(null);
-  const [isInitialized, setIsInitialized] = useState<boolean>(false);
-  const router = useRouter();
+  const [isInitialized, setIsInitialized] = useState<boolean>(false); // Tracks if onAuthStateChange has fired at least once
 
   useEffect(() => {
-    console.log("AuthContext: Initializing...");
-    let authListenerSubscription: Subscription | null = null;
-
-    async function initializeSession() {
-      const { data: { session: initialSession }, error } = await supabase.auth.getSession();
-      console.log("AuthContext: Initial session fetched. Has session:", !!initialSession, "Error:", error?.message);
-      setSession(initialSession);
-      setUser(initialSession?.user ?? null);
-      setIsInitialized(true); // Mark as initialized after first check
-
-      // Listen for auth state changes AFTER initial check
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        (_event: AuthChangeEvent, currentSession: Session | null) => {
-          console.log("AuthContext: onAuthStateChange - Event:", _event, "Session:", !!currentSession, "User:", currentSession?.user?.id);
-          setSession(currentSession);
-          setUser(currentSession?.user ?? null);
-          setAuthError(null); // Clear previous errors on state change
-
-          // Handle redirects based on auth state changes from here if desired
-          // This ensures redirects happen *after* the cookie is likely set/cleared by Supabase client
-          if (_event === "SIGNED_IN" && currentSession) {
-             // Consider if redirect is needed here or if middleware/page logic is sufficient
-             // router.push('/dashboard'); // Example
-          } else if (_event === "SIGNED_OUT") {
-             // router.push('/login'); // Example
-          }
+    console.log("AuthContext: Setting up Supabase auth listener.");
+    
+    // Set initial state from getSession (synchronous if tokens are in localStorage)
+    // This helps set isInitialized quickly.
+    // Note: getSession() might not give the absolute latest state if tokens just changed,
+    // onAuthStateChange is the source of truth for updates.
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+        console.log("AuthContext: Initial getSession() completed. Session exists:", !!initialSession);
+        if (!isInitialized) { // Only set initial state if not already done by onAuthStateChange
+            setSession(initialSession);
+            setUser(initialSession?.user ?? null);
+            setIsInitialized(true); // Mark as initialized
         }
-      );
-      authListenerSubscription = subscription;
-    }
-
-    initializeSession();
+    });
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event: AuthChangeEvent, currentSession: Session | null) => {
+        console.log("AuthContext: onAuthStateChange event:", _event, "Session ID:", currentSession?.access_token.slice(-6), "User ID:", currentSession?.user?.id);
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        setAuthError(null); // Clear previous auth errors
+        setIsInitialized(true); // Ensure initialized is true after first event
+      }
+    );
 
     return () => {
-      console.log("AuthContext: Unsubscribing auth listener.");
-      authListenerSubscription?.unsubscribe();
+      console.log("AuthContext: Unsubscribing Supabase auth listener.");
+      subscription?.unsubscribe();
     };
-  }, []); // Run only once on mount
+  }, [isInitialized]); // Re-run if isInitialized changes (though it should only change once to true)
 
   const signIn = async (credentials: SignInWithPasswordCredentials): Promise<AuthTokenResponsePassword> => {
     setIsLoadingAction(true);
     setAuthError(null);
-    console.log("AuthContext: Attempting signIn...");
     const response = await supabase.auth.signInWithPassword(credentials);
-    if (response.error) {
-      console.error("AuthContext: signIn error", response.error.message);
-      setAuthError(response.error);
-    } else {
-      console.log("AuthContext: signIn successful. User:", response.data.user?.id);
-      // onAuthStateChange will update user/session state
-    }
+    if (response.error) setAuthError(response.error);
     setIsLoadingAction(false);
     return response;
   };
@@ -86,17 +69,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signUp = async (credentials: SignUpWithPasswordCredentials): Promise<AuthResponse> => {
     setIsLoadingAction(true);
     setAuthError(null);
-    console.log("AuthContext: Attempting signUp...");
     const response = await supabase.auth.signUp(credentials);
-    if (response.error) {
-      console.error("AuthContext: signUp error", response.error.message);
-      setAuthError(response.error);
-    } else {
-      console.log("AuthContext: signUp successful. User:", response.data.user?.id, "Session:", !!response.data.session);
-      // onAuthStateChange will update user/session state
-      // If email confirmation is OFF, session will be present.
-      // If ON, session might be null until confirmed.
-    }
+    if (response.error) setAuthError(response.error);
     setIsLoadingAction(false);
     return response;
   };
@@ -104,17 +78,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async (): Promise<void> => {
     setIsLoadingAction(true);
     setAuthError(null);
-    console.log("AuthContext: Attempting signOut...");
     const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error("AuthContext: signOut error", error.message);
-      setAuthError(error);
-    } else {
-      console.log("AuthContext: signOut successful.");
-      // onAuthStateChange will clear user/session state
-      // Redirect after sign out can be handled here or in component
-      // router.push('/login'); // Ensure this doesn't cause loops with middleware
-    }
+    if (error) setAuthError(error);
+    // onAuthStateChange will set user/session to null
     setIsLoadingAction(false);
   };
 
