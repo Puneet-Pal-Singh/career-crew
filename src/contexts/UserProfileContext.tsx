@@ -98,6 +98,13 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
             .update({ role: newRole, updated_at: new Date().toISOString() })
             .eq('id', userId);
         if (error) throw error;
+
+        // UX: If role selection is intended to be a one-time choice shown to default JOB_SEEKERs
+        // you might set a flag here after they make *any* choice.
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem(`roleSelected_${userId}`, 'true');
+        }
+        
         refetchUserProfile(); // Re-fetch profile to get updated data
         console.log("UserProfileContext: Role updated successfully for", userId);
         return true;
