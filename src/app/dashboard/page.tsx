@@ -2,12 +2,12 @@
 "use client"; // This page now needs to be a client component to use hooks
 
 import React, {useEffect} from 'react';
-import type { Metadata } from 'next'; // Metadata can still be exported from client components
+// import type { Metadata } from 'next'; // Metadata can still be exported from client components
 import { useAuth } from '@/contexts/AuthContext';
-import { UserProfile, useUserProfile } from '@/contexts/UserProfileContext';
+import { useUserProfile } from '@/contexts/UserProfileContext';
 import RoleSelection from '@/components/dashboard/RoleSelection';
 import { Loader2 } from 'lucide-react';
-import { User } from '@supabase/supabase-js';
+// import { User } from '@supabase/supabase-js';
 
 // Next.js 13+ App Router allows metadata export from client components
 // export const metadata: Metadata = { 

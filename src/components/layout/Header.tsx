@@ -4,7 +4,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Menu, X, LogOut as LogOutIcon, LogIn, UserPlus } from 'lucide-react'; // Adjusted icons
+import { Menu, X, LogOut as LogOutIcon, LogIn } from 'lucide-react'; // Adjusted icons
 import { Button } from '@/components/ui/button';
 import ThemeToggleButton from '@/components/theme/ThemeToggleButton';
 import { usePathname, useRouter } from 'next/navigation';
@@ -66,8 +66,8 @@ export default function Header() {
   const innerElementBaseClasses = "transition-all duration-300 ease-in-out";
   const innerElementVerticalPadding = "py-3 sm:py-3.5"; 
   let innerElementLayoutStyles = "";
-  let textAndIconColorForLinks = "text-foreground"; 
-  let logoColorClass = "text-primary"; 
+  const textAndIconColorForLinks = "text-foreground"; 
+  const logoColorClass = "text-primary"; 
   
   if (isScrolled || isMobileMenuOpen) { 
     innerElementLayoutStyles = `mx-2.5 sm:mx-3 md:mx-4 rounded-lg md:rounded-xl bg-card/80 dark:bg-card/75 backdrop-blur-lg shadow-lg border border-border/30`;

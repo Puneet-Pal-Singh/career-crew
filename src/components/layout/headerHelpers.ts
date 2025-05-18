@@ -1,5 +1,5 @@
 // src/components/layout/headerHelpers.ts
-import { UserRole, UserProfile } from "@/contexts/UserProfileContext"; // Assuming types are exported
+import { UserProfile } from "@/contexts/UserProfileContext"; // Assuming types are exported
 import { LucideIcon, Search, Users, Briefcase, LayoutDashboard, Settings, BarChart2 } from "lucide-react";
 
 export interface NavLinkItem {
@@ -28,7 +28,7 @@ export const getNavigationLinks = ({
     { href: '/#features', label: 'Features', icon: Briefcase, show: true },
   ];
 
-  let dynamicNavLinks: NavLinkItem[] = [];
+  const dynamicNavLinks: NavLinkItem[] = [];
   let postJobLink: NavLinkItem | null = null;
 
   if (isAuthenticated) {

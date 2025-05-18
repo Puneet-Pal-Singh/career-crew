@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 export default function RoleSelection() {
   const { user } = useAuth();
-  const { updateUserProfileRole, isLoadingProfile, refetchUserProfile } = useUserProfile();
+  const { updateUserProfileRole, isLoadingProfile } = useUserProfile();
   const [isUpdatingRole, setIsUpdatingRole] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,7 +68,7 @@ export default function RoleSelection() {
               disabled={isUpdatingRole || isLoadingProfile}
             >
               <UserSearch {...commonIconProps} className="text-primary group-hover:scale-110 transition-transform"/>
-              <span className="font-semibold">I'm a Job Seeker</span>
+              <span className="font-semibold">I&apos;m a Job Seeker</span>
               <span className="text-xs text-muted-foreground text-center px-2">Find my next career opportunity.</span>
               {isUpdatingRole && <Loader2 className="animate-spin h-5 w-5 mt-2" />}
             </Button>
@@ -79,7 +79,7 @@ export default function RoleSelection() {
               disabled={isUpdatingRole || isLoadingProfile}
             >
               <Briefcase {...commonIconProps} className="text-secondary group-hover:scale-110 transition-transform"/>
-              <span className="font-semibold">I'm an Employer</span>
+              <span className="font-semibold">I&apos;m an Employer</span>
               <span className="text-xs text-muted-foreground text-center px-2">Hire top talent for my company.</span>
               {isUpdatingRole && <Loader2 className="animate-spin h-5 w-5 mt-2" />}
             </Button>
