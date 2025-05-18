@@ -10,10 +10,10 @@ export type UserRole = 'JOB_SEEKER' | 'EMPLOYER' | 'ADMIN';
 export interface UserProfile {
   id: string;
   updated_at: string;
-  email: string;
+  email: string; // Email is NOT NULL in your DB schema
   full_name?: string | null;
   avatar_url?: string | null;
-  role: UserRole;
+  role: UserRole; // Role is NOT NULL and defaults to 'JOB_SEEKER' in your DB schema
   // company_name?: string | null; 
 }
 
@@ -21,23 +21,24 @@ interface UserProfileContextType {
   userProfile: UserProfile | null;
   isLoadingProfile: boolean;
   profileError: Error | null;
-  refetchUserProfile: () => void; // Allow components to trigger a profile refresh
-  updateUserProfileRole: (userId: string, newRole: UserRole) => Promise<boolean>; // Example update function
+  refetchUserProfile: () => void;
+  updateUserProfileRole: (userId: string, newRole: UserRole) => Promise<boolean>;
 }
 
 const UserProfileContext = createContext<UserProfileContextType | undefined>(undefined);
 
 export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
-  const { user, isInitialized: authIsInitialized } = useAuth(); // Get user from AuthContext
+  const { user, isInitialized: authIsInitialized } = useAuth();
 
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [isLoadingProfile, setIsLoadingProfile] = useState<boolean>(true); // Start true until first fetch attempt
+  const [isLoadingProfile, setIsLoadingProfile] = useState<boolean>(true);
   const [profileError, setProfileError] = useState<Error | null>(null);
 
   const fetchUserProfile = useCallback(async (userId: string) => {
     if (!userId) {
       setUserProfile(null);
       setIsLoadingProfile(false);
+      setProfileError(null);
       return;
     }
     console.log("UserProfileContext: Fetching profile for user ID:", userId);
@@ -50,15 +51,15 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
         .eq('id', userId)
         .single();
 
-      if (error && status !== 406) { // 406: "Not Acceptable" - PostgREST returns this if .single() finds no rows
+      if (error && status !== 406) {
         throw error;
       }
       if (data) {
         console.log("UserProfileContext: Profile fetched:", data);
         setUserProfile(data as UserProfile);
       } else {
-        console.log("UserProfileContext: No profile found for user", userId, "(This could be normal if profile is created on first role selection).");
-        setUserProfile(null); // Explicitly set to null if no data
+        console.log("UserProfileContext: No profile found for user", userId, "(This is expected if profile is created on first role selection).");
+        setUserProfile(null);
       }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Error fetching user profile.";
@@ -71,13 +72,11 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    // Fetch profile only when AuthContext is initialized and a user ID is available
     if (authIsInitialized && user?.id) {
       fetchUserProfile(user.id);
     } else if (authIsInitialized && !user) {
-      // User logged out or no user session
       setUserProfile(null);
-      setIsLoadingProfile(false); // No profile to load if no user
+      setIsLoadingProfile(false);
       setProfileError(null);
     }
   }, [user, authIsInitialized, fetchUserProfile]);
@@ -85,36 +84,76 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
   const refetchUserProfile = useCallback(() => {
     if (user?.id) {
       fetchUserProfile(user.id);
+    } else {
+      // If no user, ensure profile state is cleared
+      setUserProfile(null);
+      setIsLoadingProfile(false);
+      setProfileError(null);
     }
   }, [user, fetchUserProfile]);
 
-  // Example function to update user role - this should ideally be a server action for security
-  // This is a placeholder for how you might interact with profile updates
   const updateUserProfileRole = async (userId: string, newRole: UserRole): Promise<boolean> => {
-    setIsLoadingProfile(true);
-    try {
-        const { error } = await supabase
-            .from('profiles')
-            .update({ role: newRole, updated_at: new Date().toISOString() })
-            .eq('id', userId);
-        if (error) throw error;
-
-        // UX: If role selection is intended to be a one-time choice shown to default JOB_SEEKERs
-        // you might set a flag here after they make *any* choice.
-        if (typeof window !== 'undefined') {
-          sessionStorage.setItem(`roleSelected_${userId}`, 'true');
-        }
-        
-        refetchUserProfile(); // Re-fetch profile to get updated data
-        console.log("UserProfileContext: Role updated successfully for", userId);
-        return true;
-    } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "Error updating role.";
-        console.error("UserProfileContext: updateUserProfileRole error:", message);
-        setProfileError(new Error(message));
-        setIsLoadingProfile(false);
-        return false;
+    // Ensure we have the authenticated user's email for the insert,
+    // as 'email' is NOT NULL in your 'profiles' table.
+    // 'user' object comes from useAuth() which should be up-to-date.
+    if (!user?.email) {
+      console.error("UserProfileContext: User email not available from AuthContext for profile upsert.");
+      setProfileError(new Error("User email not available. Cannot update profile. Please try logging in again."));
+      return false;
     }
+
+    // We are about to attempt an operation, set loading true
+    setIsLoadingProfile(true); // Or a more specific loading state like isUpdatingRole
+    setProfileError(null);   // Clear previous errors
+
+    try {
+      const profileDataForUpsert = {
+        id: userId,             // Primary key for matching
+        email: user.email,      // Email is NOT NULL
+        role: newRole,          // The new role to set
+        updated_at: new Date().toISOString(), // Keep updated_at fresh
+        // full_name and avatar_url are nullable and can be omitted here.
+        // If they were previously set, upsert should preserve them if not specified,
+        // depending on Supabase's default upsert behavior (usually `merge`).
+      };
+
+      console.log("UserProfileContext: Attempting to upsert profile:", profileDataForUpsert);
+
+      const { error: upsertError } = await supabase
+        .from('profiles')
+        .upsert(profileDataForUpsert, {
+          onConflict: 'id', // Use 'id' to determine conflict for upsert
+          // `returning: 'minimal'` is default, no need to specify unless you want data back
+        });
+
+      if (upsertError) {
+        console.error("UserProfileContext: Supabase upsert error:", upsertError.message);
+        // It's good to throw the specific error for more detailed debugging
+        throw upsertError;
+      }
+
+      // If upsert is successful
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem(`roleSelected_${userId}`, 'true');
+      }
+      
+      console.log("UserProfileContext: Profile role upserted successfully for", userId, "to", newRole);
+      // Crucially, refetch the profile to ensure the context state reflects the database,
+      // including any default values that might have been applied on insert (though less relevant here since we specify role).
+      refetchUserProfile(); 
+      return true;
+
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An unexpected error occurred while updating/creating the user profile role.";
+      console.error("UserProfileContext: updateUserProfileRole encountered an error:", message);
+      setProfileError(new Error(message));
+      // Since an error occurred, ensure loading state is reset if refetchUserProfile doesn't run or also errors.
+      // refetchUserProfile itself sets isLoadingProfile to true then false.
+      // If we land here, it means either upsert failed or refetch might have failed.
+      setIsLoadingProfile(false); // Explicitly set loading to false on catch
+      return false;
+    }
+    // No finally block needed for isLoadingProfile if try/catch and refetch manage it.
   };
 
   return (
