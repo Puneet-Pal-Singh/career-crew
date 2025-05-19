@@ -2,11 +2,13 @@
 "use server";
 
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import { cookies } from 'next/headers'; // For Next.js 15, cookies() returns a Promise
-import type { JobPostSchemaType } from '@/lib/formSchemas'; // Assuming schema is in lib
+import { cookies } from 'next/headers';
+import type { JobPostSchemaType } from '@/lib/formSchemas';
+import type { EmployerJobDisplayData, JobStatus } from '@/types'; // Ensure paths are correct
 
 // --- Supabase Client Factory for Server Actions ---
-// Correctly handles asynchronous cookie retrieval for Next.js 15+
+// This helper is localized to this actions file. If used more broadly,
+// it could be moved to a shared utility (e.g., src/lib/supabase/serverClient.ts).
 const getSupabaseServerClient = async () => {
   const cookieStoreInstance = await cookies();
   return createServerClient(
@@ -34,17 +36,16 @@ const getSupabaseServerClient = async () => {
   );
 };
 
+// --- Result Type for createJobPost ---
 interface CreateJobPostResult {
   success: boolean;
   jobId?: string;
   error?: string;
-  errorDetails?: { field?: string; message: string }[]; // For field-specific errors
+  errorDetails?: { field?: string; message: string }[];
 }
 
 /**
  * Server Action for creating a new job posting.
- * @param validatedData - The job post data, already validated by a Zod schema.
- * @returns {Promise<CreateJobPostResult>} Result of the operation.
  */
 export async function createJobPost(
   validatedData: JobPostSchemaType
@@ -53,16 +54,12 @@ export async function createJobPost(
   const actionName = "createJobPost";
 
   try {
-    // 1. Get current authenticated user (employer)
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-
     if (authError || !user) {
       console.error(`Server Action (${actionName}): Authentication error.`, authError);
       return { success: false, error: "Authentication failed. Please log in again." };
     }
 
-    // 2. Construct the job data for Supabase
-    // The status will default to 'PENDING_APPROVAL' as per your jobs table schema.
     const jobDataToInsert = {
       employer_id: user.id,
       title: validatedData.title,
@@ -78,38 +75,79 @@ export async function createJobPost(
       salary_currency: validatedData.salary_currency,
       application_email: validatedData.application_email || null,
       application_url: validatedData.application_url || null,
-      // 'status' defaults to 'PENDING_APPROVAL' in your DB schema.
-      // 'created_at' and 'updated_at' also have DB defaults.
     };
 
-    console.log(`Server Action (${actionName}): Attempting to insert job data for user ${user.id}:`, jobDataToInsert);
-
-    // 3. Insert into Supabase 'jobs' table
     const { data: newJob, error: insertError } = await supabase
       .from('jobs')
       .insert(jobDataToInsert)
-      .select('id') // Select the ID of the newly created job
-      .single();    // Expect a single record to be returned
+      .select('id')
+      .single();
 
     if (insertError) {
       console.error(`Server Action (${actionName}): Supabase insert error.`, insertError);
-      // Provide a more generic error message to the client
-      return { success: false, error: "Failed to post job. Please try again later. Code: " + insertError.code };
+      return { success: false, error: "Failed to post job. Code: " + insertError.code };
     }
-
     if (!newJob || !newJob.id) {
         console.error(`Server Action (${actionName}): Job created but no ID returned.`);
         return { success: false, error: "Job created but failed to retrieve its ID." };
     }
-
     console.log(`Server Action (${actionName}): Job posted successfully. Job ID: ${newJob.id}`);
-    // Optionally, revalidate paths if this job should appear immediately somewhere (e.g., employer's job list)
-    // revalidatePath('/dashboard/my-jobs'); 
     return { success: true, jobId: newJob.id };
 
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "An unexpected error occurred.";
     console.error(`Server Action (${actionName}): Unexpected error.`, message, err);
     return { success: false, error: "An unexpected error occurred. Please try again." };
+  }
+}
+
+// --- Result Type for getEmployerJobs ---
+interface GetEmployerJobsResult {
+  success: boolean;
+  jobs?: EmployerJobDisplayData[];
+  error?: string;
+}
+
+/**
+ * Fetches all jobs posted by the currently authenticated employer.
+ */
+export async function getEmployerJobs(): Promise<GetEmployerJobsResult> {
+  const supabase = await getSupabaseServerClient();
+  const actionName = "getEmployerJobs";
+
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      console.error(`Server Action (${actionName}): Authentication error.`, authError);
+      return { success: false, error: "Authentication required." };
+    }
+
+    const { data: jobsData, error: fetchError } = await supabase
+      .from('jobs')
+      .select('id, title, status, created_at') // Only select fields needed for EmployerJobDisplayData
+      .eq('employer_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (fetchError) {
+      console.error(`Server Action (${actionName}): Error fetching jobs for employer ${user.id}.`, fetchError);
+      return { success: false, error: "Failed to fetch your jobs. " + fetchError.message };
+    }
+
+    const displayJobs: EmployerJobDisplayData[] = (jobsData || []).map(job => ({
+      id: job.id,
+      title: job.title,
+      status: job.status as JobStatus, // Casting, ensure JobStatus type matches DB enum
+      createdAt: new Date(job.created_at).toLocaleDateString('en-US', { // Example formatting
+        year: 'numeric', month: 'short', day: 'numeric' 
+      }),
+    }));
+    
+    console.log(`Server Action (${actionName}): Fetched ${displayJobs.length} jobs for employer ${user.id}.`);
+    return { success: true, jobs: displayJobs };
+
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "An unexpected error occurred.";
+    console.error(`Server Action (${actionName}): Unexpected error.`, message, err);
+    return { success: false, error: "An unexpected error occurred while fetching your jobs." };
   }
 }
