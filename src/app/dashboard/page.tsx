@@ -1,133 +1,149 @@
 // src/app/dashboard/page.tsx
-"use client"; // This page now needs to be a client component to use hooks
+"use client";
 
-import React, {useEffect} from 'react';
-// import type { Metadata } from 'next'; // Metadata can still be exported from client components
+import React, { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserProfile } from '@/contexts/UserProfileContext';
 import RoleSelection from '@/components/dashboard/RoleSelection';
 import { Loader2 } from 'lucide-react';
-// import { User } from '@supabase/supabase-js';
+import { Button } from '@/components/ui/button'; // For potential logout button
+import Link from 'next/link'; // For navigation links
 
-// Next.js 13+ App Router allows metadata export from client components
-// export const metadata: Metadata = { 
-//   title: 'Dashboard - CareerCrew Consulting',
-// };
-// However, for dynamic titles based on role, you'd set it in useEffect or a wrapper.
-// For now, keeping it simple or relying on layout's metadata.
+// --- Dashboard Views Placeholder Components ---
+function JobSeekerDashboardView() {
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-semibold text-foreground mb-4">Seeker Dashboard</h2>
+      <p className="text-muted-foreground mb-6">Welcome back! Here you can manage your job applications, saved jobs, and profile settings.</p>
+      {/* TODO: Add links or components for applications, saved jobs, profile editing */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="p-4 border rounded-lg bg-card">
+          <h3 className="font-medium text-lg mb-2">My Applications</h3>
+          <p className="text-sm text-muted-foreground">View and track your submitted applications.</p>
+          {/* <Button variant="link" className="p-0 h-auto mt-2">View Applications</Button> */}
+        </div>
+        <div className="p-4 border rounded-lg bg-card">
+          <h3 className="font-medium text-lg mb-2">Saved Jobs</h3>
+          <p className="text-sm text-muted-foreground">Access jobs you&apos;ve bookmarked for later.</p>
+          {/* <Button variant="link" className="p-0 h-auto mt-2">View Saved Jobs</Button> */}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EmployerDashboardView() {
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-semibold text-foreground mb-4">Employer Dashboard</h2>
+      <p className="text-muted-foreground mb-6">Manage your company&apos;s job postings, review applications, and update company details.</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="p-4 border rounded-lg bg-card">
+          <h3 className="font-medium text-lg mb-2">Manage Job Postings</h3>
+          <p className="text-sm text-muted-foreground">View, edit, or archive your current job listings.</p>
+          <Button variant="outline" asChild className="mt-3">
+            <Link href="/dashboard/job-listings">View My Job Listings</Link>
+          </Button>
+        </div>
+        <div className="p-4 border rounded-lg bg-card">
+          <h3 className="font-medium text-lg mb-2">Post a New Job</h3>
+          <p className="text-sm text-muted-foreground">Create and publish a new job opening to attract talent.</p>
+          <Button asChild className="mt-3">
+            <Link href="/dashboard/post-job">Post New Job</Link>
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AdminDashboardView() { // Placeholder
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-semibold text-foreground mb-4">Admin Dashboard</h2>
+      <p className="text-muted-foreground">Site administration panel.</p>
+    </div>
+  );
+}
 
 function DashboardContentLoading() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh]">
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
       <Loader2 className="h-12 w-12 animate-spin text-primary" />
       <p className="mt-4 text-lg text-muted-foreground">Loading your dashboard...</p>
     </div>
   );
 }
 
-function JobSeekerDashboardView() {
-  // Placeholder for Job Seeker specific content
-  return (
-    <div>
-      <h2 className="text-xl font-semibold text-foreground mb-3">Job Seeker Dashboard</h2>
-      <p className="text-muted-foreground">Your applications, saved jobs, and profile settings will appear here.</p>
-      {/* TODO: Build out Job Seeker specific components */}
-    </div>
-  );
-}
-
-function EmployerDashboardView() {
-  // Placeholder for Employer specific content
-  return (
-    <div>
-      <h2 className="text-xl font-semibold text-foreground mb-3">Employer Dashboard</h2>
-      <p className="text-muted-foreground">Manage your job postings, view applicants, and company settings.</p>
-      {/* TODO: Build out Employer specific components (e.g., link to Post a Job, My Jobs table) */}
-    </div>
-  );
-}
-
-function AdminDashboardView() {
-  // Placeholder for Admin specific content
-  return (
-    <div>
-      <h2 className="text-xl font-semibold text-foreground mb-3">Admin Dashboard</h2>
-      <p className="text-muted-foreground">Approve jobs, manage users, view site analytics.</p>
-      {/* TODO: Build out Admin specific components */}
-    </div>
-  );
-}
-
-
 export default function DashboardPage() {
   const { user, isInitialized: authIsInitialized } = useAuth();
   const { userProfile, isLoadingProfile, profileError } = useUserProfile();
 
-  // Set document title dynamically (example)
   useEffect(() => {
     if (userProfile?.role) {
-      document.title = `${userProfile.role.charAt(0).toUpperCase() + userProfile.role.slice(1).toLowerCase().replace('_', ' ')} Dashboard - CareerCrew`;
+      const roleName = userProfile.role.replace('_', ' ');
+      document.title = `${roleName.charAt(0).toUpperCase() + roleName.slice(1).toLowerCase()} Dashboard - CareerCrew`;
     } else if (authIsInitialized && user && !userProfile && !isLoadingProfile) {
-      document.title = `Choose Role - CareerCrew`;
-    } else {
+      document.title = `Choose Your Role - CareerCrew`;
+    } else if (!isLoadingProfile) { // If not loading and no user/profile yet
       document.title = `Dashboard - CareerCrew`;
     }
   }, [userProfile, authIsInitialized, user, isLoadingProfile]);
 
-
-  if (!authIsInitialized || isLoadingProfile) {
+  if (!authIsInitialized || (user && isLoadingProfile)) {
+    // Show loading if:
+    // 1. Auth state is not yet initialized.
+    // 2. Auth is initialized, a user exists, BUT their profile is currently being loaded.
     return <DashboardContentLoading />;
   }
 
   if (profileError) {
     return (
-      <div className="text-center text-destructive p-4">
-        <p>Error loading your profile: {profileError.message}</p>
-        <p>Please try refreshing the page or contact support.</p>
+      <div className="container mx-auto py-8 px-4 text-center">
+        <h1 className="text-2xl font-bold text-destructive mb-4">Dashboard Error</h1>
+        <p className="text-destructive-foreground">Could not load your dashboard: {profileError.message}</p>
+        <p className="mt-2 text-muted-foreground">Please try refreshing. If the problem persists, contact support.</p>
       </div>
     );
   }
 
-  // If user is authenticated but profile is not yet created OR
-  // if their role is the default 'JOB_SEEKER' and we want to give them a chance to switch to 'EMPLOYER' easily.
-  // For simplicity, if they are JOB_SEEKER, show RoleSelection to allow switching to EMPLOYER.
-  // If they are already EMPLOYER or ADMIN, show their respective views.
-  // This logic can be refined based on how strictly you want to enforce role selection on first login.
-  if (user && (!userProfile || userProfile.role === 'JOB_SEEKER')) {
-    // More precise condition: if no profile, or if profile exists but is JOB_SEEKER (default, might want to change)
-    // OR if you want to *always* show role selection if profile is missing, regardless of default.
-    // For this MVP, if they are JOB_SEEKER (which is the default from trigger), show RoleSelection.
-    // If they pick JOB_SEEKER again, that's fine, the state updates.
-    // If their profile is somehow missing after auth, also show role selection.
-    if (!userProfile || (userProfile && userProfile.role === 'JOB_SEEKER' && !sessionStorage.getItem(`roleSelected_${user.id}`))) {
-        // Added sessionStorage check to show role selection only once per session for JOB_SEEKERs,
-        // or until they pick EMPLOYER. This is a simple UX choice.
-        // sessionStorage.setItem(`roleSelected_${user.id}`, 'true'); // Set this after they make a choice in RoleSelection
-      return <RoleSelection />;
-    }
+  // If user is authenticated, profile is loaded, but they haven't made an explicit role choice yet
+  if (user && userProfile && !userProfile.has_made_role_choice) {
+    // The DB trigger defaults new users to 'JOB_SEEKER' and has_made_role_choice to 'false'.
+    // This screen allows them to confirm or change their primary role once.
+    return <RoleSelection />;
   }
   
-  // Render dashboard based on role once profile is loaded and role is set
-  if (userProfile) {
+  // If profile is loaded and a role choice has been made
+  if (userProfile?.role) {
     switch (userProfile.role) {
       case 'JOB_SEEKER':
         return <JobSeekerDashboardView />;
       case 'EMPLOYER':
         return <EmployerDashboardView />;
       case 'ADMIN':
-        return <AdminDashboardView />;
+        return <AdminDashboardView />; // You'll need to manually set a user to ADMIN in DB
       default:
-        // Fallback or if role is somehow not one of the above (shouldn't happen with ENUM)
-        return <p>Unknown role. Please contact support.</p>;
+        // Should not happen if roles are well-defined and has_made_role_choice works
+        console.warn("DashboardPage: User profile has an unrecognized role after choice:", userProfile.role);
+        return <RoleSelection />; // Fallback to allow re-selection if role state is invalid
     }
   }
+  
+  // Fallback for unexpected states:
+  // e.g. user authenticated, profile finished loading (not isLoadingProfile), no profileError,
+  // but userProfile is still null or userProfile.role is null/undefined.
+  // This implies an issue with profile creation or fetching that wasn't an outright error.
+  if (user && !userProfile && !isLoadingProfile && !profileError) {
+    console.warn("DashboardPage: User authenticated, profile loading finished, but no profile data. Showing RoleSelection.");
+    return <RoleSelection />;
+  }
 
-  // Fallback if user is somehow authenticated but profile logic leads here (e.g. after role selection failure)
-  // Or if !user (which middleware should prevent, but good to have a fallback)
+  // If no user session (middleware should prevent this, but good to have a graceful UI)
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-foreground mb-4">Welcome to your Dashboard!</h1>
-      <p className="text-muted-foreground">Loading your experience or select a role if prompted.</p>
+    <div className="container mx-auto py-8 px-4 text-center">
+      <p className="text-muted-foreground">Loading dashboard or please log in.</p>
+      {/* Could add a login button here if appropriate */}
     </div>
   );
 }

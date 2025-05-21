@@ -3,18 +3,18 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { useAuth } from "./AuthContext"; // Import useAuth to get the authenticated user
+import { useAuth } from "./AuthContext";
 
-// Re-define UserProfile types here or import from a shared types file
+// Define UserRole and UserProfile (ensure UserProfile includes has_made_role_choice)
 export type UserRole = 'JOB_SEEKER' | 'EMPLOYER' | 'ADMIN';
 export interface UserProfile {
   id: string;
   updated_at: string;
-  email: string; // Email is NOT NULL in your DB schema
+  email: string;
   full_name?: string | null;
   avatar_url?: string | null;
-  role: UserRole; // Role is NOT NULL and defaults to 'JOB_SEEKER' in your DB schema
-  // company_name?: string | null; 
+  role: UserRole;
+  has_made_role_choice: boolean; // This flag makes the role choice persistent
 }
 
 interface UserProfileContextType {
@@ -31,129 +31,121 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
   const { user, isInitialized: authIsInitialized } = useAuth();
 
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [isLoadingProfile, setIsLoadingProfile] = useState<boolean>(true);
+  // Start isLoadingProfile true only if auth is initialized and user exists, otherwise false.
+  const [isLoadingProfile, setIsLoadingProfile] = useState<boolean>(false); 
   const [profileError, setProfileError] = useState<Error | null>(null);
+
+  const clearProfileState = useCallback(() => {
+    setUserProfile(null);
+    setIsLoadingProfile(false);
+    setProfileError(null);
+  }, []);
 
   const fetchUserProfile = useCallback(async (userId: string) => {
     if (!userId) {
-      setUserProfile(null);
-      setIsLoadingProfile(false);
-      setProfileError(null);
+      clearProfileState();
       return;
     }
-    console.log("UserProfileContext: Fetching profile for user ID:", userId);
+    // console.log("UserProfileContext: Fetching profile for user ID:", userId);
     setIsLoadingProfile(true);
-    setProfileError(null);
+    setProfileError(null); // Clear previous errors before fetching
     try {
+      // Explicitly select all desired fields including the new 'has_made_role_choice'
       const { data, error, status } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, updated_at, email, full_name, avatar_url, role, has_made_role_choice')
         .eq('id', userId)
         .single();
 
-      if (error && status !== 406) {
+      if (error && status !== 406) { // 406: PostgREST "Not Acceptable" for .single() no rows
         throw error;
       }
       if (data) {
-        console.log("UserProfileContext: Profile fetched:", data);
+        // console.log("UserProfileContext: Profile fetched:", data);
         setUserProfile(data as UserProfile);
       } else {
-        console.log("UserProfileContext: No profile found for user", userId, "(This is expected if profile is created on first role selection).");
-        setUserProfile(null);
+        // console.log("UserProfileContext: No profile found for user", userId);
+        // This case should be less common if the DB trigger creates a profile on signup.
+        // If upsert in updateUserProfileRole creates it, this fetch might initially find nothing.
+        setUserProfile(null); 
       }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Error fetching user profile.";
       console.error("UserProfileContext: fetchUserProfile error:", message);
       setProfileError(new Error(message));
-      setUserProfile(null);
+      setUserProfile(null); // Ensure profile is null on error
     } finally {
       setIsLoadingProfile(false);
     }
-  }, []);
+  }, [clearProfileState]); // Added clearProfileState to dependencies
 
   useEffect(() => {
     if (authIsInitialized && user?.id) {
+      // Only set loading true right before fetch if user exists
+      setIsLoadingProfile(true); 
       fetchUserProfile(user.id);
     } else if (authIsInitialized && !user) {
-      setUserProfile(null);
-      setIsLoadingProfile(false);
-      setProfileError(null);
+      clearProfileState();
     }
-  }, [user, authIsInitialized, fetchUserProfile]);
+    // If auth is not yet initialized, do nothing, wait for it.
+    // isLoadingProfile will remain false until authIsInitialized and user exists.
+  }, [user, authIsInitialized, fetchUserProfile, clearProfileState]);
 
   const refetchUserProfile = useCallback(() => {
     if (user?.id) {
       fetchUserProfile(user.id);
     } else {
-      // If no user, ensure profile state is cleared
-      setUserProfile(null);
-      setIsLoadingProfile(false);
-      setProfileError(null);
+      clearProfileState();
     }
-  }, [user, fetchUserProfile]);
+  }, [user, fetchUserProfile, clearProfileState]);
 
   const updateUserProfileRole = async (userId: string, newRole: UserRole): Promise<boolean> => {
-    // Ensure we have the authenticated user's email for the insert,
-    // as 'email' is NOT NULL in your 'profiles' table.
-    // 'user' object comes from useAuth() which should be up-to-date.
     if (!user?.email) {
-      console.error("UserProfileContext: User email not available from AuthContext for profile upsert.");
-      setProfileError(new Error("User email not available. Cannot update profile. Please try logging in again."));
+      console.error("UserProfileContext: User email not available for profile upsert.");
+      setProfileError(new Error("User context is not available. Please try logging in again."));
       return false;
     }
 
-    // We are about to attempt an operation, set loading true
-    setIsLoadingProfile(true); // Or a more specific loading state like isUpdatingRole
-    setProfileError(null);   // Clear previous errors
+    setIsLoadingProfile(true); // Indicate an update operation is in progress
+    setProfileError(null);
 
     try {
       const profileDataForUpsert = {
-        id: userId,             // Primary key for matching
-        email: user.email,      // Email is NOT NULL
-        role: newRole,          // The new role to set
-        updated_at: new Date().toISOString(), // Keep updated_at fresh
-        // full_name and avatar_url are nullable and can be omitted here.
-        // If they were previously set, upsert should preserve them if not specified,
-        // depending on Supabase's default upsert behavior (usually `merge`).
+        id: userId,
+        email: user.email, // Required as it's NOT NULL in your 'profiles' table
+        role: newRole,
+        has_made_role_choice: true, // Persistently mark that a role choice has been made
+        updated_at: new Date().toISOString(),
       };
 
-      console.log("UserProfileContext: Attempting to upsert profile:", profileDataForUpsert);
+      // console.log("UserProfileContext: Attempting to upsert profile:", profileDataForUpsert);
 
       const { error: upsertError } = await supabase
         .from('profiles')
         .upsert(profileDataForUpsert, {
-          onConflict: 'id', // Use 'id' to determine conflict for upsert
-          // `returning: 'minimal'` is default, no need to specify unless you want data back
+          onConflict: 'id', // Match based on the 'id' primary key
         });
 
       if (upsertError) {
         console.error("UserProfileContext: Supabase upsert error:", upsertError.message);
-        // It's good to throw the specific error for more detailed debugging
-        throw upsertError;
-      }
-
-      // If upsert is successful
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem(`roleSelected_${userId}`, 'true');
+        throw upsertError; // Propagate the error
       }
       
-      console.log("UserProfileContext: Profile role upserted successfully for", userId, "to", newRole);
-      // Crucially, refetch the profile to ensure the context state reflects the database,
-      // including any default values that might have been applied on insert (though less relevant here since we specify role).
+      // console.log("UserProfileContext: Profile role upserted successfully for", userId, "to", newRole);
+      // After successful upsert, refetch the profile to get the latest state from DB
+      // (including the updated has_made_role_choice and role)
       refetchUserProfile(); 
       return true;
 
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "An unexpected error occurred while updating/creating the user profile role.";
-      console.error("UserProfileContext: updateUserProfileRole encountered an error:", message);
+      const message = error instanceof Error ? error.message : "An unexpected error occurred while updating profile role.";
+      console.error("UserProfileContext: updateUserProfileRole error:", message);
       setProfileError(new Error(message));
-      // Since an error occurred, ensure loading state is reset if refetchUserProfile doesn't run or also errors.
-      // refetchUserProfile itself sets isLoadingProfile to true then false.
-      // If we land here, it means either upsert failed or refetch might have failed.
-      setIsLoadingProfile(false); // Explicitly set loading to false on catch
+      setIsLoadingProfile(false); // Reset loading state on error
       return false;
     }
-    // No finally block needed for isLoadingProfile if try/catch and refetch manage it.
+    // `isLoadingProfile` will be set to false by `fetchUserProfile` called by `refetchUserProfile` on success,
+    // or explicitly in the catch block on error.
   };
 
   return (
