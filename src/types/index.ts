@@ -31,3 +31,23 @@ export interface EmployerJobDisplayData {
   // companyName?: string; // Could be useful if an employer manages multiple entities under one account
   // applicationCount?: number; // For future enhancement
 }
+
+// Parameters for fetching published jobs
+export type JobTypeOption = "FULL_TIME" | "PART_TIME" | "CONTRACT" | "INTERNSHIP" | "TEMPORARY"; // Match your enum
+
+export interface FetchJobsParams {
+  query?: string;          // For text search
+  location?: string;
+  jobType?: JobTypeOption; // Use the defined type
+  isRemote?: string;       // "true" or "false" from URL searchParams, or undefined
+  page?: number;
+  limit?: number;
+  // Future: sortBy?: string, sortOrder?: 'asc' | 'desc'
+}
+
+export interface PaginatedJobsResult {
+  jobs: JobCardData[];
+  totalCount: number;
+  totalPages: number;
+  currentPage: number;
+}
