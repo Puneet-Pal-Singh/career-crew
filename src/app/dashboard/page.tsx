@@ -42,7 +42,7 @@ function EmployerDashboardView() {
           <h3 className="font-medium text-lg mb-2">Manage Job Postings</h3>
           <p className="text-sm text-muted-foreground">View, edit, or archive your current job listings.</p>
           <Button variant="outline" asChild className="mt-3">
-            <Link href="/dashboard/job-listings">View My Job Listings</Link>
+            <Link href="/dashboard/my-jobs">View My Job Listings</Link>
           </Button>
         </div>
         <div className="p-4 border rounded-lg bg-card">
