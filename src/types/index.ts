@@ -51,3 +51,25 @@ export interface PaginatedJobsResult {
   totalPages: number;
   currentPage: number;
 }
+
+// Interface for the full details of a job, used on the job detail page
+export interface JobDetailData {
+  id: string;
+  title: string;
+  companyName: string;
+  companyLogoUrl?: string | null;
+  location: string;
+  isRemote: boolean;
+  jobType?: JobTypeOption | string; // Allow string for flexibility if DB enum isn't strictly JobTypeOption
+  salaryMin?: number | null;
+  salaryMax?: number | null;
+  salaryCurrency?: string | null;
+  postedDate: string; // Formatted string
+  description: string; // Full description (HTML or Markdown if you support it, plain text otherwise)
+  requirements?: string | null; // Full requirements
+  applicationEmail?: string | null;
+  applicationUrl?: string | null;
+  // Optional: Further company details if you have a separate company profile table later
+  // companyDescription?: string;
+  // companyWebsite?: string;
+}
