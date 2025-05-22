@@ -1,5 +1,5 @@
 // src/app/jobs/page.tsx
-import { getPublishedJobs } from '@/app/actions/jobActions';
+import { getPublishedJobs } from '@/app/actions/jobQueryActions';
 import type { FetchJobsParams, JobTypeOption } from '@/types';
 import { Suspense } from 'react'; // Suspense remains important
 
