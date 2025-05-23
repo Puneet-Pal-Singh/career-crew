@@ -2,8 +2,10 @@
 "use client";
 
 import React, { useState, useTransition } from 'react';
-import type { AdminPendingJobData } from '@/app/actions/adminActions'; // Import type from action file
-import { approveJob, rejectJob } from '@/app/actions/adminActions';
+import type { AdminPendingJobData } from '@/types'; // Import type from action file
+import { approveJob } from '@/app/actions/admin/approveJobAction'; // Import actions
+import { rejectJob } from '@/app/actions/admin/rejectJobAction'; // Import actions
+// Import components
 import {
   Table,
   TableBody,

@@ -5,7 +5,7 @@ import React, { useState, useTransition } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form'; // Added Controller
 import { zodResolver } from '@hookform/resolvers/zod';
 import { JobPostSchema, type JobPostSchemaType } from '@/lib/formSchemas'; // Using simplified schema
-import { createJobPost } from '@/app/actions/employerJobActions';
+import { createJobPost } from '@/app/actions/employer/createJobPostAction';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';

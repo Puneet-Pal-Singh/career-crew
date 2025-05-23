@@ -5,7 +5,7 @@ import React, { useState, useEffect, useTransition, useMemo, useCallback } from 
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ApplicationFormSchema, type ApplicationFormSchemaType } from '@/lib/formSchemas';
-import { submitApplication } from '@/app/actions/applicationActions';
+import { submitApplication } from '@/app/actions/application/submitApplicationAction';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserProfile } from '@/contexts/UserProfileContext';
 

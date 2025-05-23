@@ -1,5 +1,5 @@
 // src/app/jobs/[jobId]/page.tsx
-import { getJobDetailsById } from '@/app/actions/jobDetailActions';
+import { getJobDetailsById } from '@/app/actions/query/getJobDetailsByIdAction';
 import type { JobDetailData } from '@/types';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';

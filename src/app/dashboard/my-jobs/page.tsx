@@ -1,5 +1,5 @@
 // src/app/dashboard/my-jobs/page.tsx
-import { getEmployerJobs } from '@/app/actions/employerJobActions';
+import { getEmployerJobs } from '@/app/actions/employer/getEmployerJobsAction';
 import EmployerJobTable from '@/components/dashboard/employer/EmployerJobTable';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, Briefcase } from 'lucide-react';

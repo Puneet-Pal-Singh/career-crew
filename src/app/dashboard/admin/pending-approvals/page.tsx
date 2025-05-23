@@ -1,5 +1,5 @@
 // src/app/dashboard/admin/pending-approvals/page.tsx
-import { getPendingApprovalJobs } from '@/app/actions/adminActions';
+import { getPendingApprovalJobs } from '@/app/actions/admin/getPendingApprovalJobsAction';
 import PendingJobsTable from '@/components/dashboard/admin/PendingJobsTable';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Briefcase, AlertTriangle, Info } from 'lucide-react';
