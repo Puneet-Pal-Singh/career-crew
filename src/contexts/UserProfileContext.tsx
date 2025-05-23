@@ -4,18 +4,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "./AuthContext";
-
-// Define UserRole and UserProfile (ensure UserProfile includes has_made_role_choice)
-export type UserRole = 'JOB_SEEKER' | 'EMPLOYER' | 'ADMIN';
-export interface UserProfile {
-  id: string;
-  updated_at: string;
-  email: string;
-  full_name?: string | null;
-  avatar_url?: string | null;
-  role: UserRole;
-  has_made_role_choice: boolean; // This flag makes the role choice persistent
-}
+import type { UserRole, UserProfile } from '@/types';
 
 interface UserProfileContextType {
   userProfile: UserProfile | null;

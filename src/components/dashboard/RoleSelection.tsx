@@ -3,7 +3,8 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useUserProfile, UserRole } from '@/contexts/UserProfileContext'; // UserProfile type also here
+import { useUserProfile } from '@/contexts/UserProfileContext'; // UserProfile type also here
+import type { UserRole } from '@/types'; // Assuming UserRole is defined in types
 import { Button } from '@/components/ui/button';
 import { Loader2, Briefcase, UserSearch } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

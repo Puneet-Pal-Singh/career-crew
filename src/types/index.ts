@@ -1,5 +1,18 @@
 // src/types/index.ts
 
+// Define UserRole and UserProfile (ensure UserProfile includes has_made_role_choice)
+export type UserRole = 'JOB_SEEKER' | 'EMPLOYER' | 'ADMIN';
+
+export interface UserProfile {
+  id: string;
+  updated_at: string;
+  email: string;
+  full_name?: string | null;
+  avatar_url?: string | null;
+  role: UserRole;
+  has_made_role_choice: boolean; // This flag makes the role choice persistent
+}
+
 export type JobStatus = 
   | "PENDING_APPROVAL" 
   | "APPROVED" 
@@ -73,3 +86,10 @@ export interface JobDetailData {
   // companyDescription?: string;
   // companyWebsite?: string;
 }
+
+// export interface AdminPendingJobData {
+//   id: string;
+//   title: string;
+//   companyName: string;
+//   createdAt: string; // Formatted date
+// }
