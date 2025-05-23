@@ -1,7 +1,7 @@
 // src/components/layout/headerHelpers.ts
-import { UserProfile } from "@/contexts/UserProfileContext"; // Assuming types are exported
-import { LucideIcon, Search, Users, Briefcase, LayoutDashboard, Settings, BarChart2 } from "lucide-react";
-
+import { UserProfile } from "@/types"; // Assuming UserProfile is defined in types
+import { LucideIcon, Search, Users, Briefcase, LayoutDashboard, Settings } from "lucide-react";
+// import { ListChecks, FileClock } from "lucide-react"; // Assuming these icons are available
 export interface NavLinkItem {
   href: string;
   label: string;
@@ -33,26 +33,35 @@ export const getNavigationLinks = ({
 
   if (isAuthenticated) {
     if (isLoadingProfile) {
-      // Show a generic "Dashboard" while profile is loading
+      // Show a generic "Dashboard" link while profile is loading
       dynamicNavLinks.push({ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, show: true });
     } else if (userProfile) {
+      // All roles go to '/dashboard' for their main view; content there differentiates
       switch (userProfile.role) {
         case 'JOB_SEEKER':
-          dynamicNavLinks.push({ href: '/dashboard/seeker', label: 'Seeker Hub', icon: BarChart2, show: true });
+          dynamicNavLinks.push({ href: '/dashboard', label: 'Seeker Dashboard', icon: LayoutDashboard, show: true });
+          // You can add other seeker-specific HEADER links here if needed,
+          // but main dashboard view is at /dashboard
           break;
         case 'EMPLOYER':
-          dynamicNavLinks.push({ href: '/dashboard/employer', label: 'Employer Hub', icon: BarChart2, show: true });
+          dynamicNavLinks.push({ href: '/dashboard', label: 'Employer Dashboard', icon: LayoutDashboard, show: true });
+          // Specific actions for employers can still have their own direct links
           postJobLink = { href: '/dashboard/post-job', label: 'Post a Job', icon: Briefcase, show: true, isPrimaryAction: true };
+          // Link to their job listings (ensure this route exists)
+          // dynamicNavLinks.push({ href: '/dashboard/my-jobs', label: 'My Listings', icon: ListChecks, show: true }); // Assuming ListChecks icon
           break;
         case 'ADMIN':
-          dynamicNavLinks.push({ href: '/dashboard/admin', label: 'Admin Panel', icon: Settings, show: true });
-          // Admin might also be able to post a job or have other specific links
+          dynamicNavLinks.push({ href: '/dashboard', label: 'Admin Panel', icon: Settings, show: true });
+          // Specific admin pages can have direct links too
+          // dynamicNavLinks.push({ href: '/dashboard/admin/pending-approvals', label: 'Pending Jobs', icon: FileClock, show: true }); // Assuming FileClock icon
           break;
         default:
+          // Fallback if role is unknown, still point to /dashboard
           dynamicNavLinks.push({ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, show: true });
       }
     } else {
-      // Authenticated but profile not found (should be rare with trigger)
+      // Authenticated but profile somehow not found (e.g., error or still loading initially)
+      // Point to /dashboard, where RoleSelection might appear if profile truly missing
       dynamicNavLinks.push({ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, show: true });
     }
   }
