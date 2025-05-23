@@ -6,6 +6,7 @@ import './globals.css';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { AppProviders } from '@/components/providers/AppProviders'; // Import AppProviders
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: 'CareerCrew Consulting - Find Your Next Opportunity',
@@ -36,6 +37,7 @@ export default function RootLayout({
           <Header />
           <main className="flex-grow">{children}</main>
           <Footer />
+          <Toaster />
         </AppProviders>
       </body>
     </html>
