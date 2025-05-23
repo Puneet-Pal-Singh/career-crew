@@ -57,11 +57,21 @@ function EmployerDashboardView() {
   );
 }
 
-function AdminDashboardView() { // Placeholder
+function AdminDashboardView() { 
   return (
     <div className="p-6">
       <h2 className="text-2xl font-semibold text-foreground mb-4">Admin Dashboard</h2>
-      <p className="text-muted-foreground">Site administration panel.</p>
+      <p className="text-muted-foreground mb-6">Manage site settings, user roles, and job postings.</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="p-4 border rounded-lg bg-card">
+          <h3 className="font-medium text-lg mb-2">Pending Job Approvals</h3>
+          <p className="text-sm text-muted-foreground">Review and approve or reject new job submissions.</p>
+          <Button variant="outline" asChild className="mt-3">
+            <Link href="/dashboard/admin/pending-approvals">View Pending Jobs</Link>
+          </Button>
+        </div>
+        {/* Add more admin links/widgets here later */}
+      </div>
     </div>
   );
 }

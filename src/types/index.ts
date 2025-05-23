@@ -87,9 +87,9 @@ export interface JobDetailData {
   // companyWebsite?: string;
 }
 
-// export interface AdminPendingJobData {
-//   id: string;
-//   title: string;
-//   companyName: string;
-//   createdAt: string; // Formatted date
-// }
+export interface AdminPendingJobData {
+  id: string;
+  title: string;
+  companyName: string;
+  createdAt: string; // Formatted date
+}
