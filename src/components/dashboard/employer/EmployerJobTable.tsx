@@ -133,7 +133,7 @@ export default function EmployerJobTable({ jobs }: EmployerJobTableProps) {
                   title={canBeEdited ? "Edit Job" : "Cannot edit job in this status"}
                 >
                   {canBeEdited ? (
-                    <Link href={`/dashboard/job-listings/${job.id}/edit`} aria-label="Edit job">
+                    <Link href={`/dashboard/my-jobs/${job.id}/edit`} aria-label="Edit job">
                       <Edit3 className="h-4 w-4" />
                     </Link>
                   ) : (

@@ -83,7 +83,7 @@ export async function createJobPost(
     console.log(`Server Action (${actionName}): Job posted successfully by user ${authUser.id}. Job ID: ${newJob.id}`);
     // Consider revalidating relevant paths, e.g., employer's job list page.
     // import { revalidatePath } from 'next/cache';
-    // revalidatePath('/dashboard/job-listings'); // Or your chosen path
+    // revalidatePath('/dashboard/my-jobs'); // Or your chosen path
 
     return { success: true, jobId: newJob.id };
 

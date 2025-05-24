@@ -101,7 +101,7 @@ export async function updateJobPost(
     console.log(`Server Action (${actionName}): Job ${jobId} updated successfully by user ${authUser.id}.`);
     
     // Revalidate paths to ensure fresh data is shown
-    // revalidatePath('/dashboard/job-listings'); // Employer's list of jobs
+    // revalidatePath('/dashboard/my-jobs'); // Employer's list of jobs
     // if (newStatus === 'APPROVED' || currentJob.status === 'APPROVED') {
     //   revalidatePath(`/jobs/${jobId}`); // Public job detail page if it was or becomes live
     //   revalidatePath('/jobs'); // Public job listings

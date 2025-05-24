@@ -108,7 +108,7 @@ export default function JobEditorForm({ mode, jobId, initialData }: JobEditorFor
         }
         // For both create and edit, redirect to the job listings page
         setTimeout(() => {
-            router.push('/dashboard/job-listings'); // Or your chosen path for employer's job list
+            router.push('/dashboard/my-jobs'); // Or your chosen path for employer's job list
             router.refresh(); // Trigger a server-side data re-fetch for the target page
         }, 2000); // Delay to allow user to read success message
       } else {

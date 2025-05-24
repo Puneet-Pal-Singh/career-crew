@@ -1,4 +1,4 @@
-// src/app/dashboard/job-listings/[jobId]/edit/page.tsx
+// src/app/dashboard/my-jobs/[jobId]/edit/page.tsx
 import JobEditorForm from '@/components/dashboard/employer/JobEditorForm';
 import { getEmployerJobByIdForEdit } from '@/app/actions/employer/getEmployerJobByIdForEditAction';
 import type { Metadata } from 'next';
@@ -44,7 +44,7 @@ export default async function EditJobPage({ params: paramsPromise }: EditJobPage
                 </AlertDescription>
             </Alert>
             <Button variant="outline" asChild className="mt-6">
-                <Link href="/dashboard/job-listings">Back to My Job Listings</Link>
+                <Link href="/dashboard/my-jobs">Back to My Job Listings</Link>
             </Button>
         </div>
     );
