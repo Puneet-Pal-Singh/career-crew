@@ -5,27 +5,60 @@ import React, { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserProfile } from '@/contexts/UserProfileContext';
 import RoleSelection from '@/components/dashboard/RoleSelection';
-import { Loader2 } from 'lucide-react';
+import { Loader2, FileText, Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button'; // For potential logout button
 import Link from 'next/link'; // For navigation links
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/card';
 
 // --- Dashboard Views Placeholder Components ---
 function JobSeekerDashboardView() {
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-semibold text-foreground mb-4">Seeker Dashboard</h2>
-      <p className="text-muted-foreground mb-6">Welcome back! Here you can manage your job applications, saved jobs, and profile settings.</p>
-      {/* TODO: Add links or components for applications, saved jobs, profile editing */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="p-4 border rounded-lg bg-card">
-          <h3 className="font-medium text-lg mb-2">My Applications</h3>
-          <p className="text-sm text-muted-foreground">View and track your submitted applications.</p>
-          {/* <Button variant="link" className="p-0 h-auto mt-2">View Applications</Button> */}
-        </div>
-        <div className="p-4 border rounded-lg bg-card">
-          <h3 className="font-medium text-lg mb-2">Saved Jobs</h3>
-          <p className="text-sm text-muted-foreground">Access jobs you&apos;ve bookmarked for later.</p>
-          {/* <Button variant="link" className="p-0 h-auto mt-2">View Saved Jobs</Button> */}
+    <div className="p-4 sm:p-6"> {/* Added padding */}
+      <h2 className="text-2xl font-semibold text-foreground mb-6">Seeker Dashboard</h2> {/* Increased bottom margin */}
+      <p className="text-muted-foreground mb-8"> {/* Increased bottom margin */}
+        Welcome back! Here you can manage your job applications, saved jobs, and profile settings.
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> {/* Increased gap */}
+        {/* My Applications Card */}
+        <Link href="/dashboard/seeker/applications" className="block hover:no-underline">
+          <Card className="hover:shadow-lg transition-shadow duration-200 h-full flex flex-col"> {/* Added h-full for consistent card height */}
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xl font-medium">My Applications</CardTitle>
+              <FileText className="h-6 w-6 text-muted-foreground" />
+            </CardHeader>
+            <CardContent className="flex-grow"> {/* flex-grow for content */}
+              <p className="text-sm text-muted-foreground">
+                View and track all your submitted job applications and their current status.
+              </p>
+            </CardContent>
+            <CardFooter>
+                <Button variant="outline" className="w-full sm:w-auto">View Applications</Button>
+            </CardFooter>
+          </Card>
+        </Link>
+
+        {/* Saved Jobs Card (Still a placeholder for functionality) */}
+        <div className="block"> {/* Make it a div for now since it's not a link yet */}
+         <Card className="opacity-70 cursor-not-allowed h-full flex flex-col"> {/* Style as disabled/coming soon */}
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xl font-medium">Saved Jobs</CardTitle>
+              <Bookmark className="h-6 w-6 text-muted-foreground" />
+            </CardHeader>
+            <CardContent className="flex-grow">
+              <p className="text-sm text-muted-foreground">
+                Access jobs you&apos;ve bookmarked. (Feature coming soon!)
+              </p>
+            </CardContent>
+             <CardFooter>
+                <Button variant="outline" disabled className="w-full sm:w-auto">View Saved Jobs</Button>
+            </CardFooter>
+          </Card>
         </div>
       </div>
     </div>

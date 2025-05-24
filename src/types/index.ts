@@ -93,3 +93,24 @@ export interface AdminPendingJobData {
   companyName: string;
   createdAt: string; // Formatted date
 }
+
+// If your 'applications' table has a distinct status enum like 'application_status_option'
+// you defined earlier (SUBMITTED, VIEWED, INTERVIEWING, OFFERED, HIRED, REJECTED):
+export type ApplicationStatusOption = 
+  | "SUBMITTED" 
+  | "VIEWED" 
+  | "INTERVIEWING" 
+  | "OFFERED" 
+  | "HIRED" 
+  | "REJECTED";
+  
+// Interface for displaying a seeker's application in their dashboard
+export interface ApplicationViewData {
+  applicationId: string; // ID from the 'applications' table
+  jobId: string;         // ID from the 'jobs' table
+  jobTitle: string;
+  companyName: string;
+  // companyLogoUrl?: string | null; // Optional, if you want to display it
+  dateApplied: string;   // Formatted date string
+  applicationStatus: ApplicationStatusOption;
+}
