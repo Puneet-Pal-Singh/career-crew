@@ -35,7 +35,9 @@ export default function RootLayout({
         // or can be passed via themeProps if needed for more flexibility
         >
           <Header />
-          <main className="flex-grow">{children}</main>
+          <main className="flex-grow pt-16 sm:pt-20"> {/* e.g., pt-20, adjust as needed */}
+             {children}
+          </main>
           <Footer />
           <Toaster />
         </AppProviders>
