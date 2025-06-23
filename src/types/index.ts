@@ -50,8 +50,9 @@ export type JobTypeOption = "FULL_TIME" | "PART_TIME" | "CONTRACT" | "INTERNSHIP
 
 export interface FetchJobsParams {
   query?: string;          // For text search
-  location?: string;
-  jobType?: JobTypeOption; // Use the defined type
+  // Change location and jobType to allow for arrays for multi-select filtering
+  location?: string | string[]; 
+  jobType?: JobTypeOption | JobTypeOption[];
   isRemote?: string;       // "true" or "false" from URL searchParams, or undefined
   page?: number;
   limit?: number;
