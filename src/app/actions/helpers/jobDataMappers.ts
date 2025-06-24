@@ -1,4 +1,5 @@
-import type { JobCardData } from '@/types';
+import type { JobCardData, JobTypeOption } from '@/types';
+import { JOB_TYPE_OPTIONS } from '@/lib/constants'; // <-- Import the constant
 
 // Raw structure for jobs when data is intended for JobCardData mapping
 export interface RawJobDataForCard {
@@ -14,6 +15,9 @@ export interface RawJobDataForCard {
   salary_currency: string | null;
   created_at: string; // ISO string timestamp
 }
+
+// Create a lookup map for efficiency
+const jobTypeLabelMap = new Map(JOB_TYPE_OPTIONS.map(opt => [opt.value, opt.label]));
 
 /**
  * Maps a raw job object from Supabase to the JobCardData format.
@@ -35,7 +39,8 @@ export const mapRawJobToJobCardData = (rawJob: RawJobDataForCard): JobCardData =
     companyLogoUrl: rawJob.company_logo_url || '/company-logos/default-company-logo.svg',
     location: rawJob.location,
     isRemote: rawJob.is_remote,
-    type: rawJob.job_type || undefined, 
+    // type: rawJob.job_type || undefined, 
+     type: jobTypeLabelMap.get(rawJob.job_type as JobTypeOption) || rawJob.job_type || undefined,
     salary: salaryDisplay,
     postedDate: new Date(rawJob.created_at).toLocaleDateString('en-US', { 
         year: 'numeric', month: 'short', day: 'numeric' 

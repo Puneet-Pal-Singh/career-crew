@@ -3,7 +3,8 @@
 
 import React from 'react';
 import { Control, Controller, FieldErrors, UseFormRegister } from 'react-hook-form';
-import { JobPostSchemaType, jobTypeOptions } from '@/lib/formSchemas';
+import { JobPostSchemaType } from '@/lib/formSchemas';
+import { JOB_TYPE_OPTIONS } from '@/lib/constants';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -60,8 +61,11 @@ export default function JobPrimaryDetailsFields({ control, register, errors }: J
                 <SelectValue placeholder="Select job type" />
               </SelectTrigger>
               <SelectContent>
-                {jobTypeOptions.map(type => (
-                  <SelectItem key={type} value={type}>{type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</SelectItem>
+                {JOB_TYPE_OPTIONS.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {/* USE THE LABEL FOR DISPLAY */}
+                    {option.label} 
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>

@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, SlidersHorizontal, Zap } from 'lucide-react';
-import { jobTypeOptions } from '@/lib/formSchemas';
+import { JOB_TYPE_OPTIONS } from '@/lib/constants'; // <-- Import the new constant
 
 const locationOptions = ["New York, NY", "San Francisco, CA", "London", "Berlin", "Delhi"]; // Static for MVP
 
@@ -114,15 +114,15 @@ export default function JobFilterSidebar() {
             JOB TYPE <ChevronDown className="h-4 w-4 transition-transform [&[data-state=open]]:rotate-180" />
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-3 pt-2">
-            {jobTypeOptions.map(type => (
-              <div key={type} className="flex items-center">
+            {JOB_TYPE_OPTIONS.map(option => (
+              <div key={option.value} className="flex items-center">
                 <Checkbox 
-                  id={`type-${type}`}
-                  checked={selectedJobTypes.includes(type)}
-                  onCheckedChange={(checked) => updateSearchParam('jobType', type, !!checked)}
+                  id={`type-${option.value}`}
+                  checked={selectedJobTypes.includes(option.value)}
+                  onCheckedChange={(checked) => updateSearchParam('jobType', option.value, !!checked)}
                 />
-                <Label htmlFor={`type-${type}`} className="ml-2 font-normal cursor-pointer text-sm">
-                  {type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                <Label htmlFor={`type-${option.value}`} className="ml-2 font-normal cursor-pointer text-sm">
+                  {option.label}
                 </Label>
               </div>
             ))}

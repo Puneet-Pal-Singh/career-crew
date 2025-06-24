@@ -3,7 +3,8 @@
 
 import React from 'react';
 import { Control, Controller, FieldErrors, UseFormRegister } from 'react-hook-form';
-import { JobPostSchemaType, currencyOptions } from '@/lib/formSchemas';
+import { JobPostSchemaType } from '@/lib/formSchemas';
+import { CURRENCY_OPTIONS } from '@/lib/constants';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -61,7 +62,7 @@ export default function JobSalaryFields({ control, register, errors }: JobSalary
                             <SelectValue placeholder="Select currency" />
                         </SelectTrigger>
                         <SelectContent>
-                            {currencyOptions.map(currency => (
+                            {CURRENCY_OPTIONS.map(currency => (
                                 <SelectItem key={currency} value={currency}>{currency}</SelectItem>
                             ))}
                         </SelectContent>

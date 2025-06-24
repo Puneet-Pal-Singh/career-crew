@@ -1,8 +1,13 @@
 // src/lib/formSchemas.ts
 import { z } from 'zod';
+import { JOB_TYPE_OPTIONS, CURRENCY_OPTIONS } from './constants'; // Import from the new constants file
 
-export const jobTypeOptions = ["FULL_TIME", "PART_TIME", "CONTRACT", "INTERNSHIP", "TEMPORARY"] as const;
-export const currencyOptions = ["USD", "EUR", "GBP", "CAD", "AUD", "INR"] as const;
+// Derive the raw enum values for Zod validation from our single source of truth.
+// This ensures that our validation schema is always in sync with our display options.
+const jobTypeValues = JOB_TYPE_OPTIONS.map(option => option.value) as [string, ...string[]];
+
+// `CURRENCY_OPTIONS` is already in the correct format for z.enum
+const currencyValues = CURRENCY_OPTIONS as [string, ...string[]];
 
 // Schema for Posting a New Job
 export const JobPostSchema = z.object({
@@ -10,7 +15,7 @@ export const JobPostSchema = z.object({
   company_name: z.string().min(2, "Company name must be at least 2 characters.").max(100, "Company name cannot exceed 100 characters."),
   company_logo_url: z.string().url("Please enter a valid URL for the company logo.").optional().or(z.literal('')),
   location: z.string().min(2, "Location is required.").max(100, "Location cannot exceed 100 characters."),
-  job_type: z.enum(jobTypeOptions, { required_error: "Job type is required." }),
+  job_type: z.enum(jobTypeValues, { required_error: "Job type is required." }),
   description: z.string().min(50, "Description must be at least 50 characters.").max(5000, "Description cannot exceed 5000 characters."),
   requirements: z.string().max(5000, "Requirements cannot exceed 5000 characters.").optional().or(z.literal('')),
   is_remote: z.boolean({ required_error: "Please specify if the job is remote." }),
@@ -22,7 +27,7 @@ export const JobPostSchema = z.object({
     .int({ message: "Maximum salary must be a whole number." })
     .positive({ message: "Maximum salary must be positive." })
     .optional(),
-  salary_currency: z.enum(currencyOptions, { required_error: "Currency is required." }),
+  salary_currency: z.enum(currencyValues, { required_error: "Currency is required." }),
   application_email: z.string().email("Please enter a valid email address.").optional().or(z.literal('')),
   application_url: z.string().url("Please enter a valid URL.").optional().or(z.literal('')),
 });
