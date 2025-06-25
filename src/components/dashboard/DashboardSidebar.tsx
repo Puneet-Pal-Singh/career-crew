@@ -100,10 +100,18 @@ export default function DashboardSidebar() {
         </Link>
       </div>
       {/* The navigation links rendered by the reusable nav component */}
-      <nav className="flex-1 overflow-auto py-4 px-2 grid items-start text-sm font-medium gap-1">
-        <DashboardSidebarNav />
+      {/* --- FIX IS HERE --- */}
+      {/* Remove 'grid' and 'items-start'. 'flex-1' is fine if you want the nav area to fill space,
+          but the content inside shouldn't be stretched. A simple div wrapper or just changing
+          the nav classes works well. */}
+      <nav className="flex-1 overflow-auto py-4 px-2">
+        <div className="grid gap-1 text-sm font-medium"> {/* Wrap nav items in a div */}
+          <DashboardSidebarNav />
+        </div>
       </nav>
-      {/* Optional: A footer for the sidebar can be added here */}
+      
+      {/* Optional: Add a section at the bottom of the sidebar */}
+      {/* <div className="mt-auto p-4"> ... Settings or User Info ... </div> */}
     </aside>
   );
 }
