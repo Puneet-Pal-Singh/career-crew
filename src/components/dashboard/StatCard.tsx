@@ -1,6 +1,4 @@
 // src/components/dashboard/StatCard.tsx
-"use client";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react"; // Import ReactNode
