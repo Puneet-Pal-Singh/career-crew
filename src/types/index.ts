@@ -115,3 +115,13 @@ export interface ApplicationViewData {
   dateApplied: string;   // Formatted date string
   applicationStatus: ApplicationStatusOption;
 }
+
+// ... (add this to your existing types)
+export interface RecentApplication {
+  applicationId: string;
+  applicationStatus: ApplicationStatusOption;
+  dateApplied: string;
+  jobId: string;
+  jobTitle: string;
+  companyName: string;
+}
