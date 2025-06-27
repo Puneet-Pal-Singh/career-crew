@@ -1,50 +1,48 @@
 // src/components/dashboard/ProfileSummaryCard.tsx
-"use client";
 
-import { useUserProfile } from '@/contexts/UserProfileContext';
-import { useAuth } from '@/contexts/AuthContext';
+// REMOVED: "use client" and all client-side hooks. This is now a simple presentational component.
 import { Card, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Edit, Mail } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
+import type { UserProfile } from '@/types';
+import type { User } from '@supabase/supabase-js'; // Import the Supabase User type
 
-export default function ProfileSummaryCard() {
-  const { user } = useAuth();
-  const { userProfile, isLoadingProfile } = useUserProfile();
+// Define the props the component now expects
+interface ProfileSummaryCardProps {
+  user: User | null;
+  profile: UserProfile | null;
+}
 
-  if (isLoadingProfile || !userProfile || !user) {
-    // Render a skeleton loader while profile data is loading
+export default function ProfileSummaryCard({ user, profile }: ProfileSummaryCardProps) {
+  // We no longer need a loading skeleton here, as the parent server component handles loading.
+  if (!profile || !user) {
+    // This can be a simple fallback or null if the parent guarantees data
     return (
-      <Card>
-        <CardHeader className="items-center text-center p-6">
-            <Skeleton className="h-20 w-20 rounded-full" />
-            <Skeleton className="h-6 w-32 mt-4" />
-            <Skeleton className="h-4 w-40 mt-2" />
-        </CardHeader>
-        <CardFooter className="p-6 pt-0">
-            <Skeleton className="h-10 w-full" />
-        </CardFooter>
-      </Card>
+        <Card>
+            <CardHeader className="items-center text-center p-6">
+                <p className="text-muted-foreground">Profile not available.</p>
+            </CardHeader>
+        </Card>
     );
   }
-
-  const userInitial = userProfile.full_name?.charAt(0) || user.email?.charAt(0) || 'U';
+  
+  // Use the name from the profile, or a fallback "Welcome!" message
+  const displayName = profile.full_name || 'Welcome!';
+  const userInitial = displayName.charAt(0) || user.email?.charAt(0) || 'U';
 
   return (
     <Card>
       <CardHeader className="items-center text-center p-6">
         <Avatar className="h-20 w-20 mb-2 border-2">
-          <AvatarImage src={userProfile.avatar_url || ''} alt={userProfile.full_name || 'User Avatar'} />
+          <AvatarImage src={profile.avatar_url || ''} alt={profile.full_name || 'User Avatar'} />
           <AvatarFallback className="text-2xl">{userInitial.toUpperCase()}</AvatarFallback>
         </Avatar>
-        <CardTitle>{userProfile.full_name || 'Welcome!'}</CardTitle>
+        <CardTitle>{displayName}</CardTitle>
         <CardDescription className="flex items-center gap-2">
             <Mail className="h-3 w-3" /> {user.email}
         </CardDescription>
       </CardHeader>
-      
-      {/* TODO: In V2, add Experience/Skills previews here */}
       
       <CardFooter className="p-6 pt-0">
         <Button variant="outline" className="w-full" disabled>

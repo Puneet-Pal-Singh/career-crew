@@ -1,4 +1,5 @@
 // src/components/dashboard/seeker/RecentApplicationsPreview.tsx
+"use client"; // <-- This component now needs to be a client component for animations
 
 import type { RecentApplication, ApplicationStatusOption } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -6,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion'; // <-- Import motion
 
 interface RecentApplicationsPreviewProps {
   applications: RecentApplication[];
@@ -14,9 +16,32 @@ interface RecentApplicationsPreviewProps {
 // Copied from MyApplicationsTable - we can centralize these helpers later if needed
 type BadgeVariant = "default" | "secondary" | "primary" | "success" | "warning" | "danger" | undefined;
 
+// Animation variants for the list container
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1, // This will make each child animate 0.1s after the previous one
+    },
+  },
+};
+
+// Animation variants for each list item
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      duration: 0.5
+    }
+  },
+};
+
 const getApplicationStatusBadgeVariant = (status: ApplicationStatusOption): BadgeVariant => {
   switch (status) {
-    case 'SUBMITTED': return 'default';
+    case 'SUBMITTED': return 'secondary';
     case 'VIEWED': return 'secondary';
     case 'INTERVIEWING': return 'warning';
     case 'OFFERED': return 'success';
@@ -57,9 +82,19 @@ export default function RecentApplicationsPreview({ applications }: RecentApplic
         <CardTitle>Recent Applications</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <ul className="divide-y">
+        <motion.ul 
+          className="divide-y"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
           {applications.map((app) => (
-            <li key={app.applicationId} className="px-6 py-4 flex justify-between items-center hover:bg-muted/50 transition-colors">
+            <motion.li 
+              key={app.applicationId} 
+              className="px-6 py-4 flex justify-between items-center"
+              variants={itemVariants}
+              whileHover={{ backgroundColor: 'hsl(var(--muted))', scale: 1.01 }} // Added hover effect
+            >
               <div>
                 <Link href={`/jobs/${app.jobId}`} className="font-semibold text-primary hover:underline">
                     {app.jobTitle}
@@ -69,9 +104,9 @@ export default function RecentApplicationsPreview({ applications }: RecentApplic
               <Badge variant={getApplicationStatusBadgeVariant(app.applicationStatus)}>
                 {formatApplicationStatusText(app.applicationStatus)}
               </Badge>
-            </li>
+            </motion.li>
           ))}
-        </ul>
+        </motion.ul>
       </CardContent>
       <CardFooter className="py-4">
         <Button variant="outline" className="w-full" asChild>

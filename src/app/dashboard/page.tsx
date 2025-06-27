@@ -24,38 +24,43 @@ export default async function DashboardPage() {
   }
 
   // Fetch the user's profile ONCE, on the server.
-  const { data: profile } = await supabase
+  const { data: userProfile, error: profileError } = await supabase
     .from('profiles')
-    .select('role, has_made_role_choice')
+    .select('*') // Select all columns to match the UserProfile type
     .eq('id', user.id)
     .single();
+
+  if (profileError) {
+    console.error("Dashboard Page Error: Could not fetch user profile.", profileError.message);
+  }
 
   let dashboardView: React.ReactNode = null;
 
   // Decide which server component to render based on the role
-  if (profile?.has_made_role_choice) {
-    switch (profile.role) {
+  if (userProfile?.has_made_role_choice && userProfile.role) {
+    switch (userProfile.role) {
       case 'JOB_SEEKER':
-        // We are NOT calling a function. We are providing the component itself.
-        // Next.js will render this on the server before passing it to the client.
-        dashboardView = <JobSeekerDashboardView />;
+        // --- FIX: Pass the fetched `userProfile` as a prop ---
+        dashboardView = <JobSeekerDashboardView user={user} profile={userProfile} />;
         break;
       case 'EMPLOYER':
-        // Note: For this to work fully, EmployerDashboardView will also need
-        // to be converted to an async Server Component in the future.
+        // This will need a similar update when we enhance the employer view
         dashboardView = <EmployerDashboardView />;
         break;
       case 'ADMIN':
+        // This will need a similar update when we enhance the admin view
         dashboardView = <AdminDashboardView />;
         break;
     }
   }
-
   // Pass the server-fetched profile data and the pre-selected dashboard view
   // to the client component.
   return (
-    <DashboardPageClient
-      serverProfile={profile}
+    <DashboardPageClient 
+      serverProfile={{
+        has_made_role_choice: userProfile?.has_made_role_choice ?? false,
+        role: userProfile?.role ?? null
+      }}
     >
       {dashboardView}
     </DashboardPageClient>

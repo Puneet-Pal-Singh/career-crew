@@ -27,7 +27,7 @@ type BadgeVariant = "default" | "secondary" | "primary" | "success" | "warning" 
 const getApplicationStatusBadgeVariant = (status: ApplicationStatusOption): BadgeVariant => {
   switch (status) {
     case 'SUBMITTED':
-      return 'default'; // Or 'primary'
+      return 'secondary'; // Or 'primary'
     case 'VIEWED':
       return 'secondary';
     case 'INTERVIEWING':
