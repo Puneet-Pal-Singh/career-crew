@@ -1,26 +1,139 @@
-@import "tailwindcss";
+/* src/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+    color-scheme: light;
+    /* Light Mode Theme Variables */
+    --background: 210 17% 98%;   /* #F9FAFB - background-light */
+    --foreground: 217 44% 18%;   /* #1A2B42 - content-light */
+    
+    --card: 0 0% 100%;            /* #FFFFFF - surface-light (used for cards) */
+    --card-foreground: 217 44% 18%; /* #1A2B42 - content-light */
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    --popover: 0 0% 100%;         /* #FFFFFF - surface-light */
+    --popover-foreground: 217 44% 18%; /* #1A2B42 - content-light */
+
+    --primary: 219 100% 58%;      /* #2A6FFF - primary */
+    --primary-foreground: 0 0% 100%; /* White text for primary buttons */
+
+    --secondary: 27 100% 58%;     /* #FF8C2A - secondary */
+    --secondary-foreground: 0 0% 100%; /* White text for secondary buttons */
+    
+    --muted: 210 17% 95%;         /* A slightly darker shade of background or a light gray */
+    --muted-foreground: 217 30% 40%; /* Darker than subtle-light text */
+
+    --accent: 210 17% 95%;        /* Same as muted, or your accent1 (you can define --accent1 HSL separately if used) */
+    --accent-foreground: 217 44% 18%; /* content-light */
+
+    --destructive: 0 84% 60%;     /* A standard red for destructive actions */
+    --destructive-foreground: 0 0% 100%; /* White text */
+
+    --border: 220 14% 92%;        /* #E5E7EB - border-light */
+    --input: 220 14% 88%;         /* Slightly darker border for inputs */
+    --ring: 219 100% 58%;         /* #2A6FFF - primary (for focus rings) */
+
+    --radius: 0.5rem;
+
+    /* Chart colors for light mode */
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    color-scheme: dark;
+    /* Dark Mode Theme Variables */
+    --background: 222 29% 14%;   /* #1A202C - background-dark */
+    --foreground: 210 22% 92%;   /* #E2E8F0 - content-dark */
+
+    --card: 222 23% 23%;          /* #2D3748 - surface-dark (used for cards) */
+    --card-foreground: 210 22% 92%; /* #E2E8F0 - content-dark */
+
+    --popover: 222 23% 23%;       /* #2D3748 - surface-dark */
+    --popover-foreground: 210 22% 92%; /* #E2E8F0 - content-dark */
+
+    --primary: 219 100% 68%;      /* #5A9FFF - primary-dark */
+    --primary-foreground: 222 29% 10%; /* Dark text for primary-dark buttons (e.g. #141821) */
+
+    --secondary: 27 100% 67%;     /* #FFA75A - secondary-dark */
+    --secondary-foreground: 222 29% 10%; /* Dark text for secondary-dark buttons */
+    
+    --muted: 222 26% 23%;         /* A slightly lighter shade of dark background */
+    --muted-foreground: 210 20% 60%; 
+
+    --accent: 222 26% 23%;
+    --accent-foreground: 210 22% 92%;
+
+    --destructive: 0 72% 51%;     /* A standard red for dark mode */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 35%;        /* #4A5568 - border-dark */
+    --input: 220 15% 30%;         /* Slightly darker input border for dark */
+    --ring: 219 100% 68%;         /* #5A9FFF - primary-dark (for focus rings) */
+    
+    /* Chart colors for dark mode - these are illustrative, adjust as needed */
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    @apply scroll-smooth motion-safe:scroll-smooth;
+  }
+
+  body {
+    @apply font-sans bg-background text-foreground; 
+    @apply transition-colors duration-300 ease-in-out;
+  }
+
+  a {
+    @apply text-primary hover:opacity-80; 
+    @apply no-underline;
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:rounded-sm;
+    @apply transition-colors duration-150 ease-in-out;
+  }
+
+  *,
+  *::before,
+  *::after {
+    @apply box-border border-border; 
+  }
+
+  img,
+  video,
+  svg {
+    @apply max-w-full h-auto block;
+  }
+
+  *:focus:not(:focus-visible) {
+    @apply outline-none;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display text-foreground; 
+  }
+} /* End of @layer base */
+
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .bg-gradient-animated {
+    /* Ensure your theme colors for gradients are correctly referenced or defined */
+    /* Example: Using theme's primary, secondary. You might want your 'accent1' here too. */
+    @apply bg-gradient-to-r from-primary via-secondary to-[hsl(var(--accent))]; /* Using --accent as a placeholder for your accent1 */
+    /* For dark mode, Tailwind will automatically use the .dark variables if from/via/to use themeable colors like 'primary' */
+    background-size: 200% auto;
+    /* animation: gradientShift 5s ease infinite; */
+  }
 }

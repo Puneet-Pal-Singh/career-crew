@@ -1,0 +1,10 @@
+<svg width="500" height="500" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="jobSeekerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#5A9FFF;stop-opacity:1" /> {/* primary-dark */}
+      <stop offset="100%" style="stop-color:#2AE8FF;stop-opacity:1" /> {/* accent1 */}
+    </linearGradient>
+  </defs>
+  <path d="M20,80 Q50,20 80,50 T85,85" stroke="url(#jobSeekerGrad)" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <circle cx="85" cy="85" r="4" fill="url(#jobSeekerGrad)"/>
+</svg>

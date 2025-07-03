@@ -10,6 +10,14 @@
 !.yarn/releases
 !.yarn/versions
 
+# Prisma
+prisma/client
+prisma/generated/
+prisma/migrations/*.sqlite-journal # If you ever use SQLite for temp testing
+prisma/dev.db # If you ever use SQLite for temp testing
+node_modules/.prisma/client/ # <<< IMPORTANT: Ignore the generated client
+# You might also have been told to ignore prisma/client if you set a custom output there
+
 # testing
 /coverage
 
