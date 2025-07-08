@@ -189,92 +189,186 @@
 //   );
 // }
 
+// This header was for before we had a separate login/register page.
+// src/components/layout/Header.tsx
+// "use client";
 
+// import React, { useState, useEffect } from 'react';
+// import Link from 'next/link';
+// import { usePathname } from 'next/navigation';
+// import { useAuth } from '@/contexts/AuthContext';
+// // import { useUserProfile } from '@/contexts/UserProfileContext';
+// import { publicHeaderNavLinks, authenticatedHeaderNavLinks, type NavLink } from './Header/headerConfig';
+// import UserNav from './Header/UserNav';
+// import { cn } from '@/lib/utils';
+// // import { Menu, X } from 'lucide-react';
+
+// export default function Header() {
+//   const [isScrolled, setIsScrolled] = useState(false);
+//   const { user, isInitialized } = useAuth();
+//   // const { userProfile } = useUserProfile();
+//   const pathname = usePathname();
+
+//   const isLandingPage = pathname === '/';
+
+//   useEffect(() => {
+//     if (pathname.startsWith('/dashboard')) return;
+//     const handleScroll = () => setIsScrolled(window.scrollY > 10);
+//     window.addEventListener('scroll', handleScroll, { passive: true });
+//     handleScroll();
+//     return () => window.removeEventListener('scroll', handleScroll);
+//   }, [pathname]);
+
+//   useEffect(() => {
+//     // This hook for mobile menu is not currently used since mobile nav is simplified,
+//     // but can be uncommented if you re-add a full-panel mobile menu.
+//     // document.body.style.overflow = isMobileMenuOpen ? 'hidden' : 'auto';
+//   }, [/* isMobileMenuOpen */]);
+
+//   const isDashboardRoute = pathname.startsWith('/dashboard');
+//   if (isDashboardRoute) {
+//     return null; 
+//   }
+
+//   const navLinks: NavLink[] = (isInitialized && user) ? authenticatedHeaderNavLinks : publicHeaderNavLinks;
+  
+//   const headerClasses = cn(
+//     "fixed top-0 left-0 right-0 z-40 transition-all duration-300 ease-in-out",
+//     // Make the header taller: h-20 (80px) instead of h-16 (64px)
+//     "h-20", 
+//     {
+//       "bg-card/90 backdrop-blur-lg border-b border-border": !isLandingPage || isScrolled,
+//       "bg-transparent border-b border-transparent": isLandingPage && !isScrolled,
+//     }
+//   );
+  
+//   const linkClasses = (href: string) => cn(
+//     "text-sm font-medium transition-colors hover:text-primary",
+//     pathname === href ? "text-primary font-semibold" : "text-muted-foreground"
+//   );
+
+//   return (
+//     <header className={headerClasses}> 
+//       <div className="container mx-auto flex h-full items-center">
+//         {/* Left Section: Logo */}
+//         <div className="flex-1 flex justify-start">
+//           <Link href="/" className="flex items-center space-x-2">
+//             {/* Make the logo font larger: text-3xl */}
+//             <span className="font-display text-3xl font-bold text-primary">
+//               CareerCrew
+//             </span>
+//           </Link>
+//         </div>
+
+//         {/* Center Section: Desktop Navigation */}
+//         <nav className="hidden md:flex items-center space-x-6">
+//           {navLinks.map(link => (
+//             <Link key={link.label} href={link.href} className={linkClasses(link.href)}>
+//               {link.label}
+//             </Link>
+//           ))}
+//         </nav>
+
+//         {/* Right Section: User Navigation */}
+//         <div className="flex-1 flex justify-end">
+//           <UserNav />
+//         </div>
+        
+//         {/* Mobile menu logic can be added back here later */}
+//       </div>
+//     </header>
+//   );
+// }
+
+// this is the new header component that replaces the old one with separate login/register pages.
 // src/components/layout/Header.tsx
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-// import { useUserProfile } from '@/contexts/UserProfileContext';
-import { publicHeaderNavLinks, authenticatedHeaderNavLinks, type NavLink } from './Header/headerConfig';
 import UserNav from './Header/UserNav';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from '@/lib/utils';
-// import { Menu, X } from 'lucide-react';
+import ThemeToggleButton from '@/components/theme/ThemeToggleButton';
 
 export default function Header() {
-  const [isScrolled, setIsScrolled] = useState(false);
   const { user, isInitialized } = useAuth();
-  // const { userProfile } = useUserProfile();
   const pathname = usePathname();
-
-  const isLandingPage = pathname === '/';
-
-  useEffect(() => {
-    if (pathname.startsWith('/dashboard')) return;
-    const handleScroll = () => setIsScrolled(window.scrollY > 10);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [pathname]);
-
-  useEffect(() => {
-    // This hook for mobile menu is not currently used since mobile nav is simplified,
-    // but can be uncommented if you re-add a full-panel mobile menu.
-    // document.body.style.overflow = isMobileMenuOpen ? 'hidden' : 'auto';
-  }, [/* isMobileMenuOpen */]);
 
   const isDashboardRoute = pathname.startsWith('/dashboard');
   if (isDashboardRoute) {
-    return null; 
+    return null; // The dashboard has its own header
   }
 
-  const navLinks: NavLink[] = (isInitialized && user) ? authenticatedHeaderNavLinks : publicHeaderNavLinks;
-  
   const headerClasses = cn(
-    "fixed top-0 left-0 right-0 z-40 transition-all duration-300 ease-in-out",
-    // Make the header taller: h-20 (80px) instead of h-16 (64px)
-    "h-20", 
-    {
-      "bg-card/90 backdrop-blur-lg border-b border-border": !isLandingPage || isScrolled,
-      "bg-transparent border-b border-transparent": isLandingPage && !isScrolled,
-    }
+    "sticky top-0 left-0 right-0 z-40 transition-all duration-300 ease-in-out h-20 border-b",
+    pathname === '/' ? "border-transparent" : "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
   );
   
-  const linkClasses = (href: string) => cn(
-    "text-sm font-medium transition-colors hover:text-primary",
-    pathname === href ? "text-primary font-semibold" : "text-muted-foreground"
-  );
-
   return (
     <header className={headerClasses}> 
       <div className="container mx-auto flex h-full items-center">
-        {/* Left Section: Logo */}
-        <div className="flex-1 flex justify-start">
-          <Link href="/" className="flex items-center space-x-2">
-            {/* Make the logo font larger: text-3xl */}
+        {/* Left Section: Logo & Main Nav */}
+        <div className="flex items-center">
+          <Link href="/" className="flex items-center space-x-2 mr-6">
             <span className="font-display text-3xl font-bold text-primary">
               CareerCrew
             </span>
           </Link>
+          <nav className="hidden md:flex items-center space-x-6">
+            <Link href="/jobs" className="text-sm font-medium text-muted-foreground hover:text-primary">Jobs</Link>
+            <Link href="/for-employers" className="text-sm font-medium text-muted-foreground hover:text-primary">For Employers</Link>
+          </nav>
         </div>
 
-        {/* Center Section: Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-6">
-          {navLinks.map(link => (
-            <Link key={link.label} href={link.href} className={linkClasses(link.href)}>
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
-        {/* Right Section: User Navigation */}
-        <div className="flex-1 flex justify-end">
-          <UserNav />
+        {/* Right Section: Auth buttons */}
+        <div className="flex flex-1 items-center justify-end space-x-2">
+          <ThemeToggleButton />
+          
+          {!isInitialized ? (
+            <div className="w-40 h-10 bg-muted/50 rounded-md animate-pulse" />
+          ) : user ? (
+            <UserNav />
+          ) : (
+            <div className="hidden sm:flex items-center space-x-2">
+              <Button variant="ghost" asChild>
+                <Link href="/login">Log In</Link>
+              </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button>Sign Up</Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-64" align="end">
+                  <DropdownMenuLabel>I am looking for...</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/register" className="flex justify-between w-full">
+                      <span>A Job</span>
+                      <span className="text-xs text-muted-foreground">For Job Seekers</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/for-employers/register" className="flex justify-between w-full">
+                      <span>Candidates</span>
+                      <span className="text-xs text-muted-foreground">For Companies</span>
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
         </div>
-        
-        {/* Mobile menu logic can be added back here later */}
       </div>
     </header>
   );

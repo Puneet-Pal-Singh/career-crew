@@ -2,7 +2,7 @@
 "use client";
 
 import React from 'react';
-import RoleSelection from '@/components/dashboard/RoleSelection';
+// import RoleSelection from '@/components/dashboard/RoleSelection';
 import { Loader2 } from 'lucide-react';
 
 // This is the shape of the profile data passed from the server
@@ -38,9 +38,9 @@ export default function DashboardPageClient({ children, serverProfile }: Dashboa
 
   // 2. If the user hasn't chosen a role, show the selection screen.
   // This remains a client-side responsibility.
-  if (!serverProfile.has_made_role_choice) {
-    return <RoleSelection />;
-  }
+  // if (!serverProfile.has_made_role_choice) {
+  //   return <RoleSelection />;
+  // }
   
   // 3. If a role has been chosen, `children` will contain the correct
   //    dashboard view, already rendered on the server. We just display it.
