@@ -284,7 +284,7 @@
 // src/components/layout/Header.tsx
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -294,79 +294,76 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from '@/lib/utils';
-import ThemeToggleButton from '@/components/theme/ThemeToggleButton';
 
 export default function Header() {
   const { user, isInitialized } = useAuth();
   const pathname = usePathname();
+  const [isScrolled, setIsScrolled] = useState(false);
 
-  const isDashboardRoute = pathname.startsWith('/dashboard');
-  if (isDashboardRoute) {
-    return null; // The dashboard has its own header
-  }
+  const isLandingPage = pathname === '/';
+
+  // Effect for handling scroll-based header transparency
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    if (isLandingPage) {
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      return () => window.removeEventListener('scroll', handleScroll);
+    }
+  }, [isLandingPage]);
 
   const headerClasses = cn(
-    "sticky top-0 left-0 right-0 z-40 transition-all duration-300 ease-in-out h-20 border-b",
-    pathname === '/' ? "border-transparent" : "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+    "sticky top-0 z-50 w-full transition-all duration-300 ease-in-out",
+    {
+      "border-b": !isLandingPage || isScrolled,
+      "bg-background/95 backdrop-blur": !isLandingPage || isScrolled,
+      "border-transparent": isLandingPage && !isScrolled,
+    }
   );
-  
+
   return (
-    <header className={headerClasses}> 
-      <div className="container mx-auto flex h-full items-center">
-        {/* Left Section: Logo & Main Nav */}
+    <header className={headerClasses}>
+      <div className="container flex h-16 items-center">
+        {/* Left Section */}
         <div className="flex items-center">
-          <Link href="/" className="flex items-center space-x-2 mr-6">
-            <span className="font-display text-3xl font-bold text-primary">
-              CareerCrew
-            </span>
-          </Link>
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link href="/jobs" className="text-sm font-medium text-muted-foreground hover:text-primary">Jobs</Link>
-            <Link href="/for-employers" className="text-sm font-medium text-muted-foreground hover:text-primary">For Employers</Link>
-          </nav>
+          <Link href="/" className="font-bold text-lg text-foreground">CareerCrew</Link>
         </div>
 
-        {/* Right Section: Auth buttons */}
-        <div className="flex flex-1 items-center justify-end space-x-2">
-          <ThemeToggleButton />
-          
+        {/* Center Section: "mx-auto" is the key to centering this */}
+        <nav className="hidden md:flex items-center space-x-6 text-sm font-medium mx-auto">
+          <Link href="/jobs" className="text-foreground/80 hover:text-foreground">Jobs</Link>
+          <Link href="/#features-for-seekers" className="text-foreground/80 hover:text-foreground">For Job Seekers</Link>
+          <Link href="/#features-for-companies" className="text-foreground/80 hover:text-foreground">For Companies</Link>
+        </nav>
+        
+        {/* Right Section */}
+        <div className="flex items-center space-x-2">
+          {/* <ThemeToggleButton /> */}
           {!isInitialized ? (
-            <div className="w-40 h-10 bg-muted/50 rounded-md animate-pulse" />
+            <div className="w-40 h-9 rounded-md bg-muted animate-pulse" />
           ) : user ? (
             <UserNav />
           ) : (
-            <div className="hidden sm:flex items-center space-x-2">
+            <>
               <Button variant="ghost" asChild>
                 <Link href="/login">Log In</Link>
               </Button>
-              
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button>Sign Up</Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-64" align="end">
-                  <DropdownMenuLabel>I am looking for...</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link href="/register" className="flex justify-between w-full">
-                      <span>A Job</span>
-                      <span className="text-xs text-muted-foreground">For Job Seekers</span>
-                    </Link>
+                <DropdownMenuTrigger asChild><Button>Sign Up</Button></DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem asChild>
+                    <Link href="/signup/job-seeker" className="cursor-pointer">I&apos;m looking for a job</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link href="/for-employers/register" className="flex justify-between w-full">
-                      <span>Candidates</span>
-                      <span className="text-xs text-muted-foreground">For Companies</span>
-                    </Link>
+                  <DropdownMenuItem asChild>
+                    <Link href="/signup/employer" className="cursor-pointer">I&apos;m looking for candidates</Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </div>
+            </>
           )}
         </div>
       </div>

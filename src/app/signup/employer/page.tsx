@@ -1,8 +1,8 @@
-// src/app/for-employers/register/page.tsx
+// src/app/signup/employer/page.tsx
 import AuthForm from "@/components/auth/AuthForm";
 import AuthPageLayout from "@/components/auth/AuthPageLayout";
 
-export default function EmployerRegisterPage() {
+export default function EmployerSignUpPage() {
   return (
     <AuthPageLayout>
       <AuthForm mode="register" role="EMPLOYER" />
