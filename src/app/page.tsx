@@ -74,10 +74,20 @@ export default async function HomePage() {
     <>
       <AnimatedHeroSection />
       <AnimatedHowItWorksSection steps={howItWorksSteps} />
+      {/* 
+        NOTE: These components are now wrapped in <section> tags with IDs.
+        This allows the header links to scroll to the correct place on the page.
+        */}
+      <section id="features-for-seekers">
+        <ForJobSeekersSection />
+      </section>
+      
+      <section id="features-for-companies">
+        <ForEmployersSection />
+      </section>
+
       <AnimatedFeaturesSection features={features} /> 
       <AnimatedStatsSection /> 
-      <ForJobSeekersSection />
-      <ForEmployersSection />
       <AnimatedFeaturedCompanies companies={featuredCompanies} /> 
       <AnimatedTestimonialsSection testimonials={testimonials} /> 
       <AnimatedRecentJobsSection jobs={recentJobs} /> 
