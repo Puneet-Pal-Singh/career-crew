@@ -6,7 +6,13 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import AnimatedGradientBackground from '@/components/ui/AnimatedGradientBackground';
 
+// FIX: Import the useAuth hook to check the user's login status
+import { useAuth } from "@/contexts/AuthContext"; 
+
 export default function AnimatedHeroSection() {
+  // FIX: Get the user object from the context.
+  const { user } = useAuth();
+
   return (
     <section 
       className="relative overflow-hidden flex flex-col justify-center items-center text-center min-h-screen pt-20 md:pt-24 pb-16 md:pb-20"
@@ -53,8 +59,13 @@ export default function AnimatedHeroSection() {
           >
             Browse Jobs
           </Link>
+          {/* 
+              FIX: This link is now dynamic. It checks if a user is logged in.
+              - If logged in, it goes to the dashboard post-job page.
+              - If logged out, it goes to the employer signup page.
+            */}
           <Link
-            href="/employer/post-job"
+            href={user ? "/dashboard/post-job" : "/signup/employer"}
             className="w-full sm:w-auto group text-base md:text-lg font-semibold leading-6 text-content-light dark:text-content-dark hover:text-primary dark:hover:text-primary-dark transition-colors duration-150 flex items-center justify-center gap-2 border border-border-light dark:border-border-dark bg-white/60 dark:bg-slate-800/60 backdrop-blur-md px-10 py-4 rounded-lg hover:border-primary dark:hover:border-primary-dark shadow-lg hover:shadow-xl"
           >
             Post a Job <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />

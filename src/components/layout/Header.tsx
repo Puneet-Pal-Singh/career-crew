@@ -281,86 +281,163 @@
 // }
 
 // this is the new header component that replaces the old one with separate login/register pages.
+// // src/components/layout/Header.tsx
+// "use client";
+
+// import React, { useState, useEffect } from 'react';
+// import Link from 'next/link';
+// import { usePathname } from 'next/navigation';
+// import { useAuth } from '@/contexts/AuthContext';
+// import UserNav from './Header/UserNav';
+// import { Button } from '@/components/ui/button';
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu";
+// import { cn } from '@/lib/utils';
+
+// export default function Header() {
+//   const { user, isInitialized } = useAuth();
+//   const pathname = usePathname();
+//   const [isScrolled, setIsScrolled] = useState(false);
+
+//   const isLandingPage = pathname === '/';
+
+//   // Effect for handling scroll-based header transparency
+//   useEffect(() => {
+//     const handleScroll = () => {
+//       setIsScrolled(window.scrollY > 10);
+//     };
+//     if (isLandingPage) {
+//       window.addEventListener('scroll', handleScroll, { passive: true });
+//       return () => window.removeEventListener('scroll', handleScroll);
+//     }
+//   }, [isLandingPage]);
+
+//   const headerClasses = cn(
+//     "sticky top-0 z-50 w-full transition-all duration-300 ease-in-out",
+//     {
+//       "border-b": !isLandingPage || isScrolled,
+//       "bg-background/95 backdrop-blur": !isLandingPage || isScrolled,
+//       "border-transparent": isLandingPage && !isScrolled,
+//     }
+//   );
+
+//   return (
+//     <header className={headerClasses}>
+//       <div className="container flex h-16 items-center">
+//         {/* Left Section */}
+//         <div className="flex items-center">
+//           <Link href="/" className="font-bold text-lg text-foreground">CareerCrew</Link>
+//         </div>
+
+//         {/* Center Section: "mx-auto" is the key to centering this */}
+//         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium mx-auto">
+//           <Link href="/jobs" className="text-foreground/80 hover:text-foreground">Jobs</Link>
+//           <Link href="/#features-for-seekers" className="text-foreground/80 hover:text-foreground">For Job Seekers</Link>
+//           <Link href="/#features-for-companies" className="text-foreground/80 hover:text-foreground">For Companies</Link>
+//         </nav>
+        
+//         {/* Right Section */}
+//         <div className="flex items-center space-x-2">
+//           {/* <ThemeToggleButton /> */}
+//           {!isInitialized ? (
+//             <div className="w-40 h-9 rounded-md bg-muted animate-pulse" />
+//           ) : user ? (
+//             <UserNav />
+//           ) : (
+//             <>
+//               <Button variant="ghost" asChild>
+//                 <Link href="/login">Log In</Link>
+//               </Button>
+//               <DropdownMenu>
+//                 <DropdownMenuTrigger asChild><Button>Sign Up</Button></DropdownMenuTrigger>
+//                 <DropdownMenuContent align="end" className="w-56">
+//                   <DropdownMenuItem asChild>
+//                     <Link href="/signup/job-seeker" className="cursor-pointer">I&apos;m looking for a job</Link>
+//                   </DropdownMenuItem>
+//                   <DropdownMenuItem asChild>
+//                     <Link href="/signup/employer" className="cursor-pointer">I&apos;m looking for candidates</Link>
+//                   </DropdownMenuItem>
+//                 </DropdownMenuContent>
+//               </DropdownMenu>
+//             </>
+//           )}
+//         </div>
+//       </div>
+//     </header>
+//   );
+// }
+
+
 // src/components/layout/Header.tsx
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import type { User } from '@supabase/supabase-js'; // For typing the prop
 import UserNav from './Header/UserNav';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from '@/lib/utils';
+import ThemeToggleButton from '@/components/theme/ThemeToggleButton';
+import { useUserProfile } from '@/contexts/UserProfileContext'; // Import useUserProfile
 
-export default function Header() {
-  const { user, isInitialized } = useAuth();
+// FIX: Define props to accept the user object. NO MORE useAuth() hook.
+interface HeaderProps {
+  user: User | null;
+}
+
+export default function Header({ user }: HeaderProps) {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
-
   const isLandingPage = pathname === '/';
 
-  // Effect for handling scroll-based header transparency
+  // We need the profile here to pass it to UserNav
+  const { userProfile } = useUserProfile();
+
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
     if (isLandingPage) {
       window.addEventListener('scroll', handleScroll, { passive: true });
       return () => window.removeEventListener('scroll', handleScroll);
+    } else {
+      setIsScrolled(true); // Ensure header is styled on non-landing pages
     }
   }, [isLandingPage]);
 
   const headerClasses = cn(
     "sticky top-0 z-50 w-full transition-all duration-300 ease-in-out",
     {
-      "border-b": !isLandingPage || isScrolled,
-      "bg-background/95 backdrop-blur": !isLandingPage || isScrolled,
-      "border-transparent": isLandingPage && !isScrolled,
+      "border-b bg-background/95 backdrop-blur": isScrolled,
+      "border-transparent": !isScrolled,
     }
   );
 
   return (
     <header className={headerClasses}>
       <div className="container flex h-16 items-center">
-        {/* Left Section */}
-        <div className="flex items-center">
-          <Link href="/" className="font-bold text-lg text-foreground">CareerCrew</Link>
-        </div>
-
-        {/* Center Section: "mx-auto" is the key to centering this */}
+        <div className="flex items-center"><Link href="/" className="font-bold text-lg text-foreground">CareerCrew</Link></div>
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium mx-auto">
           <Link href="/jobs" className="text-foreground/80 hover:text-foreground">Jobs</Link>
           <Link href="/#features-for-seekers" className="text-foreground/80 hover:text-foreground">For Job Seekers</Link>
           <Link href="/#features-for-companies" className="text-foreground/80 hover:text-foreground">For Companies</Link>
         </nav>
-        
-        {/* Right Section */}
         <div className="flex items-center space-x-2">
-          {/* <ThemeToggleButton /> */}
-          {!isInitialized ? (
-            <div className="w-40 h-9 rounded-md bg-muted animate-pulse" />
-          ) : user ? (
-            <UserNav />
+          <ThemeToggleButton />
+          {user ? (
+            <UserNav user={user} profile={userProfile} />
           ) : (
             <>
-              <Button variant="ghost" asChild>
-                <Link href="/login">Log In</Link>
-              </Button>
+              <Button variant="ghost" asChild><Link href="/login">Log In</Link></Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild><Button>Sign Up</Button></DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem asChild>
-                    <Link href="/signup/job-seeker" className="cursor-pointer">I&apos;m looking for a job</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/signup/employer" className="cursor-pointer">I&apos;m looking for candidates</Link>
-                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link href="/signup/job-seeker" className="cursor-pointer">I&apos;m looking for a job</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link href="/signup/employer" className="cursor-pointer">I&apos;m looking for candidates</Link></DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </>

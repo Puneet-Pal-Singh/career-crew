@@ -211,15 +211,108 @@
 //   ],
 // };
 
+// this was the before refactor version
+// src/middleware.ts
+// import { createServerClient, type CookieOptions } from '@supabase/ssr';
+// import { NextResponse, type NextRequest } from 'next/server';
+
+// export async function middleware(request: NextRequest) {
+//   const response = NextResponse.next({
+//     request: {
+//       headers: request.headers,
+//     },
+//   });
+
+//   const supabase = createServerClient(
+//     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+//     {
+//       cookies: {
+//         get(name: string) {
+//           return request.cookies.get(name)?.value;
+//         },
+//         set(name: string, value: string, options: CookieOptions) {
+//           response.cookies.set({ name, value, ...options });
+//         },
+//         remove(name: string, options: CookieOptions) {
+//           response.cookies.set({ name, value: '', ...options });
+//         },
+//       },
+//     }
+//   );
+
+//   const { data: { session } } = await supabase.auth.getSession();
+//   const user = session?.user;
+//   const { pathname } = request.nextUrl;
+
+//   // --- Define Route Groups for Clarity ---
+//   const authRoutes = ['/login', '/signup/job-seeker', '/signup/employer'];
+//   const onboardingRoute = '/onboarding/complete-profile';
+//   const isDashboardRoute = pathname.startsWith('/dashboard');
+
+//   // --- Logic for Authenticated Users ---
+//   if (user) {
+//     // 1. If user is on an auth page (login/signup), redirect them to the dashboard.
+//     if (authRoutes.includes(pathname)) {
+//       return NextResponse.redirect(new URL('/dashboard', request.url));
+//     }
+
+//     // 2. Check for mandatory onboarding.
+//     const { data: profile } = await supabase
+//       .from('profiles')
+//       .select('has_completed_onboarding')
+//       .eq('id', user.id)
+//       .single();
+
+//     const needsOnboarding = profile?.has_completed_onboarding === false;
+//     const isOnboardingPage = pathname === onboardingRoute;
+    
+//     // 2a. If they need onboarding and are NOT on the onboarding page, force them there.
+//     if (needsOnboarding && !isOnboardingPage) {
+//       return NextResponse.redirect(new URL(onboardingRoute, request.url));
+//     }
+    
+//     // 2b. If they have finished onboarding but land on the page, send them away.
+//     if (!needsOnboarding && isOnboardingPage) {
+//       return NextResponse.redirect(new URL('/dashboard', request.url));
+//     }
+    
+//     // If all checks pass, allow access.
+//     return response;
+//   }
+
+//   // --- Logic for Unauthenticated Users ---
+//   // If an unauthenticated user tries to access a protected dashboard route, redirect to login.
+//   if (!user && isDashboardRoute) {
+//     return NextResponse.redirect(new URL('/login', request.url));
+//   }
+
+//   // For all other cases (e.g., public pages, auth pages), allow access.
+//   return response;
+// }
+
+// export const config = {
+//   matcher: [
+//     /*
+//      * Match all request paths except for the ones starting with:
+//      * - _next/static (static files)
+//      * - _next/image (image optimization files)
+//      * - favicon.ico (favicon file)
+//      * This ensures the middleware runs on all page navigations.
+//      */
+//     '/((?!_next/static|_next/image|favicon.ico|api/).*)',
+//   ],
+// };
+
+
+// this was the after refactor version
 // src/middleware.ts
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
+    request: { headers: request.headers },
   });
 
   const supabase = createServerClient(
@@ -227,78 +320,43 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value;
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          response.cookies.set({ name, value, ...options });
-        },
-        remove(name: string, options: CookieOptions) {
-          response.cookies.set({ name, value: '', ...options });
-        },
+        get(name: string) { return request.cookies.get(name)?.value; },
+        set(name: string, value: string, options: CookieOptions) { response.cookies.set({ name, value, ...options }); },
+        remove(name: string, options: CookieOptions) { response.cookies.set({ name, value: '', ...options }); },
       },
     }
   );
 
-  const { data: { session } } = await supabase.auth.getSession();
-  const user = session?.user;
+  const { data: { user } } = await supabase.auth.getUser();
   const { pathname } = request.nextUrl;
 
-  // --- Define Route Groups for Clarity ---
   const authRoutes = ['/login', '/signup/job-seeker', '/signup/employer'];
   const onboardingRoute = '/onboarding/complete-profile';
   const isDashboardRoute = pathname.startsWith('/dashboard');
 
-  // --- Logic for Authenticated Users ---
   if (user) {
-    // 1. If user is on an auth page (login/signup), redirect them to the dashboard.
     if (authRoutes.includes(pathname)) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
-
-    // 2. Check for mandatory onboarding.
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('has_completed_onboarding')
-      .eq('id', user.id)
-      .single();
-
-    const needsOnboarding = profile?.has_completed_onboarding === false;
-    const isOnboardingPage = pathname === onboardingRoute;
     
-    // 2a. If they need onboarding and are NOT on the onboarding page, force them there.
-    if (needsOnboarding && !isOnboardingPage) {
+    const { data: profile } = await supabase.from('profiles').select('has_completed_onboarding').eq('id', user.id).single();
+    const needsOnboarding = profile?.has_completed_onboarding === false;
+    
+    if (needsOnboarding && pathname !== onboardingRoute) {
       return NextResponse.redirect(new URL(onboardingRoute, request.url));
     }
-    
-    // 2b. If they have finished onboarding but land on the page, send them away.
-    if (!needsOnboarding && isOnboardingPage) {
+    if (!needsOnboarding && pathname === onboardingRoute) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
-    
-    // If all checks pass, allow access.
-    return response;
+  } else {
+    if (isDashboardRoute) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
   }
 
-  // --- Logic for Unauthenticated Users ---
-  // If an unauthenticated user tries to access a protected dashboard route, redirect to login.
-  if (!user && isDashboardRoute) {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-
-  // For all other cases (e.g., public pages, auth pages), allow access.
   return response;
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * This ensures the middleware runs on all page navigations.
-     */
-    '/((?!_next/static|_next/image|favicon.ico|api/).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/).*)'],
 };

@@ -4,28 +4,29 @@
 import { usePathname } from 'next/navigation';
 import Header from './Header';
 import Footer from './Footer';
+import type { User } from '@supabase/supabase-js';
+
+// FIX: Define props to accept the user object from the server layout
+interface ClientLayoutProps {
+  children: React.ReactNode;
+  user: User | null;
+}
 
 // This component intelligently wraps children with a header and footer
 // ONLY on pages outside of the dashboard.
-export default function ClientLayout({ children }: { children: React.ReactNode }) {
+// Accept the user object as a prop from the server layout
+export default function ClientLayout({ children, user }: ClientLayoutProps) {
   const pathname = usePathname();
   const isDashboardRoute = pathname.startsWith('/dashboard');
 
   if (isDashboardRoute) {
-    // For dashboard routes, we don't want the public Header or Footer.
-    // The dashboard's own layout will handle its structure.
     return <>{children}</>;
   }
 
-  // For all public-facing pages (homepage, /login, /signup, etc.)
   return (
     <>
-      <Header />
-      {/* 
-        FIX: We apply flex-grow here. This is the main content area that
-        needs to expand vertically to fill the space between the Header
-        and the Footer, pushing the Footer to the bottom of the viewport.
-      */}
+      {/* FIX: Pass the user prop down to the Header */}
+      <Header user={user} />
       <main className="flex-grow">
         {children}
       </main>

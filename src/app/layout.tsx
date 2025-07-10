@@ -6,6 +6,7 @@ import './globals.css';
 import { AppProviders } from '@/components/providers/AppProviders'; // Import AppProviders
 import { Toaster } from "@/components/ui/toaster";
 import ClientLayout from '@/components/layout/ClientLayout'; // Import the new wrapper
+import { getSupabaseServerClient } from '@/lib/supabase/serverClient'; // We need the server client here
 
 export const metadata: Metadata = {
   title: 'CareerCrew Consulting - Find Your Next Opportunity',
@@ -20,18 +21,22 @@ const inter = Inter({
 // GeistSans from 'geist/font/sans' is directly the font object
 const geistSansVariable = GeistSans.variable; // Get variable name
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+  const supabase = await getSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   return (
     <html lang="en" className={`${inter.variable} ${geistSansVariable}`.trim()} suppressHydrationWarning>
       <body className="font-sans min-h-screen flex flex-col antialiased">
         {/* Note: Removed theme-specific classes from body as ThemeProvider/AppProviders handle this via html class */}
          <AppProviders>
           {/* ClientLayout now intelligently wraps the children based on the route */}
-          <ClientLayout>
+          <ClientLayout user={user}>
             {children}
           </ClientLayout>
           <Toaster />
