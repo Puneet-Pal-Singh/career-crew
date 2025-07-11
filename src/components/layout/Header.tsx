@@ -113,9 +113,11 @@ export default function Header({ user }: HeaderProps) {
             ) : (
               <>
                 <Button 
-                  variant="ghost" 
+                  // variant="ghost" 
+                  variant="outline" 
                   asChild 
-                  className="hidden sm:inline-flex text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-all duration-300"
+                  // className="hidden sm:inline-flex text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-all duration-300"
+                   className="hidden sm:inline-flex"
                 >
                   <Link href="/login">Log In</Link>
                 </Button>
@@ -213,7 +215,7 @@ export default function Header({ user }: HeaderProps) {
                       className="w-full justify-center bg-primary hover:bg-primary/90 h-11 text-base shadow-md"
                     >
                       <Link href="/signup/job-seeker" onClick={() => setIsMobileMenuOpen(false)}>
-                        I&apso;m looking for a job
+                        I&apos;m looking for a job
                       </Link>
                     </Button>
                     <Button 
