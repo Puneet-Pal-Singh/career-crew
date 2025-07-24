@@ -1,5 +1,5 @@
 // src/app/login/page.tsx
-import AuthForm from "@/components/auth/AuthForm";
+import SignInForm from "@/components/auth/SignInForm";
 import AuthPageLayout from "@/components/auth/AuthPageLayout";
 import type { Metadata } from 'next';
 
@@ -9,10 +9,11 @@ export const metadata: Metadata = {
 };
 
 export default function LoginPage() {
-  // Note: We don't pass a role here, as AuthForm will be updated to handle a universal login.
   return (
+    // The AuthPageLayout provides the centered container
     <AuthPageLayout>
-      <AuthForm mode="login" />
+      {/* Use the new, clean SignInForm component */}
+      <SignInForm />
     </AuthPageLayout>
   );
 }
