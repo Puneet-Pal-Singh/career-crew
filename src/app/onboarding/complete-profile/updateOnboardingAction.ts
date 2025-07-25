@@ -1,14 +1,14 @@
-// src/app/onboarding/complete-profile/updateOnboardingAction.ts
 "use server";
 
 import { getSupabaseServerClient } from "@/lib/supabase/serverClient";
 import { z } from "zod";
 import { revalidatePath } from 'next/cache';
+// --- NEW: Import the admin client for updating auth metadata ---
+import { adminSupabase } from "@/lib/supabase/adminClient";
 
 const onboardingSchema = z.object({
   fullName: z.string().min(2, 'Full name is required.'),
   phone: z.string().optional(),
-  // Zod validates that the role is one of these specific strings.
   role: z.enum(['JOB_SEEKER', 'EMPLOYER']),
 });
 
@@ -22,28 +22,36 @@ export async function updateOnboardingAction(input: z.infer<typeof onboardingSch
 
   const validation = onboardingSchema.safeParse(input);
   if (!validation.success) {
-    const errorMessages = validation.error.flatten().fieldErrors;
-    console.error("Onboarding validation failed:", errorMessages);
     return { success: false, error: "Invalid data provided." };
   }
 
-  const profileUpdateData = {
-    full_name: validation.data.fullName,
-    phone: validation.data.phone,
-    role: validation.data.role,
-    has_completed_onboarding: true
-  };
-
-  const { error } = await supabase
+  // 1. Update the database profile (your source of truth)
+  const { error: profileError } = await supabase
     .from('profiles')
-    .update(profileUpdateData)
+    .update({
+      full_name: validation.data.fullName,
+      phone: validation.data.phone,
+      role: validation.data.role,
+      has_completed_onboarding: true
+    })
     .eq('id', user.id);
 
-  if (error) {
-    console.error("Onboarding profile update error:", error);
+  if (profileError) {
+    console.error("Onboarding profile update error:", profileError);
     return { success: false, error: "Failed to update your profile. Please try again." };
   }
   
+  // --- NEW: Update the JWT metadata for fast middleware checks ---
+  const { error: metadataError } = await adminSupabase.auth.admin.updateUserById(
+    user.id,
+    { app_metadata: { onboarding_complete: true, role: validation.data.role } }
+  );
+
+  if (metadataError) {
+    // Log this error, but don't block the user. The primary DB write was successful.
+    console.error("Onboarding auth metadata update error:", metadataError);
+  }
+
   revalidatePath('/dashboard');
   return { success: true };
 }

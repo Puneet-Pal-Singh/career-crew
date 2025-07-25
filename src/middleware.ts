@@ -1,4 +1,3 @@
-// src/middleware.ts
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
@@ -31,23 +30,9 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
     
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('has_completed_onboarding')
-      .eq('id', user.id)
-      .single();
-    
-    // Handle case where profile doesn't exist or query fails
-    if (error || !profile) {
-      console.error('Failed to fetch user profile:', error);
-      // Redirect to onboarding if profile is missing
-      if (pathname !== onboardingRoute) {
-        return NextResponse.redirect(new URL(onboardingRoute, request.url));
-      }
-      return response;
-    }
-    
-    const needsOnboarding = profile.has_completed_onboarding === false;
+    // --- PERFORMANCE FIX: No database query! Read directly from JWT metadata. ---
+    // The optional chaining `?.` is important for backward compatibility with old users.
+    const needsOnboarding = user.app_metadata?.onboarding_complete === false;
     
     if (needsOnboarding && pathname !== onboardingRoute) {
       return NextResponse.redirect(new URL(onboardingRoute, request.url));
@@ -55,6 +40,7 @@ export async function middleware(request: NextRequest) {
     if (!needsOnboarding && pathname === onboardingRoute) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
+
   } else {
     if (isDashboardRoute) {
       return NextResponse.redirect(new URL('/login', request.url));
