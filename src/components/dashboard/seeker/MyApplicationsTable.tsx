@@ -232,16 +232,17 @@ interface MyApplicationsTableProps {
   applications: ApplicationViewData[];
 }
 
-type BadgeVariant = "default" | "secondary" | "primary" | "success" | "warning" | "danger" | undefined;
+// Define the type for your actual badge variants if different from shadcn defaults
+type BadgeVariant = "default" | "secondary" | "destructive" | "outline" | null | undefined;
 
 const getApplicationStatusBadgeVariant = (status: ApplicationStatusOption): BadgeVariant => {
   switch (status) {
     case 'SUBMITTED': return 'secondary';
-    case 'VIEWED': return 'primary';
-    case 'INTERVIEWING': return 'warning';
-    case 'OFFERED': return 'success';
-    case 'HIRED': return 'success';
-    case 'REJECTED': return 'danger';
+    case 'VIEWED': return 'secondary';
+    case 'INTERVIEWING': return 'outline';
+    case 'OFFERED': return 'default';
+    case 'HIRED': return 'default';
+    case 'REJECTED': return 'destructive';
     default: return 'default';
   }
 };

@@ -63,7 +63,7 @@ export default function JobCard({ job }: JobCardProps) {
             // 'outline' might be better for tags if it's just text with a border.
             // Let's use a more distinct variant for tags if available, or a subtle default.
             // Your 'primary' variant: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary" looks good for tags.
-            <Badge key={tag} variant="primary" size="sm">{tag}</Badge>
+            <Badge key={tag} variant="outline">{tag}</Badge>
           ))}
         </div>
       )}

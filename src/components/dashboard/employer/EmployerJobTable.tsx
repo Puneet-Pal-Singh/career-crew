@@ -20,14 +20,14 @@ interface EmployerJobTableProps {
   jobs: EmployerJobDisplayData[];
 }
 
-type BadgeVariant = "default" | "secondary" | "primary" | "success" | "warning" | "danger" | undefined;
+type BadgeVariant = "default" | "destructive" | "outline" | "secondary" | undefined | null;
 
 const getStatusBadgeVariant = (status: JobStatus): BadgeVariant => {
   switch (status) {
-    case 'APPROVED': return 'success';
-    case 'PENDING_APPROVAL': case 'DRAFT': return 'warning';
-    case 'REJECTED': return 'danger';
-    case 'ARCHIVED': case 'FILLED': return 'secondary';
+    case 'APPROVED': return 'default';
+    case 'PENDING_APPROVAL': case 'DRAFT': return 'secondary';
+    case 'REJECTED': return 'destructive';
+    case 'ARCHIVED': case 'FILLED': return 'outline';
     default: return 'default';
   }
 };
