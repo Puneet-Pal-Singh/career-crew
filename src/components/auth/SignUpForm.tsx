@@ -38,14 +38,15 @@ export default function SignUpForm({ role }: SignUpFormProps) {
     setIsGoogleLoading(true);
     setError(null);
 
-    // FIX: The 'data' property is removed. It is no longer a valid option.
-    // The role information for Google OAuth must be handled by a different mechanism,
-    // such as a state parameter in the redirect URL or a subsequent onboarding step.
-    // For now, we will sign them up and let the onboarding flow handle role confirmation if needed.
+    // FIX: The role is now passed as a query parameter in the redirect URL.
+    // This is the correct way to preserve the user's intent.
+    const redirectTo = `${window.location.origin}/auth/callback?intended_role=${role}`;
+    
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: redirectTo,
+        queryParams: { prompt: 'select_account' },
       },
     });
 
@@ -59,11 +60,7 @@ export default function SignUpForm({ role }: SignUpFormProps) {
     setIsLoading(true);
     setError(null);
     const result = await registerUserAction({ ...values, role: role });
-
     if (result.success) {
-      // After email signup, the user needs to confirm their email.
-      // Redirecting to a "check your email" page is better UX than straight to dashboard.
-      // For now, we will redirect to login with a message.
       router.push('/login?message=check-email');
     } else {
       setError(result.error?.message || "An unexpected error occurred.");

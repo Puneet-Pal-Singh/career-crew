@@ -29,12 +29,23 @@ export default function SignInForm() {
     defaultValues: { email: '', password: '' },
   });
 
+  // Logic for handling Google Sign-In
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
-    await supabase.auth.signInWithOAuth({
+    setError(null);
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { 
+        redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: {
+          prompt: 'select_account', // Force account selection for a better UX
+        }
+      },
     });
+    if (oauthError) {
+      setError(oauthError.message);
+      setIsGoogleLoading(false);
+    }
   };
 
   const onSubmit = async (values: FormValues) => {

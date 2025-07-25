@@ -42,7 +42,7 @@ export function SignInUI({ form, onSubmit, onGoogleSignIn, isLoading, isGoogleLo
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="hi@yourcompany.com" {...form.register('email')} disabled={isLoading || isGoogleLoading} />
+            <Input id="email" type="email" placeholder="you@example.com" {...form.register('email')} disabled={isLoading || isGoogleLoading} />
             {form.formState.errors.email && <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>}
           </div>
           <div className="space-y-2">
@@ -68,6 +68,14 @@ export function SignInUI({ form, onSubmit, onGoogleSignIn, isLoading, isGoogleLo
       <Button variant="outline" className="w-full" onClick={onGoogleSignIn} disabled={isLoading || isGoogleLoading}>
         {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />} Login with Google
       </Button>
+
+      {/* FIX: This <p> tag adds the link to the seeker signup page. */}
+      <p className="mt-8 text-center text-sm text-muted-foreground">
+        Don&apos;t have an account?{' '}
+        <Link href="/signup/job-seeker" className="font-semibold text-primary hover:underline">
+          Sign up
+        </Link>
+      </p>
     </div>
   );
 }

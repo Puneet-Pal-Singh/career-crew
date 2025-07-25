@@ -3,10 +3,13 @@
 
 import { getSupabaseServerClient } from "@/lib/supabase/serverClient";
 import { z } from "zod";
+import { revalidatePath } from 'next/cache';
 
 const onboardingSchema = z.object({
   fullName: z.string().min(2, 'Full name is required.'),
-  companyName: z.string().optional(),
+  phone: z.string().optional(),
+  // Zod validates that the role is one of these specific strings.
+  role: z.enum(['JOB_SEEKER', 'EMPLOYER', 'ADMIN']),
 });
 
 export async function updateOnboardingAction(input: z.infer<typeof onboardingSchema>) {
@@ -19,21 +22,28 @@ export async function updateOnboardingAction(input: z.infer<typeof onboardingSch
 
   const validation = onboardingSchema.safeParse(input);
   if (!validation.success) {
+    const errorMessages = validation.error.flatten().fieldErrors;
+    console.error("Onboarding validation failed:", errorMessages);
     return { success: false, error: "Invalid data provided." };
   }
 
+  const profileUpdateData = {
+    full_name: validation.data.fullName,
+    phone: validation.data.phone,
+    role: validation.data.role,
+    has_completed_onboarding: true
+  };
+
   const { error } = await supabase
     .from('profiles')
-    .update({ 
-      full_name: validation.data.fullName,
-      // You can add company_name to your profiles table and update it here
-      has_completed_onboarding: true // This is the most important part!
-    })
+    .update(profileUpdateData)
     .eq('id', user.id);
 
   if (error) {
-    return { success: false, error: "Failed to update profile." };
+    console.error("Onboarding profile update error:", error);
+    return { success: false, error: "Failed to update your profile. Please try again." };
   }
   
+  revalidatePath('/dashboard');
   return { success: true };
 }

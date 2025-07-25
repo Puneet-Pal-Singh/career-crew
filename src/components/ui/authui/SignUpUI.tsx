@@ -49,7 +49,7 @@ export function SignUpUI({ form, onSubmit, onGoogleSignIn, isLoading, isGoogleLo
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">{role === 'EMPLOYER' ? 'Work Email' : 'Email'}</Label>
-            <Input id="email" placeholder="hi@yourcompany.com" type="email" {...form.register('email')} disabled={isLoading || isGoogleLoading} />
+            <Input id="email" placeholder="you@example.com" type="email" {...form.register('email')} disabled={isLoading || isGoogleLoading} />
             {form.formState.errors.email && <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>}
           </div>
           <div className="space-y-2">
