@@ -12,7 +12,7 @@ import { SignInUI } from '@/components/ui/authui/SignInUI'; // CORRECTED IMPORT 
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required.'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
 // Export the type so our UI component can use it
@@ -33,19 +33,26 @@ export default function SignInForm() {
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     setError(null);
+
+    // Use environment variable or Next.js config for base URL
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { 
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${baseUrl}/auth/callback`,
         queryParams: {
           prompt: 'select_account', // Force account selection for a better UX
         }
       },
     });
+
     if (oauthError) {
       setError(oauthError.message);
-      setIsGoogleLoading(false);
     }
+
+    // Always reset loading state
+    setIsGoogleLoading(false);
   };
 
   const onSubmit = async (values: FormValues) => {

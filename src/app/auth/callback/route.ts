@@ -6,12 +6,11 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
   const intendedRole = searchParams.get('intended_role');
-
-  // The default redirect path is now always the onboarding page.
+  // Allowed roles for validation
+  const allowedRoles = ['employer', 'job-seeker', 'admin'];
   let next = '/onboarding/complete-profile';
-  
-  // If a role was passed from the signup form, append it to the redirect URL.
-  if (intendedRole) {
+  // Only append intended_role if it is valid
+  if (intendedRole && allowedRoles.includes(intendedRole)) {
     next = `${next}?intended_role=${intendedRole}`;
   }
 

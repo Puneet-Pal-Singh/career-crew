@@ -31,8 +31,23 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
     
-    const { data: profile } = await supabase.from('profiles').select('has_completed_onboarding').eq('id', user.id).single();
-    const needsOnboarding = profile?.has_completed_onboarding === false;
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('has_completed_onboarding')
+      .eq('id', user.id)
+      .single();
+    
+    // Handle case where profile doesn't exist or query fails
+    if (error || !profile) {
+      console.error('Failed to fetch user profile:', error);
+      // Redirect to onboarding if profile is missing
+      if (pathname !== onboardingRoute) {
+        return NextResponse.redirect(new URL(onboardingRoute, request.url));
+      }
+      return response;
+    }
+    
+    const needsOnboarding = profile.has_completed_onboarding === false;
     
     if (needsOnboarding && pathname !== onboardingRoute) {
       return NextResponse.redirect(new URL(onboardingRoute, request.url));

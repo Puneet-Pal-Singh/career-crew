@@ -38,9 +38,9 @@ export default function SignUpForm({ role }: SignUpFormProps) {
     setIsGoogleLoading(true);
     setError(null);
 
-    // FIX: The role is now passed as a query parameter in the redirect URL.
-    // This is the correct way to preserve the user's intent.
-    const redirectTo = `${window.location.origin}/auth/callback?intended_role=${role}`;
+    // Use environment variable for base URL for consistency and security
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+    const redirectTo = `${baseUrl}/auth/callback?intended_role=${role}`;
     
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: 'google',

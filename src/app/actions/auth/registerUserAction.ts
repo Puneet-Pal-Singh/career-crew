@@ -9,7 +9,7 @@ import type { UserRole } from "@/types";
 const registerSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
   role: z.enum(["JOB_SEEKER", "EMPLOYER"]),
 });
 
@@ -31,7 +31,7 @@ export async function registerUserAction(input: {
   if (!validation.success) {
     return {
       success: false,
-      error: { message: "Invalid input: " + validation.error.flatten().fieldErrors, }
+      error: { message: "Invalid input: " + JSON.stringify(validation.error.flatten().fieldErrors) }
     };
   }
 
@@ -76,13 +76,9 @@ export async function registerUserAction(input: {
 
   if (profileError) {
     console.error("Profile Update Error:", profileError.message);
-    // Clean up the user account if profile creation fails
-    try {
-     await supabase.auth.admin.deleteUser(user.id);
-      console.log("Cleaned up user account due to profile update failure");
-    } catch (cleanupError) {
-      console.error("Failed to cleanup user account:", cleanupError);
-    }
+    // Service role is not available, so we cannot delete the user automatically.
+    // Log the orphaned user ID for manual cleanup.
+    console.error(`Orphaned user account due to profile update failure. User ID: ${user.id}`);
     return { success: false, error: { message: "Could not set user role." } };
   }
 

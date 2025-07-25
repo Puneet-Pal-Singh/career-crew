@@ -75,15 +75,9 @@ interface DashboardHeaderProps {
 }
 
 export default function DashboardHeader({ user, profile }: DashboardHeaderProps) {
-  // The header cannot render anything useful without a user.
-  if (!user) {
-    return <header className="flex h-14 items-center px-4 lg:h-[60px] lg:px-6"></header>; // Render an empty header of correct height
-  }
-
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
-    {/* <header className="flex h-14 items-center gap-4 bg-background px-4 lg:h-[60px] lg:px-6"> */}
-    <Sheet>
+      <Sheet>
         <SheetTrigger asChild>
           <Button variant="outline" size="icon" className="shrink-0 md:hidden">
             <Menu className="h-5 w-5" />
