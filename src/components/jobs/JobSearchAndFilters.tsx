@@ -1,7 +1,6 @@
-// src/components/jobs/JobSearchAndFilters.tsx
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -9,26 +8,30 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Search, XCircle, MapPin, Briefcase as BriefcaseIcon, Zap } from 'lucide-react';
-import { jobTypeOptions } from '@/lib/formSchemas';
+import { JOB_TYPE_OPTIONS } from '@/lib/constants';
 import type { FetchJobsParams, JobTypeOption } from '@/types';
-import { debounce } from '@/lib/utils'; // Assuming debounce utility
-import { useMemo } from 'react'; // Add useMemo
+import { debounce } from '@/lib/utils';
 
 interface JobSearchAndFiltersProps {
   initialParams: FetchJobsParams;
 }
 
-const ALL_TYPES_FILTER_VALUE = "_ALL_TYPES_"; // Unique value for "All Types" option
+const ALL_TYPES_FILTER_VALUE = "_ALL_TYPES_";
 
 export default function JobSearchAndFilters({ initialParams }: JobSearchAndFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Local state: '' for jobType means "All Types" internally
+  const getInitialJobType = () => {
+    const type = initialParams.jobType;
+    if (Array.isArray(type)) return type[0] as JobTypeOption | '' || '';
+    return type || '';
+  };
+  
   const [searchTerm, setSearchTerm] = useState(initialParams.query || '');
-  const [location, setLocation] = useState(initialParams.location || '');
-  const [jobType, setJobType] = useState<JobTypeOption | ''>(initialParams.jobType || '');
+  const [location, setLocation] = useState(initialParams.location ? String(initialParams.location) : '');
+  const [jobType, setJobType] = useState<JobTypeOption | ''>(getInitialJobType());
   const [isRemote, setIsRemote] = useState(initialParams.isRemote === 'true');
 
   const updateSearchParams = useCallback((newParams: Partial<FetchJobsParams>) => {
@@ -37,15 +40,15 @@ export default function JobSearchAndFilters({ initialParams }: JobSearchAndFilte
       if (value !== undefined && value !== null && String(value).trim() !== '') {
         current.set(key, String(value));
       } else {
-        current.delete(key); // Remove if value is empty/undefined/null
+        current.delete(key);
       }
     });
-    current.set('page', '1'); // Reset page on filter change
+    current.set('page', '1');
     const queryStr = current.toString();
     router.push(`${pathname}${queryStr ? `?${queryStr}` : ''}`, { scroll: false });
   }, [searchParams, pathname, router]);
 
-   const debouncedUpdateSearch = useMemo(() => {
+  const debouncedUpdateSearch = useMemo(() => {
     return debounce((params: Partial<FetchJobsParams>) => updateSearchParams(params), 500);
   }, [updateSearchParams]);
   
@@ -61,28 +64,24 @@ export default function JobSearchAndFilters({ initialParams }: JobSearchAndFilte
     debouncedUpdateSearch({ location: newLocation });
   };
   
-  // `value` from SelectItem will now be ALL_TYPES_FILTER_VALUE or a JobTypeOption
   const handleJobTypeChange = (selectedValue: string) => {
     const newJobTypeState = selectedValue === ALL_TYPES_FILTER_VALUE ? '' : selectedValue as JobTypeOption;
-    setJobType(newJobTypeState); // Update local state ('' for all)
-    // For URL params, if it's "All Types", send 'undefined' to remove the jobType filter
+    setJobType(newJobTypeState);
     updateSearchParams({ jobType: newJobTypeState === '' ? undefined : newJobTypeState });
   };
 
-  const handleIsRemoteChange = (checked: boolean) => {
+  const handleIsRemoteChange = (checked: boolean | 'indeterminate') => {
+    if (typeof checked !== 'boolean') return;
     setIsRemote(checked);
-    // Send 'true' if checked, 'undefined' if unchecked (to remove param)
     updateSearchParams({ isRemote: checked ? 'true' : undefined }); 
   };
 
   const clearFilters = () => {
     setSearchTerm('');
     setLocation('');
-    setJobType(''); // Reset local state to "All Types"
+    setJobType('');
     setIsRemote(false);
-    const params = new URLSearchParams();
-    params.set('page', '1');
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    updateSearchParams({ query: undefined, location: undefined, jobType: undefined, isRemote: undefined });
   };
   
   useEffect(() => {
@@ -95,6 +94,7 @@ export default function JobSearchAndFilters({ initialParams }: JobSearchAndFilte
   return (
     <div className="mb-10 p-6 bg-card border rounded-lg shadow-sm">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+        {/* The rest of the JSX remains unchanged... */}
         <div className="lg:col-span-2">
           <Label htmlFor="search-term" className="text-sm font-medium">Keywords</Label>
           <div className="relative mt-1">
@@ -113,7 +113,7 @@ export default function JobSearchAndFilters({ initialParams }: JobSearchAndFilte
           <Label htmlFor="job-type-select" className="text-sm font-medium">Job Type</Label>
           <div className="relative mt-1">
             <Select 
-              value={jobType === '' ? ALL_TYPES_FILTER_VALUE : jobType} // Map internal '' state to select's "All Types" value
+              value={jobType === '' ? ALL_TYPES_FILTER_VALUE : jobType}
               onValueChange={handleJobTypeChange}
             >
               <SelectTrigger id="job-type-select" className="pl-10">
@@ -121,10 +121,10 @@ export default function JobSearchAndFilters({ initialParams }: JobSearchAndFilte
                 <SelectValue placeholder="All Types" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={ALL_TYPES_FILTER_VALUE}>All Types</SelectItem> {/* Use unique non-empty value */}
-                {jobTypeOptions.map(type => (
-                  <SelectItem key={type} value={type}>
-                    {type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                <SelectItem value={ALL_TYPES_FILTER_VALUE}>All Types</SelectItem>
+                {JOB_TYPE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
