@@ -1,34 +1,36 @@
-// src/components/ui/Badge.tsx
-import React from 'react';
+import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
 
-interface BadgeProps {
-  children: React.ReactNode;
-  variant?: 'primary' | 'secondary' | 'default' | 'success' | 'warning' | 'danger';
-  className?: string;
-  size?: 'sm' | 'md';
-}
+import { cn } from "@/lib/utils"
 
-export function Badge({ children, variant = 'default', className = '', size = 'sm' }: BadgeProps) {
-  const baseClasses = "inline-flex items-center rounded-full font-medium whitespace-nowrap";
-  
-  const sizeClasses = {
-    sm: "px-2.5 py-0.5 text-xs",
-    md: "px-3 py-1 text-sm",
-  };
+const badgeVariants = cva(
+  "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  {
+    variants: {
+      variant: {
+        default:
+          "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80",
+        secondary:
+          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        destructive:
+          "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
+        outline: "text-foreground",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
 
-  // Adjusted for your theme colors
-  const variantClasses = {
-    default: "bg-surface-dark/50 dark:bg-surface-light/10 text-subtle-dark dark:text-subtle-light border border-transparent",
-    primary: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary border border-transparent",
-    secondary: "bg-secondary/10 text-secondary dark:bg-secondary/20 dark:text-secondary border border-transparent",
-    success: "bg-green-500/10 text-green-700 dark:bg-green-500/20 dark:text-green-400 border border-transparent",
-    warning: "bg-yellow-500/10 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400 border border-transparent",
-    danger: "bg-red-500/10 text-red-700 dark:bg-red-500/20 dark:text-red-400 border border-transparent",
-  };
+export interface BadgeProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof badgeVariants> {}
 
+function Badge({ className, variant, ...props }: BadgeProps) {
   return (
-    <span className={`${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${className}`}>
-      {children}
-    </span>
-  );
+    <div className={cn(badgeVariants({ variant }), className)} {...props} />
+  )
 }
+
+export { Badge, badgeVariants }

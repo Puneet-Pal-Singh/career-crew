@@ -14,7 +14,8 @@ interface RecentApplicationsPreviewProps {
 }
 
 // Copied from MyApplicationsTable - we can centralize these helpers later if needed
-type BadgeVariant = "default" | "secondary" | "primary" | "success" | "warning" | "danger" | undefined;
+// Function to get the badge variant based on application status
+type BadgeVariant = "default" | "destructive" | "outline" | "secondary" | null | undefined;
 
 // Animation variants for the list container
 const containerVariants = {
@@ -39,14 +40,15 @@ const itemVariants = {
   },
 };
 
+// Function to get the badge variant based on application status
 const getApplicationStatusBadgeVariant = (status: ApplicationStatusOption): BadgeVariant => {
   switch (status) {
     case 'SUBMITTED': return 'secondary';
     case 'VIEWED': return 'secondary';
-    case 'INTERVIEWING': return 'warning';
-    case 'OFFERED': return 'success';
-    case 'HIRED': return 'success';
-    case 'REJECTED': return 'danger';
+    case 'INTERVIEWING': return 'outline';
+    case 'OFFERED': return 'default';
+    case 'HIRED': return 'default';
+    case 'REJECTED': return 'destructive';
     default: return 'default';
   }
 };

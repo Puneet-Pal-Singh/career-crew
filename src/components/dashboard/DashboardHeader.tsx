@@ -3,69 +3,97 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { PanelLeft, Briefcase } from 'lucide-react';
-import UserNav from '@/components/layout/Header/UserNav'; // Re-use the UserNav component
-import { DashboardSidebarNav } from './DashboardSidebar'; // Import the nav links component
+import { Menu } from 'lucide-react';
+import UserNav from '@/components/layout/Header/UserNav';
+import { usePathname } from 'next/navigation'; // Import for mobile nav active state
+import { cn } from '@/lib/utils';
+import type { User } from '@supabase/supabase-js';
+import type { UserRole, UserProfile } from '@/types';
+import { LayoutDashboard, ListChecks, PlusCircle, FileText, ShieldCheck } from 'lucide-react';
 
-/**
- * The header component specifically for the dashboard layout.
- * It is NOT fixed/sticky globally, but is part of the dashboard's own layout.
- * It includes the mobile navigation trigger (Sheet) and the user profile menu.
- */
-export default function DashboardHeader() {
+// A helper function for nav links, can be co-located or imported
+const getNavLinksForRole = (role?: UserRole) => {
+  switch (role) {
+    case 'JOB_SEEKER':
+      return [
+        { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+        { href: "/dashboard/seeker/applications", label: "My Applications", icon: FileText },
+      ];
+    case 'EMPLOYER':
+      return [
+        { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+        { href: "/dashboard/my-jobs", label: "My Jobs", icon: ListChecks },
+        { href: "/dashboard/post-job", label: "Post a New Job", icon: PlusCircle },
+      ];
+    case 'ADMIN':
+      return [
+        { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+        { href: "/dashboard/admin/pending-approvals", label: "Pending Jobs", icon: ShieldCheck },
+      ];
+    default:
+      return [];
+  }
+};
+
+
+// The navigation component for the mobile sheet menu
+function MobileSidebarNav({ role }: { role?: UserRole }) {
   const pathname = usePathname();
-  // Example of how to get a dynamic page title for the header
-  const getPageTitle = () => {
-    if (pathname === '/dashboard') return 'Overview';
-    if (pathname.startsWith('/dashboard/my-jobs')) return 'My Job Postings';
-    if (pathname.startsWith('/dashboard/post-job')) return 'Post a New Job';
-    if (pathname.startsWith('/dashboard/job-listings')) return 'My Job Listings'; // Added
-    if (pathname.startsWith('/dashboard/admin/pending-approvals')) return 'Pending Approvals';
-    if (pathname.startsWith('/dashboard/seeker/applications')) return 'My Applications';
-    return 'Dashboard';
-  };
+  const availableLinks = getNavLinksForRole(role);
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-      
-      {/* Mobile Sidebar Navigation using a Sheet component */}
+    <nav className="grid gap-2 text-lg font-medium">
+      <Link href="/" className="flex items-center gap-2 text-lg font-semibold mb-4 border-b pb-4">
+        CareerCrew
+      </Link>
+      {availableLinks.map((link) => {
+        const isActive = link.href === '/dashboard' ? pathname === link.href : pathname.startsWith(link.href);
+        return (
+          <Link
+            key={link.href}
+            href={link.href}
+            className={cn(
+              "flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground",
+              isActive && "bg-muted text-foreground"
+            )}
+          >
+            <link.icon className="h-5 w-5" />
+            {link.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+// The main header component, receives props from the server layout
+interface DashboardHeaderProps {
+  user: User;
+  profile: UserProfile | null;
+}
+
+export default function DashboardHeader({ user, profile }: DashboardHeaderProps) {
+  return (
+    <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
       <Sheet>
         <SheetTrigger asChild>
-          <Button size="icon" variant="outline" className="sm:hidden">
-            <PanelLeft className="h-5 w-5" />
-            <span className="sr-only">Toggle Menu</span>
+          <Button variant="outline" size="icon" className="shrink-0 md:hidden">
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle navigation menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="sm:max-w-xs">
-          <nav className="grid gap-6 text-lg font-medium">
-            <Link
-              href="/"
-              className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
-            >
-              <Briefcase className="h-5 w-5 transition-all group-hover:scale-110" />
-              <span className="sr-only">CareerCrew</span>
-            </Link>
-            {/* Render the navigation links inside the mobile sheet */}
-            <DashboardSidebarNav />
-          </nav>
+        <SheetContent side="left" className="flex flex-col">
+          <MobileSidebarNav role={profile?.role} />
         </SheetContent>
       </Sheet>
 
-      {/* Page Title / Breadcrumbs for Desktop */}
-      <div className="hidden md:flex">
-        <h1 className="text-xl font-semibold">{getPageTitle()}</h1>
+      <div className="w-full flex-1">
+        {/* Future elements like breadcrumbs or a search bar can go here */}
       </div>
 
-      {/* Right-aligned items */}
-      <div className="relative ml-auto flex-1 md:grow-0">
-        {/* A dashboard-specific search bar could be added here later */}
-      </div>
-
-      {/* User profile button and dropdown */}
-      <UserNav />
+      <UserNav user={user} profile={profile} />
     </header>
   );
 }

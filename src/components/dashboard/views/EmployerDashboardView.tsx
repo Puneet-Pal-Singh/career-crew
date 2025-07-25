@@ -6,13 +6,23 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 
-// This is a presentational component. It could fetch stats in the future.
-export default function EmployerDashboardView() {
+import type { UserProfile } from '@/types';
+
+// Define the props the component now expects
+interface EmployerDashboardViewProps {
+  profile: UserProfile;
+}
+
+export default function EmployerDashboardView({ profile }: EmployerDashboardViewProps) {
+  const firstName = profile?.full_name?.split(' ')[0] || 'Employer';
+
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold text-foreground">Employer Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Manage your job postings, review applications, and update company details.</p>
+        <p className="text-muted-foreground mt-1">
+          Welcome, {firstName}! Manage your company&apos;s presence on CareerCrew.
+        </p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -30,7 +40,7 @@ export default function EmployerDashboardView() {
         <Card className="hover:shadow-lg transition-shadow">
           <CardHeader>
             <CardTitle>Post a New Job</CardTitle>
-            <CardDescription>Create and publish a new job opening to attract top talent.</CardDescription>
+            <CardDescription>Create a new job opening to attract top talent.</CardDescription>
           </CardHeader>
           <CardFooter>
             <Button asChild>

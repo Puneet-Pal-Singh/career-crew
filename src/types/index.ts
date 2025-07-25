@@ -10,7 +10,7 @@ export interface UserProfile {
   full_name?: string | null;
   avatar_url?: string | null;
   role: UserRole;
-  has_made_role_choice: boolean; // This flag makes the role choice persistent
+  has_completed_onboarding: boolean; // This flag makes the role choice optional
 }
 
 export type JobStatus = 

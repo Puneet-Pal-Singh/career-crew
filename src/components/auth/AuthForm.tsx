@@ -1,102 +1,107 @@
 // src/components/auth/AuthForm.tsx
 "use client";
 
-import React, { useState, FormEvent, useEffect } from "react";
-import { useRouter } from "next/navigation"; // Keep for potential future client-side nav if needed
-import Link from "next/link";
-import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import type { UserRole } from '@/types';
+import { useRouter } from 'next/navigation';
+import { loginUserAction } from '@/app/actions/auth/loginUserAction';
+import { registerUserAction } from '@/app/actions/auth/registerUserAction';
 
-interface AuthFormProps {
-  mode: "login" | "register";
-}
+type AuthFormProps = { mode: 'login' } | { mode: 'register', role: UserRole };
 
-export default function AuthForm({ mode }: AuthFormProps) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [formSpecificError, setFormSpecificError] = useState<string | null>(null);
+const formSchema = z.object({
+  fullName: z.string().optional(),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+});
 
-  // Get auth functions and state from context
-  const { signIn, signUp, isLoading: authActionIsLoading, error: authContextError, user, isInitialized } = useAuth();
-  const router = useRouter(); // Initialize router
+type FormValues = z.infer<typeof formSchema>;
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setFormSpecificError(null); // Clear local form error
+export default function AuthForm(props: AuthFormProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-    if (mode === "register" && password !== confirmPassword) {
-      setFormSpecificError("Passwords do not match.");
-      return;
-    }
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { fullName: '', email: '', password: '' },
+  });
 
-    let response;
-    if (mode === "login") {
-      console.log("AuthForm: Submitting login...");
-      response = await signIn({ email, password });
+  const onSubmit = async (values: FormValues) => {
+    setIsLoading(true);
+    setError(null);
+    let result;
+
+    if (props.mode === 'register') {
+      if (!values.fullName || values.fullName.trim().length < 2) {
+        form.setError("fullName", { type: "manual", message: "Full name is required." });
+        setIsLoading(false);
+        return;
+      }
+      result = await registerUserAction({ ...values, fullName: values.fullName, role: props.role });
     } else {
-      console.log("AuthForm: Submitting register...");
-      response = await signUp({ email, password });
+      result = await loginUserAction({ email: values.email, password: values.password });
     }
-    
-    console.log(`AuthForm: ${mode} response received. Error:`, response.error?.message);
-    // No explicit redirect here. AuthContext's onAuthStateChange will update the user state.
-    // Middleware and potentially an effect watching `user` in a higher-level component or page will handle redirects.
-    // If there's a Supabase error, it's set in AuthContext and displayed.
-  };
-  
-  // This useEffect is a client-side guard. If a logged-in user lands here,
-  // it attempts to redirect them. Middleware should be the primary guard.
-  useEffect(() => {
-     if (isInitialized && user) {
-         const currentPath = window.location.pathname;
-         if (currentPath.startsWith('/login') || currentPath.startsWith('/register')) {
-             console.log("AuthForm useEffect: Authenticated user on auth page, redirecting to /dashboard.");
-             router.replace('/dashboard');
-         }
-     }
-  }, [user, isInitialized, router]);
 
+    if (result.success) {
+      router.push('/dashboard'); // On success, always go to dashboard
+    } else {
+      setError(result.error?.message || "An unexpected error occurred.");
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <div className="mx-auto w-full max-w-md rounded-lg bg-card p-6 shadow-xl md:p-8">
-      <h2 className="mb-6 text-center text-2xl font-bold text-foreground">
-        {mode === "login" ? "Welcome Back" : "Create Account"}
-      </h2>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <Label htmlFor="email">Email Address</Label>
-          <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={authActionIsLoading} />
-        </div>
-        <div>
-          <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={authActionIsLoading} />
-        </div>
-        {mode === "register" && (
-          <div>
-            <Label htmlFor="confirm-password">Confirm Password</Label>
-            <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required disabled={authActionIsLoading} />
+    <Card className="w-full max-w-sm">
+      <CardHeader className="text-center">
+        <CardTitle className="text-2xl">{props.mode === 'register' ? 'Create Account' : 'Log In'}</CardTitle>
+      </CardHeader>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <CardContent className="space-y-4">
+          {props.mode === 'register' && (
+            <div className="space-y-2">
+              <Label htmlFor="fullName">Full Name</Label>
+              <Input id="fullName" {...form.register('fullName')} disabled={isLoading} />
+              {form.formState.errors.fullName && <p className="text-sm text-destructive">{form.formState.errors.fullName.message}</p>}
+            </div>
+          )}
+          <div className="space-y-2">
+            <Label htmlFor="email">{props.mode === 'register' && props.role === 'EMPLOYER' ? 'Work Email' : 'Email'}</Label>
+            <Input id="email" type="email" {...form.register('email')} disabled={isLoading} />
+            {form.formState.errors.email && <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>}
           </div>
-        )}
-        {(authContextError || formSpecificError) && (
-          <div className="text-destructive text-sm p-3 bg-destructive/10 border border-destructive/50 rounded-md flex items-center">
-            <AlertCircle className="h-5 w-5 mr-2" />
-            {authContextError?.message || formSpecificError}
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input id="password" type="password" {...form.register('password')} disabled={isLoading} />
+            {form.formState.errors.password && <p className="text-sm text-destructive">{form.formState.errors.password.message}</p>}
           </div>
-        )}
-        <Button type="submit" className="w-full" disabled={authActionIsLoading}>
-          {authActionIsLoading ? <Loader2 className="animate-spin mr-2" /> : (mode === "login" ? "Sign In" : "Create Account")}
-        </Button>
+          {error && <p className="text-sm font-medium text-destructive text-center">{error}</p>}
+        </CardContent>
+        <CardFooter>
+          <div className="w-full flex flex-col gap-4">
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {props.mode === 'register' ? 'Create Account' : 'Log In'}
+            </Button>
+            <p className="text-sm text-muted-foreground text-center">
+              {props.mode === 'register' ? 'Already have an account?' : "Don't have an account?"}
+              {/* FIX: Login page now correctly links to the seeker signup page. */}
+              <Link href={props.mode === 'register' ? '/login' : '/signup/job-seeker'} className="ml-1 font-semibold text-primary hover:underline">
+                {props.mode === 'register' ? 'Log In' : 'Create an Account'}
+              </Link>
+            </p>
+          </div>
+        </CardFooter>
       </form>
-      <p className="mt-6 text-center text-sm text-muted-foreground">
-        {mode === "login" ? "Don't have an account? " : "Already have an account? "}
-        <Link href={mode === "login" ? "/register" : "/login"} className="font-medium text-primary hover:underline">
-          {mode === "login" ? "Sign up" : "Sign in"}
-        </Link>
-      </p>
-    </div>
+    </Card>
   );
 }
