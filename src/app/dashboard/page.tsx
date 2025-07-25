@@ -2,7 +2,6 @@
 import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
-// import type { User } from '@supabase/supabase-js';
 
 // Import your dashboard views directly
 import JobSeekerDashboardView from '@/components/dashboard/views/JobSeekerDashboardView';
@@ -38,13 +37,13 @@ export default async function DashboardPage() {
   switch (userProfile.role) {
     case 'JOB_SEEKER':
       // The unused variable error is now gone because `user` and `userProfile` are passed as props.
-      return <JobSeekerDashboardView user={user} profile={userProfile} />;
+      return <JobSeekerDashboardView profile={userProfile} />;
     
     case 'EMPLOYER':
-      return <EmployerDashboardView user={user} profile={userProfile} />;
+      return <EmployerDashboardView profile={userProfile} />;
       
     case 'ADMIN':
-      return <AdminDashboardView user={user} profile={userProfile} />;
+      return <AdminDashboardView profile={userProfile} />;
       
     default:
       // If role is invalid, log out the user for safety.

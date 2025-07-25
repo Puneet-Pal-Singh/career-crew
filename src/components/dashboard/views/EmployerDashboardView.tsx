@@ -5,12 +5,11 @@ import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import type { User } from '@supabase/supabase-js';
+
 import type { UserProfile } from '@/types';
 
 // Define the props the component now expects
 interface EmployerDashboardViewProps {
-  user: User;
   profile: UserProfile;
 }
 

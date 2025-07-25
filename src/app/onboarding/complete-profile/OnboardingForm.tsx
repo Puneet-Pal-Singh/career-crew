@@ -1,4 +1,3 @@
-// src/app/onboarding/complete-profile/OnboardingForm.tsx
 "use client";
 
 import { useState } from 'react';
@@ -12,7 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { updateOnboardingAction } from './updateOnboardingAction';
-import type { UserRole } from '@/types';
+// REMOVED: No longer need the broad UserRole type.
+// import type { UserRole } from '@/types';
 
 const formSchema = z.object({
   fullName: z.string().min(2, 'Please enter your full name.'),
@@ -21,7 +21,12 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function OnboardingForm({ fullName, role }: { fullName: string, role: UserRole }) {
+// FIX: Define a stricter type for the role that this form can handle.
+// This aligns with the security fix in the server action.
+type OnboardingRole = 'JOB_SEEKER' | 'EMPLOYER';
+
+// FIX: Update the component's props to use the new, stricter type.
+export default function OnboardingForm({ fullName, role }: { fullName: string, role: OnboardingRole }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -34,13 +39,16 @@ export default function OnboardingForm({ fullName, role }: { fullName: string, r
   const onSubmit = async (values: FormValues) => {
     setIsLoading(true);
     setError(null);
+    // This call is now type-safe. The 'role' prop can no longer be 'ADMIN'.
     const result = await updateOnboardingAction({ ...values, role: role });
 
     if (result.success) {
       router.push('/dashboard');
       router.refresh();
     } else {
-      setError(result.error || 'An unexpected error occurred.');
+      // Assuming result.error is a string now based on previous refactors
+      const errorMessage = typeof result.error === 'string' ? result.error : 'An unexpected error occurred.';
+      setError(errorMessage);
       setIsLoading(false);
     }
   };

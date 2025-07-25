@@ -1,23 +1,17 @@
 // src/components/dashboard/ProfileSummaryCard.tsx
-
-// REMOVED: "use client" and all client-side hooks. This is now a simple presentational component.
 import { Card, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Edit, Mail } from 'lucide-react';
 import type { UserProfile } from '@/types';
-import type { User } from '@supabase/supabase-js'; // Import the Supabase User type
 
-// Define the props the component now expects
+// FIX: This component should only need the complete UserProfile object.
 interface ProfileSummaryCardProps {
-  user: User | null;
   profile: UserProfile | null;
 }
 
-export default function ProfileSummaryCard({ user, profile }: ProfileSummaryCardProps) {
-  // We no longer need a loading skeleton here, as the parent server component handles loading.
-  if (!profile || !user) {
-    // This can be a simple fallback or null if the parent guarantees data
+export default function ProfileSummaryCard({ profile }: ProfileSummaryCardProps) {
+  if (!profile) {
     return (
         <Card>
             <CardHeader className="items-center text-center p-6">
@@ -27,9 +21,9 @@ export default function ProfileSummaryCard({ user, profile }: ProfileSummaryCard
     );
   }
   
-  // Use the name from the profile, or a fallback "Welcome!" message
+  // FIX: Get ALL data from the single 'profile' prop.
   const displayName = profile.full_name || 'Welcome!';
-  const userInitial = displayName.charAt(0) || user.email?.charAt(0) || 'U';
+  const userInitial = displayName.charAt(0) || profile.email.charAt(0) || 'U';
 
   return (
     <Card>
@@ -40,7 +34,8 @@ export default function ProfileSummaryCard({ user, profile }: ProfileSummaryCard
         </Avatar>
         <CardTitle>{displayName}</CardTitle>
         <CardDescription className="flex items-center gap-2">
-            <Mail className="h-3 w-3" /> {user.email}
+            {/* FIX: Use the email from the profile object. */}
+            <Mail className="h-3 w-3" /> {profile.email}
         </CardDescription>
       </CardHeader>
       

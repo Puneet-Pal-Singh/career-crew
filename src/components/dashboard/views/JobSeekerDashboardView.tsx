@@ -7,16 +7,14 @@ import ProfileSummaryCard from '@/components/dashboard/ProfileSummaryCard';
 import RecentApplicationsPreview from '@/components/dashboard/seeker/RecentApplicationsPreview';
 import { FileText, Bookmark, Briefcase as BriefcaseIcon } from 'lucide-react';
 import type { UserProfile } from '@/types'; 
-import type { User } from '@supabase/supabase-js';
 
 // --- FIX: The props are now non-nullable as the parent page guarantees they exist ---
 interface JobSeekerDashboardViewProps {
-  user: User;
   profile: UserProfile;
 }
 
 // This component remains an async Server Component for data fetching
-export default async function JobSeekerDashboardView({ user, profile }: JobSeekerDashboardViewProps) {
+export default async function JobSeekerDashboardView({ profile }: JobSeekerDashboardViewProps) {
   // Fetch dashboard-specific data
   const [statsData, recentAppsData] = await Promise.all([
     getSeekerDashboardStats(),
@@ -79,7 +77,7 @@ export default async function JobSeekerDashboardView({ user, profile }: JobSeeke
       {/* Right Sidebar Column */}
       <div className="space-y-6">
         {/* Pass the non-nullable props down to the summary card */}
-        <ProfileSummaryCard user={user} profile={profile} />
+        <ProfileSummaryCard profile={profile} />
       </div>
     </div>
   );

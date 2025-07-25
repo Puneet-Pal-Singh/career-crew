@@ -4,12 +4,11 @@
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import type { User } from '@supabase/supabase-js';
+
 import type { UserProfile } from '@/types';
 
 // Define the props the component now expects
 interface AdminDashboardViewProps {
-  user: User;
   profile: UserProfile;
 }
 
