@@ -47,6 +47,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  console.error("Authentication callback error:", searchParams.get('error_description'));
+  const errorDesc = searchParams.get('error_description');
+  console.error("Authentication callback error:", errorDesc ? 'OAuth error occurred' : 'Unknown error');
   return NextResponse.redirect(new URL('/auth/auth-code-error', origin));
 }

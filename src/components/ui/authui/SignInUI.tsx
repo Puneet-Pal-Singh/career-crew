@@ -23,10 +23,20 @@ interface SignInUIProps {
   isLoading: boolean;
   isGoogleLoading: boolean;
   error: string | null;
+  /** e.g. "/signup/job-seeker" or "/signup/employer" */
+  signupLink?: string;
 }
 
 // This is a PURE UI component. It has no logic of its own.
-export function SignInUI({ form, onSubmit, onGoogleSignIn, isLoading, isGoogleLoading, error }: SignInUIProps) {
+export function SignInUI({
+  form,
+  onSubmit,
+  onGoogleSignIn,
+  isLoading,
+  isGoogleLoading,
+  error,
+  signupLink = "/signup/job-seeker",
+}: SignInUIProps) {
   return (
     <div className="mx-auto w-full max-w-sm rounded-xl bg-card p-8 shadow-2xl">
       <div className="mb-8 flex flex-col items-center gap-2 text-center">
@@ -72,7 +82,7 @@ export function SignInUI({ form, onSubmit, onGoogleSignIn, isLoading, isGoogleLo
       {/* FIX: This <p> tag adds the link to the seeker signup page. */}
       <p className="mt-8 text-center text-sm text-muted-foreground">
         Don&apos;t have an account?{' '}
-        <Link href="/signup/job-seeker" className="font-semibold text-primary hover:underline">
+        <Link href={signupLink} className="font-semibold text-primary hover:underline">
           Sign up
         </Link>
       </p>

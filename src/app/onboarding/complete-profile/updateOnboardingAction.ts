@@ -9,7 +9,7 @@ const onboardingSchema = z.object({
   fullName: z.string().min(2, 'Full name is required.'),
   phone: z.string().optional(),
   // Zod validates that the role is one of these specific strings.
-  role: z.enum(['JOB_SEEKER', 'EMPLOYER', 'ADMIN']),
+  role: z.enum(['JOB_SEEKER', 'EMPLOYER']),
 });
 
 export async function updateOnboardingAction(input: z.infer<typeof onboardingSchema>) {

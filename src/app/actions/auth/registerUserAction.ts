@@ -76,8 +76,13 @@ export async function registerUserAction(input: {
 
   if (profileError) {
     console.error("Profile Update Error:", profileError.message);
-    // This is an unfortunate state, user is created but profile is not. 
-    // You might want to add more robust error handling here later.
+    // Clean up the user account if profile creation fails
+    try {
+     await supabase.auth.admin.deleteUser(user.id);
+      console.log("Cleaned up user account due to profile update failure");
+    } catch (cleanupError) {
+      console.error("Failed to cleanup user account:", cleanupError);
+    }
     return { success: false, error: { message: "Could not set user role." } };
   }
 

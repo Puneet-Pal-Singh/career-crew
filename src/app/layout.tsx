@@ -27,8 +27,15 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
 
-  const supabase = await getSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const supabase = await getSupabaseServerClient();
+    const { data: { user: fetchedUser } } = await supabase.auth.getUser();
+    user = fetchedUser;
+  } catch (error) {
+    console.error('Failed to fetch user in root layout:', error);
+    // The app will continue with user = null, showing the public state.
+  }
 
   return (
     <html lang="en" className={`${inter.variable} ${geistSansVariable}`.trim()} suppressHydrationWarning>

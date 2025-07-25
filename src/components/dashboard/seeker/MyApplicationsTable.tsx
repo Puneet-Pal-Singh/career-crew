@@ -423,7 +423,8 @@ export default function MyApplicationsTable({ applications }: MyApplicationsTabl
                   </div>
                 </div>
                 <Button variant="ghost" size="sm" asChild>
-                  <Link href={`/jobs/${app.jobId}`} target="_blank">
+                  <Link href={`/jobs/${app.jobId}`} target="_blank" rel="noopener noreferrer">
+
                     <ExternalLink className="w-4 h-4" />
                   </Link>
                 </Button>
@@ -492,7 +493,7 @@ export default function MyApplicationsTable({ applications }: MyApplicationsTabl
                     <TableCell className="py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Button variant="outline" size="sm" asChild>
-                          <Link href={`/jobs/${app.jobId}`} target="_blank" className="flex items-center gap-2">
+                          <Link href={`/jobs/${app.jobId}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
                             <Eye className="w-4 h-4" />
                             View Job
                           </Link>

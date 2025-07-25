@@ -25,10 +25,22 @@ export default async function CompleteProfilePage({ params, searchParams }: Comp
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const { data: profile } = await supabase.from('profiles').select('full_name, has_completed_onboarding').eq('id', user.id).single();
+  const { data: profile, error: profileError } = await supabase.from('profiles').select('full_name, has_completed_onboarding').eq('id', user.id).single();
+  if (profileError) {
+    console.error('Failed to fetch profile:', profileError);
+    redirect('/login');
+  }
   if (profile?.has_completed_onboarding) redirect('/dashboard');
 
-  const finalRole = resolvedSearchParams.intended_role === 'EMPLOYER' ? 'EMPLOYER' : 'JOB_SEEKER';
+  const validRoles = ['EMPLOYER', 'JOB_SEEKER'] as const;
+  // Get the intended role from the search parameters.
+  const intendedRole = resolvedSearchParams.intended_role;
+  // Use .find() to safely check if the intendedRole is one of the validRoles.
+  // If it's found, 'foundRole' will be the matched role.
+  // If not, 'foundRole' will be undefined.
+  const foundRole = validRoles.find(role => role === intendedRole);
+
+  const finalRole = foundRole || 'JOB_SEEKER';
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4">

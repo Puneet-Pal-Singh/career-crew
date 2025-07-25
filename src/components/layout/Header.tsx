@@ -1,7 +1,7 @@
 // src/components/layout/Header.tsx
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
@@ -41,10 +41,12 @@ export default function Header({ user }: HeaderProps) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isLandingPage]);
 
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+
   // Close mobile menu when clicking outside
   useEffect(() => {
-    const handleClickOutside = () => {
-      if (isMobileMenuOpen) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isMobileMenuOpen && mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
         setIsMobileMenuOpen(false);
       }
     };
@@ -170,7 +172,7 @@ export default function Header({ user }: HeaderProps) {
 
         {/* Enhanced Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden border-t border-slate-200 bg-white/98 backdrop-blur-sm shadow-lg">
+          <div ref={mobileMenuRef} className="lg:hidden border-t border-slate-200 bg-white/98 backdrop-blur-sm shadow-lg">
             <div className="px-4 pt-4 pb-6 space-y-3">
               {/* Mobile Navigation Links */}
               <div className="space-y-2">
