@@ -16,7 +16,7 @@ export default function JobCard({ job }: JobCardProps) {
   return (
     <Link 
       href={`/jobs/${job.id}`} 
-      className="block group bg-surface-light dark:bg-surface-dark p-5 sm:p-6 rounded-xl shadow-lg hover:shadow-xl border border-border-light dark:border-border-dark hover:border-primary/40 dark:hover:border-primary-dark/40 transition-all duration-300 ease-in-out transform hover:-translate-y-1.5 flex flex-col h-full"
+      className="group bg-surface-light dark:bg-surface-dark p-5 sm:p-6 rounded-xl shadow-lg hover:shadow-xl border border-border-light dark:border-border-dark hover:border-primary/40 dark:hover:border-primary-dark/40 transition-all duration-300 ease-in-out transform hover:-translate-y-1.5 flex flex-col h-full"
     >
       <div className="flex items-start space-x-4 mb-4">
         <div className="flex-shrink-0 mt-1">

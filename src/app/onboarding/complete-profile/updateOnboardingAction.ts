@@ -1,9 +1,9 @@
+// src/app/onboarding/complete-profile/updateOnboardingAction.ts
 "use server";
 
 import { getSupabaseServerClient } from "@/lib/supabase/serverClient";
 import { z } from "zod";
 import { revalidatePath } from 'next/cache';
-// --- NEW: Import the admin client for updating auth metadata ---
 import { adminSupabase } from "@/lib/supabase/adminClient";
 
 const onboardingSchema = z.object({
@@ -24,34 +24,41 @@ export async function updateOnboardingAction(input: z.infer<typeof onboardingSch
   if (!validation.success) {
     return { success: false, error: "Invalid data provided." };
   }
+  const { fullName, phone, role } = validation.data;
 
-  // 1. Update the database profile (your source of truth)
-  const { error: profileError } = await supabase
+  // Step 1: Use the ADMIN client to perform a privileged update.
+  // This is now the definitive source of truth for setting the final role and
+  // completing onboarding, bypassing any restrictive user RLS policies.
+  const { error: profileUpdateError } = await adminSupabase
     .from('profiles')
     .update({
-      full_name: validation.data.fullName,
-      phone: validation.data.phone,
-      role: validation.data.role,
+      full_name: fullName,
+      phone: phone,
+      role: role, // The correct role is definitively set here.
       has_completed_onboarding: true
     })
     .eq('id', user.id);
 
-  if (profileError) {
-    console.error("Onboarding profile update error:", profileError);
-    return { success: false, error: "Failed to update your profile. Please try again." };
+  if (profileUpdateError) {
+    console.error("Onboarding profile update error:", profileUpdateError);
+    return { success: false, error: "Failed to update your profile." };
   }
   
-  // --- NEW: Update the JWT metadata for fast middleware checks ---
+  // Step 2: Update the JWT metadata on the Supabase server.
   const { error: metadataError } = await adminSupabase.auth.admin.updateUserById(
     user.id,
-    { app_metadata: { onboarding_complete: true, role: validation.data.role } }
+    { app_metadata: { onboarding_complete: true, role: role } }
   );
 
   if (metadataError) {
-    // Log this error, but don't block the user. The primary DB write was successful.
     console.error("Onboarding auth metadata update error:", metadataError);
   }
 
-  revalidatePath('/dashboard');
+  // Step 3: CRITICAL FIX - Force a session refresh.
+  // This tells the browser to get the new JWT with the updated metadata
+  // BEFORE the user is redirected to the dashboard.
+  await supabase.auth.refreshSession();
+
+  revalidatePath('/dashboard', 'layout');
   return { success: true };
 }
