@@ -42,6 +42,9 @@ export default function SignUpForm({ role }: SignUpFormProps) {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
     const redirectTo = `${baseUrl}/auth/callback?intended_role=${role}`;
     
+    // --- ADD THIS LOG ---
+    console.log('[SignUpForm] Constructed redirectTo URL for Google OAuth:', redirectTo);
+    
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
