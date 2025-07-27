@@ -14,12 +14,13 @@ interface ClientLayoutProps {
 export default function ClientLayout({ children, user }: ClientLayoutProps) {
   const pathname = usePathname();
 
-  // --- Define routes that should NOT have the public header/footer ---
+  // Define routes that should NOT have the public header/footer ---
   const noLayoutRoutes = [
     '/login',
-    '/signup/job-seeker',
-    '/signup/employer',
-    // Add any other routes that should be full-screen here
+    '/jobs/signup',
+    '/employer/signup',
+    '/onboarding/complete-profile',
+    '/auth/auth-code-error'
   ];
 
   const isDashboardRoute = pathname.startsWith('/dashboard');

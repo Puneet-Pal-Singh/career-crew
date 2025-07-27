@@ -135,7 +135,8 @@ export default function Header({ user }: HeaderProps) {
                     className="w-56 sm:w-64 mt-2 bg-background/95 backdrop-blur-sm border border-border/50 shadow-xl"
                   >
                     <DropdownMenuItem asChild>
-                      <Link href="/signup/job-seeker" className="cursor-pointer flex items-center px-4 py-3 hover:bg-primary/10 transition-colors">
+                      {/* FIX: Updated to new contextual route */}
+                      <Link href="/jobs/signup" className="cursor-pointer flex items-center px-4 py-3 hover:bg-primary/10 transition-colors">
                         <div className="flex flex-col">
                           <span className="font-medium">I&apos;m looking for a job</span>
                           <span className="text-xs text-muted-foreground">Find your dream position</span>
@@ -143,7 +144,8 @@ export default function Header({ user }: HeaderProps) {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/signup/employer" className="cursor-pointer flex items-center px-4 py-3 hover:bg-primary/10 transition-colors">
+                      {/* FIX: Updated to new contextual route */}
+                      <Link href="/employer/signup" className="cursor-pointer flex items-center px-4 py-3 hover:bg-primary/10 transition-colors">
                         <div className="flex flex-col">
                           <span className="font-medium">I&apos;m looking for candidates</span>
                           <span className="text-xs text-muted-foreground">Build your dream team</span>
@@ -216,7 +218,8 @@ export default function Header({ user }: HeaderProps) {
                       asChild 
                       className="w-full justify-center bg-primary hover:bg-primary/90 h-11 text-base shadow-md"
                     >
-                      <Link href="/signup/job-seeker" onClick={() => setIsMobileMenuOpen(false)}>
+                      {/* FIX: Updated to new contextual route */}
+                      <Link href="/jobs/signup" onClick={() => setIsMobileMenuOpen(false)}>
                         I&apos;m looking for a job
                       </Link>
                     </Button>
@@ -225,7 +228,8 @@ export default function Header({ user }: HeaderProps) {
                       variant="outline"
                       className="w-full justify-center border-primary text-primary hover:bg-primary/10 h-11 text-base"
                     >
-                      <Link href="/signup/employer" onClick={() => setIsMobileMenuOpen(false)}>
+                      {/* FIX: Updated to new contextual route */}
+                      <Link href="/employer/signup" onClick={() => setIsMobileMenuOpen(false)}>
                         I&apos;m looking for candidates
                       </Link>
                     </Button>
