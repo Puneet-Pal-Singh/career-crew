@@ -1,4 +1,3 @@
-// src/app/auth/callback/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import { type CookieOptions, createServerClient } from '@supabase/ssr';
 
@@ -6,17 +5,24 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
   const intendedRole = searchParams.get('intended_role');
+  
+  // FIX: Get the after_sign_in parameter
+  const afterSignIn = searchParams.get('after_sign_in');
 
-  // Build the redirect URL first, passing the role intent to the onboarding page.
   const allowedRoles = ['JOB_SEEKER', 'EMPLOYER'];
   const validatedRole = intendedRole && allowedRoles.includes(intendedRole) ? intendedRole : null;
 
-  // Build the redirect URL, only passing the role if it's valid.
-  let next = '/onboarding/complete-profile';
+  // FIX: Use URLSearchParams to safely construct the redirect URL
+  const redirectParams = new URLSearchParams();
   if (validatedRole) {
-    next = `${next}?intended_role=${validatedRole}`;
+    redirectParams.set('intended_role', validatedRole);
   }
-  
+  // A simple safety check to ensure it's a relative path
+  if (afterSignIn && afterSignIn.startsWith('/')) {
+    redirectParams.set('after_sign_in', afterSignIn);
+  }
+
+  const next = `/onboarding/complete-profile?${redirectParams.toString()}`;
   const response = NextResponse.redirect(new URL(next, origin));
 
   if (code) {
@@ -35,8 +41,6 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     
     if (!error) {
-      // Safeguard: Force a session refresh to ensure the browser's cookie
-      // has the initial JWT metadata from our database trigger.
       await supabase.auth.refreshSession();
       return response;
     }
