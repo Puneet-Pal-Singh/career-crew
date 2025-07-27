@@ -1,5 +1,7 @@
+// src/app/actions/helpers/jobDataMappers.ts
 import type { JobCardData, JobTypeOption } from '@/types';
 import { JOB_TYPE_OPTIONS } from '@/lib/constants'; // <-- Import the constant
+import { generateJobSlug } from '@/lib/utils';
 
 // Raw structure for jobs when data is intended for JobCardData mapping
 export interface RawJobDataForCard {
@@ -34,6 +36,7 @@ export const mapRawJobToJobCardData = (rawJob: RawJobDataForCard): JobCardData =
 
   return {
     id: rawJob.id,
+    slug: generateJobSlug(rawJob.id, rawJob.title), // Generate SEO-friendly slug
     title: rawJob.title,
     companyName: rawJob.company_name,
     companyLogoUrl: rawJob.company_logo_url || '/company-logos/default-company-logo.svg',
