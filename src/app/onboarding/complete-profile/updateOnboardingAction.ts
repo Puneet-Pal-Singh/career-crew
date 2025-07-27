@@ -10,6 +10,7 @@ const onboardingSchema = z.object({
   fullName: z.string().min(2, 'Full name is required.'),
   phone: z.string().optional(),
   role: z.enum(['JOB_SEEKER', 'EMPLOYER']),
+  redirectTo: z.string().nullable().optional(),
 });
 
 export async function updateOnboardingAction(input: z.infer<typeof onboardingSchema>) {
@@ -24,7 +25,7 @@ export async function updateOnboardingAction(input: z.infer<typeof onboardingSch
   if (!validation.success) {
     return { success: false, error: "Invalid data provided." };
   }
-  const { fullName, phone, role } = validation.data;
+  const { fullName, phone, role, redirectTo } = validation.data;
 
   // Step 1: Use the ADMIN client to perform a privileged update.
   // This is now the definitive source of truth for setting the final role and
@@ -60,5 +61,7 @@ export async function updateOnboardingAction(input: z.infer<typeof onboardingSch
   await supabase.auth.refreshSession();
 
   revalidatePath('/dashboard', 'layout');
-  return { success: true };
+  // FIX: Determine the final redirect path
+  const finalRedirectTo = (redirectTo && redirectTo.startsWith('/')) ? redirectTo : '/dashboard';
+  return { success: true, redirectTo: finalRedirectTo };
 }

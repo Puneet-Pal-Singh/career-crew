@@ -8,39 +8,47 @@ export const metadata: Metadata = {
   title: 'Complete Your Profile - CareerCrew',
 };
 
-// Updated props type for Next.js 15 - both params and searchParams are now promises
+// FIX: Update the props type to include the new 'after_sign_in' parameter.
 type CompleteProfilePageProps = {
   params: Promise<Record<string, never>>; 
   searchParams: Promise<{
     intended_role?: string;
+    after_sign_in?: string;
   }>;
 };
 
 export default async function CompleteProfilePage({ params, searchParams }: CompleteProfilePageProps) {
-  // Await both params and searchParams (even though params isn't used here)
-  await params; // This ensures the promise is resolved even if not used
+  await params;
   const resolvedSearchParams = await searchParams;
   
   const supabase = await getSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const { data: profile, error: profileError } = await supabase.from('profiles').select('full_name, has_completed_onboarding').eq('id', user.id).single();
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('full_name, has_completed_onboarding')
+    .eq('id', user.id)
+    .single();
+    
   if (profileError) {
     console.error('Failed to fetch profile:', profileError);
     redirect('/login');
   }
-  if (profile?.has_completed_onboarding) redirect('/dashboard');
+
+  // Redirect to the final destination if onboarding is already done.
+  if (profile?.has_completed_onboarding) {
+    const finalRedirect = resolvedSearchParams.after_sign_in || '/dashboard';
+    redirect(finalRedirect);
+  }
 
   const validRoles = ['EMPLOYER', 'JOB_SEEKER'] as const;
-  // Get the intended role from the search parameters.
   const intendedRole = resolvedSearchParams.intended_role;
-  // Use .find() to safely check if the intendedRole is one of the validRoles.
-  // If it's found, 'foundRole' will be the matched role.
-  // If not, 'foundRole' will be undefined.
   const foundRole = validRoles.find(role => role === intendedRole);
-
   const finalRole = foundRole || 'JOB_SEEKER';
+
+  // FIX: Extract the 'after_sign_in' parameter to pass to the form.
+  const afterSignIn = resolvedSearchParams.after_sign_in || null;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
@@ -48,6 +56,8 @@ export default async function CompleteProfilePage({ params, searchParams }: Comp
         <OnboardingForm 
           fullName={profile?.full_name || ''} 
           role={finalRole}
+          // FIX: Pass the redirect URL down to the client component.
+          afterSignIn={afterSignIn}
         />
       </div>
     </div>

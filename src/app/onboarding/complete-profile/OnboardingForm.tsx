@@ -1,3 +1,4 @@
+// src/app/onboarding/complete-profile/OnboardingForm.tsx
 "use client";
 
 import { useState } from 'react';
@@ -25,8 +26,15 @@ type FormValues = z.infer<typeof formSchema>;
 // This aligns with the security fix in the server action.
 type OnboardingRole = 'JOB_SEEKER' | 'EMPLOYER';
 
+interface OnboardingFormProps {
+  fullName: string;
+  role: OnboardingRole;
+  // FIX: Add a prop to receive the redirect URL
+  afterSignIn: string | null;
+}
+
 // FIX: Update the component's props to use the new, stricter type.
-export default function OnboardingForm({ fullName, role }: { fullName: string, role: OnboardingRole }) {
+export default function OnboardingForm({ fullName, role, afterSignIn }: OnboardingFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -40,10 +48,12 @@ export default function OnboardingForm({ fullName, role }: { fullName: string, r
     setIsLoading(true);
     setError(null);
     // This call is now type-safe. The 'role' prop can no longer be 'ADMIN'.
-    const result = await updateOnboardingAction({ ...values, role: role });
+    const result = await updateOnboardingAction({ ...values, role: role, redirectTo: afterSignIn});
 
-    if (result.success) {
-      router.push('/dashboard');
+    if (result.success && result.redirectTo) {
+
+      // FIX: Use the redirect path returned from the server action
+      router.push(result.redirectTo);
       router.refresh();
     } else {
       // Assuming result.error is a string now based on previous refactors
