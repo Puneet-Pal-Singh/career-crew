@@ -6,12 +6,17 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
   const intendedRole = searchParams.get('intended_role');
-  
+
   // Build the redirect URL first, passing the role intent to the onboarding page.
+  const allowedRoles = ['JOB_SEEKER', 'EMPLOYER'];
+  const validatedRole = intendedRole && allowedRoles.includes(intendedRole) ? intendedRole : null;
+
+  // Build the redirect URL, only passing the role if it's valid.
   let next = '/onboarding/complete-profile';
-  if (intendedRole) {
-    next = `${next}?intended_role=${intendedRole}`;
+  if (validatedRole) {
+    next = `${next}?intended_role=${validatedRole}`;
   }
+  
   const response = NextResponse.redirect(new URL(next, origin));
 
   if (code) {
