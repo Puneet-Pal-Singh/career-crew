@@ -24,6 +24,7 @@ export type JobStatus =
 // Interface for data expected by the JobCard component
 export interface JobCardData {
   id: string;
+  slug: string;
   title: string;
   companyName: string;
   companyLogoUrl?: string | null;

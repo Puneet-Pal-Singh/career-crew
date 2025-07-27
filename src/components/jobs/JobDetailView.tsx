@@ -36,13 +36,20 @@ export default function JobDetailView({ job }: JobDetailViewProps) {
     }
   }, [job]);
 
-  const handleApplyNow = () => {
-    if (!user && authInitialized && !authLoading) {
-      const currentPath = window.location.pathname;
-      router.push(`/login?redirectedFrom=${encodeURIComponent(currentPath)}`);
-    } else if (user) {
-      setIsApplicationModalOpen(true);
+ const handleApplyNow = () => {
+    // Check if auth has initialized and is not in a loading state.
+    if (authInitialized && !authLoading) {
+      if (!user) {
+        // If there's no user, redirect to login with the return path.
+        const returnUrl = window.location.pathname;
+        // FIX: Use 'after_sign_in' for the parameter name for consistency.
+        router.push(`/login?after_sign_in=${encodeURIComponent(returnUrl)}`);
+      } else {
+        // If there is a user, open the application modal.
+        setIsApplicationModalOpen(true);
+      }
     }
+    // If auth is still loading, the button is disabled, so nothing happens.
   };
 
   if (!job) { // Should not happen if page component handles notFound()

@@ -36,3 +36,21 @@ export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(
     });
   };
 }
+
+// --- NEW: Add this slug generation function ---
+/**
+ * Generates a URL-friendly slug from a job ID and title.
+ * e.g., (123, "Senior Software Engineer!") => "123-senior-software-engineer"
+ * @param id - The job ID (string or number).
+ * @param title - The job title.
+ * @returns {string} The generated SEO-friendly slug.
+ */
+export function generateJobSlug(id: string | number, title: string): string {
+  const sanitizedTitle = title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-')         // Replace spaces with hyphens
+    .replace(/-+/g, '-')          // Replace multiple hyphens with a single one
+    .trim();
+  return `${id}-${sanitizedTitle}`;
+}

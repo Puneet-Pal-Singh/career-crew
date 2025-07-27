@@ -26,7 +26,8 @@ export default function JobListItem({ job }: JobListItemProps) {
       </div>
       <div className="flex-grow">
         <h3 className="text-lg font-semibold text-foreground hover:text-primary transition-colors">
-          <Link href={`/jobs/${job.id}`}>{job.title}</Link>
+          {/* Use the slug for SEO-friendly URLs */}
+         <Link href={`/jobs/${job.slug}`}>{job.title}</Link>
         </h3>
         <p className="text-sm text-muted-foreground">{job.companyName}</p>
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
@@ -37,7 +38,9 @@ export default function JobListItem({ job }: JobListItemProps) {
       </div>
       <div className="flex-shrink-0 w-full sm:w-auto mt-4 sm:mt-0 flex flex-col sm:items-end gap-2">
         <Button asChild className="w-full sm:w-auto">
-          <Link href={`/jobs/${job.id}`}>
+          {/* Use the slug for SEO-friendly URLs */}
+          {/* this is the link to the job detail page */}
+          <Link href={`/jobs/${job.slug}`}>
             View Details <ExternalLink className="w-4 h-4 ml-2"/>
           </Link>
         </Button>
