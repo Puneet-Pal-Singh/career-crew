@@ -8,7 +8,7 @@ import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import { loginUserAction } from '@/app/actions/auth/loginUserAction';
 import { supabase } from '@/lib/supabaseClient';
-import { SignInUI } from '@/components/ui/authui/SignInUI'; // CORRECTED IMPORT PATH
+import { SignInUI } from '@/components/ui/authui/SignInUI';
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -77,6 +77,8 @@ export default function SignInForm() {
       isLoading={isLoading}
       isGoogleLoading={isGoogleLoading}
       error={error}
+      // FIX: The "Sign up" link in the UI now points to the new contextual route
+      signupLink="/jobs/signup"
     />
   );
 }
