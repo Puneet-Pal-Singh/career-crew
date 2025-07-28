@@ -54,3 +54,25 @@ export function generateJobSlug(id: string | number, title: string): string {
     .trim();
   return `${id}-${sanitizedTitle}`;
 }
+
+// --- NEW: Add this security utility function ---
+/**
+ * Validates a URL path to ensure it is a safe, internal redirect target.
+ * Protects against Open Redirect and Path Traversal vulnerabilities.
+ * @param path - The URL path to validate.
+ * @returns {boolean} True if the path is a safe internal redirect, false otherwise.
+ */
+export function isValidInternalPath(path: string | null | undefined): path is string {
+  if (!path) return false;
+
+  return (
+    // Must start with '/'
+    path.startsWith('/') &&
+    // Must NOT start with '//' or '/\' (protocol-relative URLs)
+    !path.startsWith('//') &&
+    !path.startsWith('/\\') &&
+    // Must NOT contain '..' or '.\' (path traversal)
+    !path.includes('..') &&
+    !path.includes('.\\')
+  );
+}

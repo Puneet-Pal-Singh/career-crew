@@ -3,6 +3,8 @@ import { getSupabaseServerClient } from "@/lib/supabase/serverClient";
 import { redirect } from "next/navigation";
 import OnboardingForm from "./OnboardingForm";
 import type { Metadata } from 'next';
+// Import the security utility
+import { isValidInternalPath } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: 'Complete Your Profile - CareerCrew',
@@ -38,7 +40,9 @@ export default async function CompleteProfilePage({ params, searchParams }: Comp
 
   // Redirect to the final destination if onboarding is already done.
   if (profile?.has_completed_onboarding) {
-    const finalRedirect = resolvedSearchParams.after_sign_in || '/dashboard';
+    // Use the new robust validation function
+    const afterSignIn = resolvedSearchParams.after_sign_in;
+    const finalRedirect = isValidInternalPath(afterSignIn) ? afterSignIn : '/dashboard';
     redirect(finalRedirect);
   }
 
@@ -56,7 +60,7 @@ export default async function CompleteProfilePage({ params, searchParams }: Comp
         <OnboardingForm 
           fullName={profile?.full_name || ''} 
           role={finalRole}
-          // FIX: Pass the redirect URL down to the client component.
+          // Pass the redirect URL down to the client component.
           afterSignIn={afterSignIn}
         />
       </div>

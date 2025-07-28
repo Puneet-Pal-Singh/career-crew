@@ -5,6 +5,8 @@ import { getSupabaseServerClient } from "@/lib/supabase/serverClient";
 import { z } from "zod";
 import { revalidatePath } from 'next/cache';
 import { adminSupabase } from "@/lib/supabase/adminClient";
+// Import the security utility
+import { isValidInternalPath } from "@/lib/utils";
 
 const onboardingSchema = z.object({
   fullName: z.string().min(2, 'Full name is required.'),
@@ -61,7 +63,8 @@ export async function updateOnboardingAction(input: z.infer<typeof onboardingSch
   await supabase.auth.refreshSession();
 
   revalidatePath('/dashboard', 'layout');
-  // FIX: Determine the final redirect path
-  const finalRedirectTo = (redirectTo && redirectTo.startsWith('/')) ? redirectTo : '/dashboard';
+  // Use the new robust validation function
+  const finalRedirectTo = isValidInternalPath(redirectTo) ? redirectTo : '/dashboard';
+
   return { success: true, redirectTo: finalRedirectTo };
 }

@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { type CookieOptions, createServerClient } from '@supabase/ssr';
+// Import the security utility
+import { isValidInternalPath } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -17,11 +19,12 @@ export async function GET(request: NextRequest) {
   if (validatedRole) {
     redirectParams.set('intended_role', validatedRole);
   }
-  // A simple safety check to ensure it's a relative path
-  if (afterSignIn && afterSignIn.startsWith('/')) {
+
+  // --- FIX: Use the new robust validation function ---
+  if (isValidInternalPath(afterSignIn)) {
     redirectParams.set('after_sign_in', afterSignIn);
   }
-
+  
   const next = `/onboarding/complete-profile?${redirectParams.toString()}`;
   const response = NextResponse.redirect(new URL(next, origin));
 

@@ -3,6 +3,8 @@
 
 import { z } from "zod";
 import { getSupabaseServerClient } from "@/lib/supabase/serverClient";
+// Import the security utility
+import { isValidInternalPath } from "@/lib/utils";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -25,9 +27,8 @@ export async function loginUserAction(input: z.infer<typeof loginSchema>) {
     return { success: false, error: { message: "Invalid email or password." } };
   }
 
-  // A simple safety check to ensure we only redirect to internal pages.
-  const finalRedirectTo = (redirectTo && redirectTo.startsWith('/')) ? redirectTo : '/dashboard';
+  // --- FIX: Use the new robust validation function ---
+  const finalRedirectTo = isValidInternalPath(redirectTo) ? redirectTo : '/dashboard';
 
-  // FIX: Return the redirect path to the client
   return { success: true, redirectTo: finalRedirectTo };
 }
