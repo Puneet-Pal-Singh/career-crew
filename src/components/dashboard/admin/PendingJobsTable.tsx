@@ -26,13 +26,16 @@ interface PendingJobsTableProps {
 export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps) {
   const [jobs, setJobs] = useState<AdminPendingJobData[]>(initialJobs);
   const [isProcessing, startTransition] = useTransition();
-  const [processingJobId, setProcessingJobId] = useState<string | null>(null);
+  // FIX: The processing ID should be a number to match the job.id type.
+  const [processingJobId, setProcessingJobId] = useState<number | null>(null);
   const { toast } = useToast(); // For showing success/error messages
 
-  const handleApprove = async (jobId: string, jobTitle: string) => {
+  // FIX: This handler now accepts a number for the jobId.
+  const handleApprove = async (jobId: number, jobTitle: string) => {
     setProcessingJobId(jobId);
     startTransition(async () => {
-      const result = await approveJob(jobId);
+      // FIX: Convert the numeric ID to a string before sending to the server action.
+      const result = await approveJob(String(jobId));
       if (result.success) {
         setJobs(prevJobs => prevJobs.filter(job => job.id !== jobId));
         toast({
@@ -51,11 +54,13 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
     });
   };
 
-  const handleReject = async (jobId: string, jobTitle: string) => {
+  // FIX: This handler now accepts a number for the jobId.
+  const handleReject = async (jobId: number, jobTitle: string) => {
     // Optional: Add a confirmation dialog before rejecting
     setProcessingJobId(jobId);
     startTransition(async () => {
-      const result = await rejectJob(jobId);
+      // FIX: Convert the numeric ID to a string before sending to the server action.
+      const result = await rejectJob(String(jobId));
       if (result.success) {
         setJobs(prevJobs => prevJobs.filter(job => job.id !== jobId));
         toast({
@@ -118,7 +123,7 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    onClick={() => handleApprove(job.id, job.title)}
+                    onClick={() => handleApprove(job.id, job.title)} // Passes the number
                     disabled={isProcessing}
                     className="text-green-600 border-green-600 hover:bg-green-50 hover:text-green-700"
                     title="Approve Job"
@@ -129,7 +134,7 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    onClick={() => handleReject(job.id, job.title)}
+                    onClick={() => handleReject(job.id, job.title)} // Passes the number
                     disabled={isProcessing}
                     className="text-red-600 border-red-600 hover:bg-red-50 hover:text-red-700"
                     title="Reject Job"

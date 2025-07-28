@@ -1,28 +1,35 @@
-// src/app/jobs/[jobSlug]/page.tsx
 import { getJobDetailsById } from '@/app/actions/query/getJobDetailsByIdAction';
 import JobDetailView from '@/components/jobs/JobDetailView';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 
-// FIX: Define the props type to reflect that `params` is a Promise.
 interface JobDetailsPageProps {
   params: Promise<{
-    jobSlug: string; // e.g., "12345-senior-software-engineer"
+    jobSlug: string;
   }>;
 }
 
-// This function generates metadata for SEO
+// Helper function to safely parse the job ID from the slug
+function parseJobIdFromSlug(slug: string): number | null {
+  const jobIdStr = slug.split('-')[0];
+  if (!jobIdStr) return null;
+
+  const jobId = parseInt(jobIdStr, 10);
+  return isNaN(jobId) ? null : jobId;
+}
+
 export async function generateMetadata({ params: paramsPromise }: JobDetailsPageProps): Promise<Metadata> {
-  // FIX: Extract the ID from the slug. The slug is guaranteed to exist.
   const params = await paramsPromise;
-  const jobId = params.jobSlug.split('-')[0];
-  
-  // A defensive check in case the slug is malformed (e.g., just "my-job-title")
-  if (!jobId || isNaN(parseInt(jobId, 10))) {
+  // FIX: Use the helper to get a number or null
+  const jobId = parseJobIdFromSlug(params.jobSlug);
+
+  if (jobId === null) {
     return { title: 'Invalid Job Post - CareerCrew' };
   }
 
+  // The server action now receives the correct type (number)
   const job = await getJobDetailsById(jobId);
+
   if (!job) {
     return { title: 'Job Not Found - CareerCrew' };
   }
@@ -31,16 +38,17 @@ export async function generateMetadata({ params: paramsPromise }: JobDetailsPage
     description: job.description.substring(0, 160),
   };
 }
-export default async function JobDetailsPage({ params: paramsPromise }: JobDetailsPageProps) {
-  // FIX: Extract the ID from the slug to fetch the data.
-  const params = await paramsPromise;
-  const jobId = params.jobSlug.split('-')[0];
 
-  // If the extracted part is not a valid number or doesn't exist, it's a 404.
-  if (!jobId || isNaN(parseInt(jobId, 10))) {
+export default async function JobDetailsPage({ params: paramsPromise }: JobDetailsPageProps) {
+  const params = await paramsPromise;
+  // FIX: Use the helper to get a number or null
+  const jobId = parseJobIdFromSlug(params.jobSlug);
+
+  if (jobId === null) {
     notFound();
   }
 
+  // The server action now receives the correct type (number)
   const job = await getJobDetailsById(jobId);
 
   if (!job) {

@@ -2,11 +2,11 @@
 "use server";
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { UserProfile } from '@/types'; // Assuming UserProfile is correctly defined in types
+import type { UserProfile } from '@/types';
 
 /**
  * Helper function to ensure the currently authenticated user has 'ADMIN' privileges.
- * Fetches the user's profile to verify their role.
+ * Fetches the user's profile to verify their role and that they are fully onboarded.
  * 
  * @param supabaseClient - An instance of the Supabase client.
  * @returns {Promise<{ user: UserProfile; error?: undefined } | { user?: undefined; error: string }>}
@@ -24,9 +24,10 @@ export const ensureAdmin = async (
 
   const { data: userProfileData, error: profileError } = await supabaseClient
     .from('profiles')
-    .select('id, role, email, updated_at, has_made_role_choice, full_name, avatar_url') // Select all fields of UserProfile
+    // FIX: Select only the required columns and use the correct column name.
+    .select('role, has_completed_onboarding')
     .eq('id', authUser.id)
-    .single<UserProfile>(); // Expect a single UserProfile record
+    .single<{ role: string, has_completed_onboarding: boolean }>(); // Type the partial response
 
   if (profileError) {
     console.error("ensureAdmin: Error fetching profile for user:", authUser.id, profileError.message);
@@ -37,11 +38,13 @@ export const ensureAdmin = async (
     return { error: "User profile not found. Cannot verify admin status." };
   }
 
-  if (userProfileData.role !== 'ADMIN') {
-    console.warn(`ensureAdmin: User ${authUser.id} with role '${userProfileData.role}' attempted an admin action. Access denied.`);
+  // FIX: Check for the correct role AND that onboarding is complete.
+  if (userProfileData.role !== 'ADMIN' || !userProfileData.has_completed_onboarding) {
+    console.warn(`ensureAdmin: User ${authUser.id} with role '${userProfileData.role}' and onboarding status '${userProfileData.has_completed_onboarding}' attempted an admin action. Access denied.`);
     return { error: "Admin privileges required for this action." };
   }
   
-  // console.log(`ensureAdmin: Admin check passed for user: ${authUser.id}`);
-  return { user: userProfileData }; // On success, return the full UserProfile of the admin
+  // Cast the partial data to the full UserProfile type for the return,
+  // as the rest of the function doesn't need the other fields.
+  return { user: userProfileData as UserProfile };
 };

@@ -23,7 +23,7 @@ export type JobStatus =
 
 // Interface for data expected by the JobCard component
 export interface JobCardData {
-  id: string;
+  id: number; // Use number if your job IDs are numeric, or string if they are UUIDs
   slug: string;
   title: string;
   companyName: string;
@@ -38,7 +38,7 @@ export interface JobCardData {
 
 // Interface for displaying an employer's jobs in their dashboard
 export interface EmployerJobDisplayData {
-  id: string;
+  id: number; // Use number if your job IDs are numeric
   title: string;
   status: JobStatus; // Uses the JobStatus type
   createdAt: string; // Formatted date string, e.g., "YYYY-MM-DD" or "Month DD, YYYY"
@@ -69,7 +69,7 @@ export interface PaginatedJobsResult {
 
 // Interface for the full details of a job, used on the job detail page
 export interface JobDetailData {
-  id: string;
+  id: number; // FIX: Changed from string to number
   title: string;
   companyName: string;
   companyLogoUrl?: string | null;
@@ -90,7 +90,7 @@ export interface JobDetailData {
 }
 
 export interface AdminPendingJobData {
-  id: string;
+  id: number;
   title: string;
   companyName: string;
   createdAt: string; // Formatted date
@@ -108,8 +108,8 @@ export type ApplicationStatusOption =
   
 // Interface for displaying a seeker's application in their dashboard
 export interface ApplicationViewData {
-  applicationId: string; // ID from the 'applications' table
-  jobId: string;         // ID from the 'jobs' table
+  applicationId: string; // ID from the 'applications' table - This remains a string (UUID)
+  jobId: number;         // ID from the 'jobs' table - This is a number
   jobTitle: string;
   companyName: string;
   // companyLogoUrl?: string | null; // Optional, if you want to display it
@@ -119,10 +119,10 @@ export interface ApplicationViewData {
 
 // ... (add this to your existing types)
 export interface RecentApplication {
-  applicationId: string;
+  applicationId: string; // ID from the 'applications' table - This remains a string (UUID)
   applicationStatus: ApplicationStatusOption;
   dateApplied: string;
-  jobId: string;
+  jobId: number; // FIX: Changed from string to number
   jobTitle: string;
   companyName: string;
 }

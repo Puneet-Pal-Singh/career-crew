@@ -151,7 +151,9 @@ export default function JobDetailView({ job }: JobDetailViewProps) {
       <ApplicationModal
         isOpen={isApplicationModalOpen}
         onOpenChange={setIsApplicationModalOpen}
-        jobId={job.id}
+        // FIX: Convert the numeric job.id to a string for the modal.'
+        // Ensure jobId is a string for the modal
+        jobId={String(job.id)}
         jobTitle={job.title}
       />
     </>
