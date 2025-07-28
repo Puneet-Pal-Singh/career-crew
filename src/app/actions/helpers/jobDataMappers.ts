@@ -5,7 +5,7 @@ import { generateJobSlug } from '@/lib/utils';
 
 // Raw structure for jobs when data is intended for JobCardData mapping
 export interface RawJobDataForCard {
-  id: string;
+  id: number; // Changed from string to number to match the new DB schema.
   title: string;
   company_name: string;
   company_logo_url: string | null;

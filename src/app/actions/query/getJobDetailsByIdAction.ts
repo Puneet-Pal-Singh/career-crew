@@ -1,12 +1,10 @@
-// src/app/actions/query/getJobDetailsByIdAction.ts
 "use server";
 
 import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
-import type { JobDetailData, JobTypeOption } from '@/types'; // Your defined types
+import type { JobDetailData, JobTypeOption } from '@/types';
 
-// Interface for the raw data structure from Supabase for a single job's details
 interface RawJobDetailFromSupabase {
-  id: string;
+  id: number; // This is correct
   title: string;
   company_name: string;
   company_logo_url: string | null;
@@ -21,7 +19,7 @@ interface RawJobDetailFromSupabase {
   requirements: string | null;
   application_email: string | null;
   application_url: string | null;
-  status: string; // To ensure we only show 'APPROVED' jobs
+  status: string;
 }
 
 /**
@@ -29,7 +27,9 @@ interface RawJobDetailFromSupabase {
  * @param jobId - The ID of the job to fetch.
  * @returns {Promise<JobDetailData | null>} The detailed job data, or null if not found or on error.
  */
-export async function getJobDetailsById(jobId: string): Promise<JobDetailData | null> {
+// FIX: The function must accept a 'number' for the jobId.
+export async function getJobDetailsById(jobId: number): Promise<JobDetailData | null> {
+  // FIX: The old safety check was incorrect. A simple check for a valid number is enough.
   if (!jobId) {
     console.warn("getJobDetailsById: No jobId provided.");
     return null;
@@ -37,22 +37,17 @@ export async function getJobDetailsById(jobId: string): Promise<JobDetailData | 
 
   const supabase = await getSupabaseServerClient();
   const actionName = "getJobDetailsById";
-  // console.log(`Server Action (${actionName}): Fetching details for job ID: ${jobId}`);
 
   try {
     const { data: rawJob, error } = await supabase
       .from('jobs')
-      .select(`
-        id, title, company_name, company_logo_url, location, is_remote,
-        job_type, salary_min, salary_max, salary_currency, created_at,
-        description, requirements, application_email, application_url, status
-      `)
+      .select(`*`) // Simplified select for clarity
       .eq('id', jobId)
-      .eq('status', 'APPROVED') // Only fetch 'APPROVED' jobs for public detail view
+      .eq('status', 'APPROVED')
       .single<RawJobDetailFromSupabase>();
 
     if (error) {
-      if (error.code === 'PGRST116') { // Job not found or not approved
+      if (error.code === 'PGRST116') {
         console.log(`Server Action (${actionName}): Job not found or not approved for ID: ${jobId}`);
       } else {
         console.error(`Server Action (${actionName}): Supabase error for job ${jobId}. Message:`, error.message);
@@ -60,8 +55,7 @@ export async function getJobDetailsById(jobId: string): Promise<JobDetailData | 
       return null;
     }
 
-    if (!rawJob) { // Should be caught by .single() error if PGRST116, but defensive check
-      console.log(`Server Action (${actionName}): No job data returned for ID: ${jobId}.`);
+    if (!rawJob) {
       return null;
     }
 
@@ -85,7 +79,6 @@ export async function getJobDetailsById(jobId: string): Promise<JobDetailData | 
       applicationUrl: rawJob.application_url,
     };
     
-    // console.log(`Server Action (${actionName}): Fetched details for job ID: ${jobId}`);
     return jobDetail;
 
   } catch (err: unknown) {

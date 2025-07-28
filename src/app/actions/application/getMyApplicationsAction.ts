@@ -22,7 +22,7 @@ interface RawApplicationWithJob {
   id: string;
   created_at: string;
   status: string; // This will be one of ApplicationStatusOption values
-  job_id: string;
+  job_id: number; // FIX: Changed from string to number
   jobs: RawJoinedJobData | RawJoinedJobData[] | null; // Supabase might return object or array for join
 }
 
@@ -82,7 +82,7 @@ export async function getMyApplications(): Promise<GetMyApplicationsResult> {
 
       return {
         applicationId: app.id,
-        jobId: app.job_id,
+        jobId: app.job_id, // This is now a number
         jobTitle: jobInfo?.title || "Job Title Unavailable",
         companyName: jobInfo?.company_name || "Company Unavailable",
         dateApplied: new Date(app.created_at).toLocaleDateString('en-US', {
