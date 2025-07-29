@@ -3,8 +3,8 @@
 
 import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
 import { ensureAdmin } from '@/app/actions/helpers/adminAuthUtils';
-import type { JobStatus } from '@/types'; // For casting status
-// import { revalidatePath } from 'next/cache'; // For cache revalidation
+import type { JobStatus } from '@/types';
+// import { revalidatePath } from 'next/cache';
 
 interface AdminActionResult {
   success: boolean;
@@ -13,14 +13,15 @@ interface AdminActionResult {
 
 /**
  * Approves a job posting. Requires ADMIN privileges.
- * @param jobId - The ID of the job to approve.
+ * @param jobId - The ID (string or number) of the job to approve.
  */
 export async function approveJob(jobId: string | number): Promise<AdminActionResult> {
-
   if (!jobId) {
     console.warn("approveJob Action: No jobId provided.");
     return { success: false, error: "Job ID is required for approval." };
   }
+  // FIX: Coerce to string for consistent use, matching the pattern in rejectJobAction.
+  const idAsString = String(jobId);
 
   const supabase = await getSupabaseServerClient();
   const actionName = "approveJob";
@@ -32,33 +33,30 @@ export async function approveJob(jobId: string | number): Promise<AdminActionRes
     }
     const adminUser = adminCheckResult.user;
 
-    // console.log(`Server Action (${actionName}): Admin ${adminUser.id} attempting to approve job ${jobId}.`);
-
     const { error } = await supabase
       .from('jobs')
       .update({ 
         status: 'APPROVED' as JobStatus, 
         updated_at: new Date().toISOString() 
       })
-      .eq('id', jobId)
-      .eq('status', 'PENDING_APPROVAL' as JobStatus); // Only approve if currently pending
+      .eq('id', idAsString) // Use the consistent string variable
+      .eq('status', 'PENDING_APPROVAL' as JobStatus);
 
     if (error) {
-      console.error(`Server Action (${actionName}): Error approving job ${jobId}. Message:`, error.message);
+      console.error(`Server Action (${actionName}): Error approving job ${idAsString}. Message:`, error.message);
       return { success: false, error: `Failed to approve job: ${error.message}` };
     }
 
-    console.log(`Server Action (${actionName}): Job ${jobId} approved by admin ${adminUser.id}.`);
-    // Consider revalidating paths
+    console.log(`Server Action (${actionName}): Job ${idAsString} approved by admin ${adminUser.id}.`);
     // revalidatePath('/dashboard/admin/pending-approvals');
-    // revalidatePath('/jobs'); // Public listing
-    // revalidatePath(`/jobs/${jobId}`); // Specific job detail
+    // revalidatePath('/jobs');
+    // revalidatePath(`/jobs/${idAsString}`);
 
     return { success: true };
 
   } catch (err: unknown) { 
     const message = err instanceof Error ? err.message : "An unexpected error occurred.";
-    console.error(`Server Action (${actionName}): Unexpected error for job ${jobId}. Message:`, message, err);
+    console.error(`Server Action (${actionName}): Unexpected error for job ${idAsString}. Message:`, message, err);
     return { success: false, error: message };
   }
 }
