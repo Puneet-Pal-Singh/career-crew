@@ -4,7 +4,6 @@
 import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
 import { ensureAdmin } from '@/app/actions/helpers/adminAuthUtils';
 import type { JobStatus } from '@/types';
-// import { revalidatePath } from 'next/cache';
 
 interface AdminActionResult {
   success: boolean;
@@ -13,13 +12,16 @@ interface AdminActionResult {
 
 /**
  * Rejects a job posting. Requires ADMIN privileges.
- * @param jobId - The ID of the job to reject.
+ * @param jobId - The ID (string or number) of the job to reject.
  */
-export async function rejectJob(jobId: string): Promise<AdminActionResult> {
+// FIX: The function now accepts a string or a number for the jobId.
+export async function rejectJob(jobId: string | number): Promise<AdminActionResult> {
   if (!jobId) {
     console.warn("rejectJob Action: No jobId provided.");
     return { success: false, error: "Job ID is required for rejection." };
   }
+  // Coerce to string for consistent use in Supabase client and logging.
+  const idAsString = String(jobId);
 
   const supabase = await getSupabaseServerClient();
   const actionName = "rejectJob";
@@ -31,30 +33,27 @@ export async function rejectJob(jobId: string): Promise<AdminActionResult> {
     }
     const adminUser = adminCheckResult.user;
 
-    // console.log(`Server Action (${actionName}): Admin ${adminUser.id} attempting to reject job ${jobId}.`);
-
     const { error } = await supabase
       .from('jobs')
       .update({ 
         status: 'REJECTED' as JobStatus, 
         updated_at: new Date().toISOString() 
       })
-      .eq('id', jobId)
-      .eq('status', 'PENDING_APPROVAL' as JobStatus); // Only reject if currently pending
+      .eq('id', idAsString) // Use the string version here
+      .eq('status', 'PENDING_APPROVAL' as JobStatus);
 
     if (error) {
-      console.error(`Server Action (${actionName}): Error rejecting job ${jobId}. Message:`, error.message);
+      console.error(`Server Action (${actionName}): Error rejecting job ${idAsString}. Message:`, error.message);
       return { success: false, error: `Failed to reject job: ${error.message}` };
     }
     
-    console.log(`Server Action (${actionName}): Job ${jobId} rejected by admin ${adminUser.id}.`);
-    // revalidatePath('/dashboard/admin/pending-approvals');
-
+    console.log(`Server Action (${actionName}): Job ${idAsString} rejected by admin ${adminUser.id}.`);
+    
     return { success: true };
 
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "An unexpected error occurred.";
-    console.error(`Server Action (${actionName}): Unexpected error for job ${jobId}. Message:`, message, err);
+    console.error(`Server Action (${actionName}): Unexpected error for job ${idAsString}. Message:`, message, err);
     return { success: false, error: message };
   }
 }

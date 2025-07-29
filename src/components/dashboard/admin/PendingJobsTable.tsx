@@ -34,8 +34,10 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
   const handleApprove = async (jobId: number, jobTitle: string) => {
     setProcessingJobId(jobId);
     startTransition(async () => {
-      // FIX: Convert the numeric ID to a string before sending to the server action.
-      const result = await approveJob(String(jobId));
+      // we used to Convert the numeric ID to a string before sending to the server action.
+      // FIX: Pass the numeric ID directly to the server action.
+      // The server action is now responsible for handling the type.
+      const result = await approveJob(jobId);
       if (result.success) {
         setJobs(prevJobs => prevJobs.filter(job => job.id !== jobId));
         toast({
@@ -60,7 +62,8 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
     setProcessingJobId(jobId);
     startTransition(async () => {
       // FIX: Convert the numeric ID to a string before sending to the server action.
-      const result = await rejectJob(String(jobId));
+      // FIX: Pass the numeric ID directly to the server action.
+      const result = await rejectJob(jobId);
       if (result.success) {
         setJobs(prevJobs => prevJobs.filter(job => job.id !== jobId));
         toast({
