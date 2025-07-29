@@ -15,6 +15,8 @@ import { Badge } from "@/components/ui/Badge";
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Eye, Edit3, Archive, PlusCircle, Briefcase} from 'lucide-react';
+// --- NEW: Import the slug generation utility ---
+import { generateJobSlug } from '@/lib/utils';
 
 interface EmployerJobTableProps {
   jobs: EmployerJobDisplayData[];
@@ -96,7 +98,7 @@ export default function EmployerJobTable({ jobs }: EmployerJobTableProps) {
                     title={canBeViewedPublicly ? "View Public Listing" : "Not live for public view"}
                   >
                     {canBeViewedPublicly ? (
-                      <Link href={`/jobs/${job.id}`} target="_blank"><Eye className="h-4 w-4" /></Link>
+                      <Link href={`/jobs/${generateJobSlug(job.id, job.title)}`} target="_blank"><Eye className="h-4 w-4" /></Link>
                     ) : (
                       <span className="p-2 inline-flex"><Eye className="h-4 w-4 text-muted-foreground" /></span>
                     )}
