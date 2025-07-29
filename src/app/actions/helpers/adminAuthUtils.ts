@@ -46,5 +46,15 @@ export const ensureAdmin = async (
   
   // Cast the partial data to the full UserProfile type for the return,
   // as the rest of the function doesn't need the other fields.
-  return { user: userProfileData as UserProfile };
+  // Return only the validated fields we actually fetched
+  return { 
+    user: {
+      ...userProfileData,
+      id: authUser.id,
+      email: authUser.email || '',
+      updated_at: new Date().toISOString(),
+      full_name: null,
+      avatar_url: null
+    } as UserProfile 
+  };
 };

@@ -15,7 +15,8 @@ interface AdminActionResult {
  * Approves a job posting. Requires ADMIN privileges.
  * @param jobId - The ID of the job to approve.
  */
-export async function approveJob(jobId: string): Promise<AdminActionResult> {
+export async function approveJob(jobId: string | number): Promise<AdminActionResult> {
+
   if (!jobId) {
     console.warn("approveJob Action: No jobId provided.");
     return { success: false, error: "Job ID is required for approval." };
