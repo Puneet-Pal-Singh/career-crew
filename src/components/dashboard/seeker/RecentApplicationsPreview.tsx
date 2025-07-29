@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion'; // <-- Import motion
+// This is a utility function to generate job slugs
+import { generateJobSlug } from '@/lib/utils';
 
 interface RecentApplicationsPreviewProps {
   applications: RecentApplication[];
@@ -98,7 +100,7 @@ export default function RecentApplicationsPreview({ applications }: RecentApplic
               whileHover={{ backgroundColor: 'hsl(var(--muted))', scale: 1.01 }} // Added hover effect
             >
               <div>
-                <Link href={`/jobs/${app.jobId}`} className="font-semibold text-primary hover:underline">
+                <Link href={`/jobs/${generateJobSlug(app.jobId, app.jobTitle)}`} className="font-semibold text-primary hover:underline">
                     {app.jobTitle}
                 </Link>
                 <p className="text-sm text-muted-foreground">{app.companyName}</p>

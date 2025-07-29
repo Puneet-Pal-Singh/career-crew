@@ -227,6 +227,9 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+// This is a utility function to generate job slugs
+import { generateJobSlug } from '@/lib/utils';
+
 
 interface MyApplicationsTableProps {
   applications: ApplicationViewData[];
@@ -415,7 +418,7 @@ export default function MyApplicationsTable({ applications }: MyApplicationsTabl
             <CardContent className="p-4">
               <div className="flex justify-between items-start mb-3">
                 <div className="flex-1">
-                  <Link href={`/jobs/${app.jobId}`} className="text-lg font-semibold text-blue-600 hover:text-blue-800">
+                  <Link href={`/jobs/${generateJobSlug(app.jobId, app.jobTitle)}`} className="text-lg font-semibold text-blue-600 hover:text-blue-800">
                     {app.jobTitle}
                   </Link>
                   <div className="flex items-center gap-2 mt-1 text-gray-600">
@@ -465,7 +468,7 @@ export default function MyApplicationsTable({ applications }: MyApplicationsTabl
                     <TableCell className="py-4">
                       <div className="space-y-1">
                         <Link 
-                          href={`/jobs/${app.jobId}`} 
+                          href={`/jobs/${generateJobSlug(app.jobId, app.jobTitle)}`}
                           className="text-lg font-semibold text-blue-600 hover:text-blue-800 block"
                         >
                           {app.jobTitle}
@@ -494,7 +497,7 @@ export default function MyApplicationsTable({ applications }: MyApplicationsTabl
                     <TableCell className="py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Button variant="outline" size="sm" asChild>
-                          <Link href={`/jobs/${app.jobId}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                          <Link href={`/jobs/${generateJobSlug(app.jobId, app.jobTitle)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
                             <Eye className="w-4 h-4" />
                             View Job
                           </Link>
