@@ -3,84 +3,53 @@
 
 import { z } from "zod";
 import { getSupabaseServerClient } from "@/lib/supabase/serverClient";
-import type { UserRole } from "@/types";
+// import type { UserRole } from "@/types";
 
-// Define the schema for input validation
 const registerSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
+  // The action only accepts roles that can be created via a public form.
   role: z.enum(["JOB_SEEKER", "EMPLOYER"]),
 });
 
 interface RegisterResult {
   success: boolean;
-  error?: {
-    message: string;
-  };
+  error?: { message: string; };
 }
 
-export async function registerUserAction(input: {
-  fullName: string;
-  email: string;
-  password: string;
-  role: UserRole;
-}): Promise<RegisterResult> {
+// Ensure the input type matches the stricter schema
+export async function registerUserAction(input: z.infer<typeof registerSchema>): Promise<RegisterResult> {
   const validation = registerSchema.safeParse(input);
 
   if (!validation.success) {
-    return {
-      success: false,
-      error: { message: "Invalid input: " + JSON.stringify(validation.error.flatten().fieldErrors) }
-    };
+    return { success: false, error: { message: "Invalid input: " + JSON.stringify(validation.error.flatten().fieldErrors) }};
   }
 
   const supabase = await getSupabaseServerClient();
   const { fullName, email, password, role } = validation.data;
 
-  // Sign up the user in Supabase Auth
-  const { data: { user }, error: signUpError } = await supabase.auth.signUp({
+  const { error: signUpError } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      // You can pass additional metadata here if needed
+      // ✅ THE FIX: Pass the role directly in the metadata.
+      // This allows the database trigger to set the correct role from the start.
       data: {
         full_name: fullName,
-        // The role will be set in the profiles table directly
+        role: role, 
       },
     },
   });
 
   if (signUpError) {
-    console.error("Sign-up Error:", signUpError.message);
-    // Provide a more user-friendly message
     if (signUpError.message.includes("User already registered")) {
         return { success: false, error: { message: "An account with this email already exists." } };
     }
     return { success: false, error: { message: signUpError.message } };
   }
 
-  if (!user) {
-    return { success: false, error: { message: "User registration failed, please try again." } };
-  }
-  
-  // The DB trigger creates the profile. Now, update it with the role and name.
-  // This is a critical step.
-  const { error: profileError } = await supabase
-    .from("profiles")
-    .update({ 
-        role: role,
-        full_name: fullName 
-    })
-    .eq("id", user.id);
-
-  if (profileError) {
-    console.error("Profile Update Error:", profileError.message);
-    // Service role is not available, so we cannot delete the user automatically.
-    // Log the orphaned user ID for manual cleanup.
-    console.error(`Orphaned user account due to profile update failure. User ID: ${user.id}`);
-    return { success: false, error: { message: "Could not set user role." } };
-  }
+  // ❌ The old, failing `.update()` call has been removed.
 
   return { success: true };
 }

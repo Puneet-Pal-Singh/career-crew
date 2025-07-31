@@ -1,4 +1,5 @@
 // src/components/auth/SignUpForm.tsx
+
 "use client";
 
 import { useState } from 'react';
@@ -8,11 +9,17 @@ import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import { registerUserAction } from '@/app/actions/auth/registerUserAction';
 import { supabase } from '@/lib/supabaseClient';
-import type { UserRole } from '@/types';
+// ❌ We no longer need the broad UserRole type here, as it's too permissive.
+// import type { UserRole } from '@/types';
 import { SignUpUI } from '@/components/ui/authui/SignUpUI';
 
+// ✅ THE FIX: Define a stricter type for the roles this form can handle.
+// This component should never be used to create an Admin.
+type PublicSignUpRole = 'EMPLOYER' | 'JOB_SEEKER';
+
 interface SignUpFormProps {
-  role: UserRole;
+  // Use the new, more specific type for the role prop.
+  role: PublicSignUpRole;
 }
 
 const formSchema = z.object({
@@ -23,6 +30,7 @@ const formSchema = z.object({
 
 export type FormValues = z.infer<typeof formSchema>;
 
+// The component now correctly enforces that its role can only be one of the public types.
 export default function SignUpForm({ role }: SignUpFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -37,29 +45,26 @@ export default function SignUpForm({ role }: SignUpFormProps) {
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     setError(null);
-
-    // Use environment variable for base URL for consistency and security
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
-    const redirectTo = `${baseUrl}/auth/callback?intended_role=${role}`;
     
-    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+    // This logic is correct.
+    const redirectTo = `${window.location.origin}/auth/callback?intended_role=${role}`;
+    
+    await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: redirectTo,
+        redirectTo,
         queryParams: { prompt: 'select_account' },
       },
     });
-
-    if (oauthError) {
-        setError(oauthError.message);
-        setIsGoogleLoading(false);
-    }
   };
 
   const onSubmit = async (values: FormValues) => {
     setIsLoading(true);
     setError(null);
+
+    // ✅ This call is now type-safe. TypeScript knows that 'role' cannot be 'ADMIN'.
     const result = await registerUserAction({ ...values, role: role });
+    
     if (result.success) {
       router.push('/login?message=check-email');
     } else {
