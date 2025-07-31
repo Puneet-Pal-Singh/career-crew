@@ -49,13 +49,18 @@ export default function SignUpForm({ role }: SignUpFormProps) {
     // This logic is correct.
     const redirectTo = `${window.location.origin}/auth/callback?intended_role=${role}`;
     
-    await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo,
         queryParams: { prompt: 'select_account' },
       },
     });
+    
+    if (error) {
+      setError('Failed to sign in with Google. Please try again.');
+      setIsGoogleLoading(false);
+    }
   };
 
   const onSubmit = async (values: FormValues) => {

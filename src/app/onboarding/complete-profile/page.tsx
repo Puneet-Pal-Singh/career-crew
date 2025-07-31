@@ -36,7 +36,17 @@ export default async function CompleteProfilePage({ searchParams }: CompleteProf
     finalRole = 'JOB_SEEKER';
   }
   
-  const { data: profile } = await supabase.from('profiles').select('full_name, has_completed_onboarding').eq('id', user.id).single();
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('full_name, has_completed_onboarding')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError) {
+    console.error('Profile fetch error:', profileError);
+    // Handle appropriately - maybe redirect to error page or create profile
+    return redirect('/login');
+  }
 
   if (profile?.has_completed_onboarding) {
     return redirect('/dashboard');
