@@ -28,9 +28,6 @@ export default function SignInForm() {
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirectTo'); // Gets the value of 'redirectTo'
 
-  // This line is the source of the type 'string | null'.
-  const redirectToFromParams = searchParams.get('redirectTo');
-
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: { email: '', password: '' },
@@ -60,8 +57,8 @@ export default function SignInForm() {
     setIsLoading(true);
     setError(null);
     
-    const redirectTo = redirectToFromParams || undefined;
-    const result = await loginUserAction({ ...values, redirectTo });
+    // Pass the redirectTo parameter to the action.
+    const result = await loginUserAction({ ...values, redirectTo: redirectTo || undefined });
 
     if (result.success) {
       // ✅ THE FIX: Instead of pushing to a new URL, just refresh the page.
