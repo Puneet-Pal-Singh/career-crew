@@ -5,11 +5,12 @@ import React, { useState, useEffect } from 'react';
 import type { JobDetailData } from '@/types';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { MapPin, Briefcase, Mail, ExternalLink, Building, Clock, DollarSign, Zap, Loader2 } from 'lucide-react';
+import { MapPin, Briefcase, Mail, ExternalLink, Building, Clock, DollarSign, Zap } from 'lucide-react';
 import Link from 'next/link';
 import ApplicationModal from '@/components/jobs/ApplicationModal';
-import { useAuth } from '@/contexts/AuthContext';
+// import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation'; // Corrected import
+import type { User } from '@supabase/supabase-js'; // Import the User type
 
 // Helper to format salary display
 const formatSalaryDetail = (min?: number | null, max?: number | null, currency?: string | null): string => {
@@ -22,11 +23,13 @@ const formatSalaryDetail = (min?: number | null, max?: number | null, currency?:
 
 interface JobDetailViewProps {
   job: JobDetailData; // Job data is passed as a prop
+  // ✅ Accept the user object as a prop from the server component.
+  user: User | null;
 }
 
-export default function JobDetailView({ job }: JobDetailViewProps) {
+export default function JobDetailView({ job, user }: JobDetailViewProps) {
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
-  const { user, isLoading: authLoading, isInitialized: authInitialized } = useAuth();
+  // const { user, isLoading: authLoading, isInitialized: authInitialized } = useAuth();
   const router = useRouter();
 
   // Update document title when job data is available
@@ -37,19 +40,14 @@ export default function JobDetailView({ job }: JobDetailViewProps) {
   }, [job]);
 
  const handleApplyNow = () => {
-    // Check if auth has initialized and is not in a loading state.
-    if (authInitialized && !authLoading) {
-      if (!user) {
-        // If there's no user, redirect to login with the return path.
-        const returnUrl = window.location.pathname;
-        // FIX: Use 'after_sign_in' for the parameter name for consistency.
-        router.push(`/login?after_sign_in=${encodeURIComponent(returnUrl)}`);
-      } else {
-        // If there is a user, open the application modal.
-        setIsApplicationModalOpen(true);
-      }
+    // The logic is now much simpler and more reliable.
+    if (!user) {
+      const returnUrl = window.location.pathname;
+      // ✅ THE FIX: Use 'redirectTo' to match the login page's expectation.
+      router.push(`/login?redirectTo=${encodeURIComponent(returnUrl)}`);
+    } else {
+      setIsApplicationModalOpen(true);
     }
-    // If auth is still loading, the button is disabled, so nothing happens.
   };
 
   if (!job) { // Should not happen if page component handles notFound()
@@ -85,9 +83,7 @@ export default function JobDetailView({ job }: JobDetailViewProps) {
                     size="lg" 
                     className="w-full sm:w-auto" 
                     onClick={handleApplyNow}
-                    disabled={authInitialized && authLoading}
                 >
-                  {(authInitialized && authLoading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Apply Now
                 </Button>
               </div>
@@ -151,7 +147,6 @@ export default function JobDetailView({ job }: JobDetailViewProps) {
       <ApplicationModal
         isOpen={isApplicationModalOpen}
         onOpenChange={setIsApplicationModalOpen}
-        // FIX: Convert the numeric job.id to a string for the modal.'
         // Ensure jobId is a string for the modal
         jobId={String(job.id)}
         jobTitle={job.title}

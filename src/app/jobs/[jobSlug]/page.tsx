@@ -1,7 +1,9 @@
+// src/app/jobs/[jobSlug]/page.tsx
 import { getJobDetailsById } from '@/app/actions/query/getJobDetailsByIdAction';
 import JobDetailView from '@/components/jobs/JobDetailView';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
+import { getSupabaseServerClient } from '@/lib/supabase/serverClient'; // Import the client
 
 interface JobDetailsPageProps {
   params: Promise<{
@@ -41,19 +43,24 @@ export async function generateMetadata({ params: paramsPromise }: JobDetailsPage
 
 export default async function JobDetailsPage({ params: paramsPromise }: JobDetailsPageProps) {
   const params = await paramsPromise;
-  // FIX: Use the helper to get a number or null
   const jobId = parseJobIdFromSlug(params.jobSlug);
 
   if (jobId === null) {
     notFound();
   }
+  
+  // FIX: Use the server client to fetch job details and user data
+  const supabase = await getSupabaseServerClient();
+  const jobPromise = getJobDetailsById(jobId);
+  const userPromise = supabase.auth.getUser();
 
-  // The server action now receives the correct type (number)
-  const job = await getJobDetailsById(jobId);
+  // Await both promises in parallel.
+  const [job, { data: userData }] = await Promise.all([jobPromise, userPromise]);
 
   if (!job) {
     notFound();
   }
 
-  return <JobDetailView job={job} />;
+  // ✅ Pass the session (which can be null for logged-out users) as a prop.
+  return <JobDetailView job={job} user={userData.user} />;
 }

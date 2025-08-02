@@ -27,26 +27,35 @@ export default async function DashboardPage() {
     .eq('id', user.id)
     .single();
 
-  // If there's an error fetching the profile, or onboarding is incomplete, redirect.
-  // This is a robust safeguard against race conditions or data issues.
-  if (error || !userProfile || !userProfile.has_completed_onboarding) {
+  if (error) {
+    // This error means the user is authenticated, but their profile data is missing.
+    // The safest action is to perform a server-side sign-out to clear the invalid session.
+    console.error(`CRITICAL: No profile found for logged-in user ${user.id}. Signing out. Error: ${error.message}`);
+    
+    // 1. Invalidate the user's session on the server.
+    await supabase.auth.signOut();
+    
+    // 2. Redirect to the login page with an error message.
+    return redirect('/login?error=account_issue');
+  }
+
+  // This check remains as a safeguard.
+  if (!userProfile.has_completed_onboarding) {
     return redirect('/onboarding/complete-profile');
   }
 
-  // Render the correct view based on the fetched profile role.
+  // Render the correct view based on the profile role.
   switch (userProfile.role) {
     case 'JOB_SEEKER':
-      // The unused variable error is now gone because `user` and `userProfile` are passed as props.
       return <JobSeekerDashboardView profile={userProfile} />;
-    
     case 'EMPLOYER':
       return <EmployerDashboardView profile={userProfile} />;
-      
     case 'ADMIN':
       return <AdminDashboardView profile={userProfile} />;
-      
     default:
-      // If role is invalid, log out the user for safety.
-      return redirect('/api/auth/logout'); // Assumes you have a logout route handler
+      // If the role is somehow invalid, also sign the user out safely.
+      console.error(`CRITICAL: Invalid role detected for user ${user.id}. Signing out.`);
+      await supabase.auth.signOut();
+      return redirect('/login?error=invalid_role');
   }
 }
