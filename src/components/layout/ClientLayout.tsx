@@ -20,7 +20,10 @@ export default function ClientLayout({ children, user }: ClientLayoutProps) {
     '/jobs/signup',
     '/employer/signup',
     '/onboarding/complete-profile',
-    '/auth/auth-code-error'
+    '/auth/auth-code-error',
+    '/forgot-password',
+    '/update-password',
+    '/terms' 
   ];
 
   const isDashboardRoute = pathname.startsWith('/dashboard');
