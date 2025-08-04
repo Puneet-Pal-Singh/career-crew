@@ -22,7 +22,8 @@ export default function ClientLayout({ children, user }: ClientLayoutProps) {
     '/onboarding/complete-profile',
     '/auth/auth-code-error',
     '/forgot-password',
-    '/update-password'
+    '/update-password',
+    '/terms' 
   ];
 
   const isDashboardRoute = pathname.startsWith('/dashboard');
