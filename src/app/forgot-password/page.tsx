@@ -1,6 +1,5 @@
 // src/app/forgot-password/page.tsx
 import type { Metadata } from 'next';
-import AuthPageLayout from '@/components/auth/AuthPageLayout';
 import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
 
 export const metadata: Metadata = {
@@ -10,15 +9,11 @@ export const metadata: Metadata = {
 
 export default function ForgotPasswordPage() {
   return (
-    <AuthPageLayout>
-      {/* This structure is now correct and will not cause a type error. */}
-      <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">Forgot Your Password?</h1>
-        <p className="text-sm text-muted-foreground mt-2">
-          No problem. Enter your email below and we&apos;ll send you a link to reset it.
-        </p>
+    // This layout centers the form on the page, matching the inspiration.
+    <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
+      <div className="w-full max-w-md">
+        <ForgotPasswordForm />
       </div>
-      <ForgotPasswordForm />
-    </AuthPageLayout>
+    </div>
   );
 }
