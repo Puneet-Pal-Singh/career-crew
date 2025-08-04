@@ -62,7 +62,11 @@ export default function ForgotPasswordForm() {
                 <Link href="/login">Back to log in</Link>
             </Button>
             <p className="mt-4 text-xs text-muted-foreground">
-                Didn&apos;t receive the email? <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => setSuccess(false)}>Click to resend</Button>
+                Didn&apos;t receive the email? <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => {
+                  setSuccess(false);
+                  setError(null);
+                  setSubmittedEmail('');
+                }}>Click to resend</Button>
             </p>
         </CardContent>
       </Card>
