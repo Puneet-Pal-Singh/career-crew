@@ -30,10 +30,11 @@ export interface JobCardData {
   companyLogoUrl?: string | null;
   location: string;
   isRemote: boolean;
-  salary?: string | null; // e.g., "$100k - $120k" or "Competitive"
+  salaryMin?: number | null;
+  salaryMax?: number | null; // e.g., "$100k - $120k" or "Competitive"
   postedDate: string; // e.g., "Posted 2 days ago", "2023-10-26"
-  type?: string; // e.g., "Full-time", "Contract", "Part-time"
-  tags?: string[]; // NEWLY ADDED: Optional array of strings for tags
+  jobType?: string | null; // e.g., "Full-time", "Contract", "Part-time"
+  tags: string[]; // NEWLY ADDED: Optional array of strings for tags
 }
 
 // Interface for displaying an employer's jobs in their dashboard

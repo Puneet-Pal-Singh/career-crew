@@ -76,3 +76,27 @@ export function isValidInternalPath(path: string | null | undefined): path is st
     !path.includes('.\\')
   );
 }
+
+/**
+ * Formats an ISO date string into a human-readable relative time format (e.g., "X days ago").
+ * @param {string} dateStr - The ISO date string to format.
+ * @returns {string} The formatted, human-readable date string.
+ */
+export function formatDatePosted(dateStr: string): string {
+  try {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (isNaN(diffDays)) return "Invalid date";
+    if (diffDays <= 1) return 'Posted today';
+    if (diffDays <= 30) return `Posted ${diffDays} days ago`;
+    
+    // For older dates, you might want a different format
+    return `Posted on ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+  } catch (error) {
+    console.error("Failed to format date:", dateStr, error);
+    return "Invalid date";
+  }
+}
