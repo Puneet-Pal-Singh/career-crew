@@ -16,6 +16,7 @@ export interface RawJobDataForCard {
   salary_max: number | null;
   salary_currency: string | null;
   created_at: string; // ISO string timestamp
+  tags: string[] | null;  // It can be a string array or null if the column is empty.
 }
 
 // Create a lookup map for efficiency
@@ -49,6 +50,6 @@ export const mapRawJobToJobCardData = (rawJob: RawJobDataForCard): JobCardData =
     jobType: jobTypeLabelMap.get(rawJob.job_type as JobTypeOption) || rawJob.job_type,
     postedDate: rawJob.created_at,
     // tags: [], // Default to empty array; populate if tags are fetched from DB
-    tags: ['React', 'TypeScript', 'Next.js']
+    tags: rawJob.tags || [],
   };
 };
