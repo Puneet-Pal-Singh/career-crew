@@ -2,7 +2,7 @@
 'use client';
 
 import { motion, useScroll, useTransform } from 'framer-motion';
-import TestimonialCard from '@/components/landing/TestimonialCard'; 
+import TestimonialCard from '@/components/landing/testimonials/TestimonialCard'; 
 import type { TestimonialData as Testimonial } from '@/lib/data/landingContent'; 
 import { useRef, type RefObject } from 'react'; // Import RefObject
 
