@@ -1,5 +1,5 @@
 // src/app/employer/page.tsx
-import ForEmployersSection from "@/components/landing/ForEmployersSection";
+import ForEmployersSection from "@/components/landing/value-proposition/ForEmployersSection";
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
