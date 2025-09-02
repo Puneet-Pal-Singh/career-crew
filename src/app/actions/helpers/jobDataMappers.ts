@@ -1,7 +1,7 @@
 // src/app/actions/helpers/jobDataMappers.ts
-import type { JobCardData, JobTypeOption } from '@/types';
+import type { JobCardData, JobTypeOption, JobDetailData } from '@/types';
 import { JOB_TYPE_OPTIONS } from '@/lib/constants'; // <-- Import the constant
-import { generateJobSlug } from '@/lib/utils';
+// import { generateJobSlug } from '@/lib/utils';
 
 // Raw structure for jobs when data is intended for JobCardData mapping
 export interface RawJobDataForCard {
@@ -17,6 +17,15 @@ export interface RawJobDataForCard {
   salary_currency: string | null;
   created_at: string; // ISO string timestamp
   tags: string[] | null;  // It can be a string array or null if the column is empty.
+}
+
+// A new interface for the full job detail data from the database.
+export interface RawJobDataForDetail extends RawJobDataForCard {
+  description: string;
+  requirements: string | null;
+  application_email: string | null;
+  application_url: string | null;
+  salary_currency: string | null;
 }
 
 // Create a lookup map for efficiency
@@ -37,7 +46,7 @@ export const mapRawJobToJobCardData = (rawJob: RawJobDataForCard): JobCardData =
 
   return {
     id: rawJob.id,
-    slug: generateJobSlug(rawJob.id, rawJob.title), // Generate SEO-friendly slug
+    // slug: generateJobSlug(rawJob.id, rawJob.title), // Generate SEO-friendly slug
     title: rawJob.title,
     companyName: rawJob.company_name,
     companyLogoUrl: rawJob.company_logo_url || '/company-logos/default-company-logo.svg',
@@ -50,6 +59,28 @@ export const mapRawJobToJobCardData = (rawJob: RawJobDataForCard): JobCardData =
     jobType: jobTypeLabelMap.get(rawJob.job_type as JobTypeOption) || rawJob.job_type,
     postedDate: rawJob.created_at,
     // tags: [], // Default to empty array; populate if tags are fetched from DB
+    tags: rawJob.tags || [],
+  };
+};
+
+// dedicated mapper for the Job Detail Page.
+export const mapRawJobToJobDetailData = (rawJob: RawJobDataForDetail): JobDetailData => {
+  return {
+    id: rawJob.id,
+    title: rawJob.title,
+    companyName: rawJob.company_name,
+    companyLogoUrl: rawJob.company_logo_url,
+    location: rawJob.location,
+    isRemote: rawJob.is_remote,
+    jobType: jobTypeLabelMap.get(rawJob.job_type as JobTypeOption) || rawJob.job_type || undefined,
+    salaryMin: rawJob.salary_min,
+    salaryMax: rawJob.salary_max,
+    salaryCurrency: rawJob.salary_currency,
+    postedDate: rawJob.created_at,
+    description: rawJob.description,
+    requirements: rawJob.requirements,
+    applicationEmail: rawJob.application_email,
+    applicationUrl: rawJob.application_url,
     tags: rawJob.tags || [],
   };
 };

@@ -24,7 +24,7 @@ export type JobStatus =
 // Interface for data expected by the JobCard component
 export interface JobCardData {
   id: number; // Use number if your job IDs are numeric, or string if they are UUIDs
-  slug: string;
+  // slug: string;
   title: string;
   companyName: string;
   companyLogoUrl?: string | null;
@@ -85,6 +85,7 @@ export interface JobDetailData {
   requirements?: string | null; // Full requirements
   applicationEmail?: string | null;
   applicationUrl?: string | null;
+  tags: string[]; 
   // Optional: Further company details if you have a separate company profile table later
   // companyDescription?: string;
   // companyWebsite?: string;
