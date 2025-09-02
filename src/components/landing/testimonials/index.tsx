@@ -1,123 +1,84 @@
-// src/components/landing/AnimatedTestimonialsSection.tsx
-'use client';
+// src/components/landing/testimonials/index.tsx
+"use client"; // ✅ THE FIX: This directive MUST be at the top of this file.
 
-import { motion, useScroll, useTransform } from 'framer-motion';
-import TestimonialCard from '@/components/landing/testimonials/TestimonialCard'; 
-import type { TestimonialData as Testimonial } from '@/lib/data/landingContent'; 
-import { useRef, type RefObject } from 'react'; // Import RefObject
+import React, { useCallback } from 'react';
+import useEmblaCarousel from 'embla-carousel-react';
+import Autoplay from 'embla-carousel-autoplay';
+import TestimonialCard from './TestimonialCard';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
-interface AnimatedTestimonialsSectionProps {
+interface Testimonial {
+  quote: string;
+  name: string;
+  role: string;
+  avatarUrl: string;
+}
+
+interface TestimonialsSectionProps {
   testimonials: Testimonial[];
 }
 
-// Simple Blob component for background decoration with parallax
-interface BackgroundParallaxBlobProps {
-  className: string;
-  initialY: string | number;
-  finalY: string | number;
-  // Correctly type the ref to accept a div element or null
-  scrollTargetRef: RefObject<HTMLDivElement | null>; 
-}
-
-function BackgroundParallaxBlob({ 
-  className, 
-  initialY, 
-  finalY,
-  scrollTargetRef 
-}: BackgroundParallaxBlobProps) {
-  const { scrollYProgress } = useScroll({
-    target: scrollTargetRef, 
-    offset: ["start end", "end start"] 
-  });
-
-  const y = useTransform(scrollYProgress, [0, 1], [initialY, finalY]);
-
-  return (
-    <motion.div 
-      className={`absolute rounded-full filter blur-3xl opacity-25 dark:opacity-20 -z-10 ${className}`}
-      style={{ y }} 
-    />
+export default function TestimonialsSection({ testimonials }: TestimonialsSectionProps) {
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    { loop: true }, 
+    [Autoplay({ delay: 5000, stopOnInteraction: true })]
   );
-}
 
-export default function AnimatedTestimonialsSection({ testimonials }: AnimatedTestimonialsSectionProps) {
-  // Initialize the ref with the correct type for a div element
-  const sectionRef = useRef<HTMLDivElement>(null); 
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
 
-  const sectionHeaderVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } }
-  };
-  
-  const gridContainerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1, 
-      transition: { staggerChildren: 0.15, delayChildren: 0.2 } 
-    },
-  };
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
 
-  const cardVariants = {
-    hidden: { opacity: 0, y: 50, scale: 0.9 },
-    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: [0.25, 0.1, 0.25, 1] } },
-  };
+  if (!testimonials || testimonials.length === 0) {
+    return null;
+  }
 
   return (
-    <section 
-      ref={sectionRef} 
-      id="testimonials" 
-      className="py-20 md:py-28 lg:py-32 relative overflow-hidden
-                 bg-primary/5 dark:bg-slate-800" 
-    >
-      <BackgroundParallaxBlob 
-        scrollTargetRef={sectionRef} // Pass the correctly typed ref
-        className="w-72 h-72 sm:w-96 sm:h-96 bg-secondary/20 dark:bg-secondary-dark/15 top-[5%] left-[-15%]" 
-        initialY="-50px" 
-        finalY="50px" 
-      />
-      <BackgroundParallaxBlob 
-        scrollTargetRef={sectionRef} // Pass the correctly typed ref
-        className="w-60 h-60 sm:w-80 sm:h-80 bg-accent1/20 dark:bg-accent1-dark/15 bottom-[5%] right-[-10%]" 
-        initialY="50px" 
-        finalY="-50px" 
-      />
-      
-      <div className="container mx-auto px-4 relative z-0">
-        <motion.div
-          className="text-center mb-16 md:mb-20"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          variants={sectionHeaderVariants}
-        >
-          <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-content-light dark:text-content-dark">
-            Loved by Job Seekers & Employers
-          </h2>
-          <p className="mt-6 text-lg sm:text-xl text-subtle-light dark:text-subtle-dark max-w-xl lg:max-w-2xl mx-auto leading-relaxed">
-            Hear what our users have to say about their experience with CareerCrew.
-          </p>
-        </motion.div>
-        {testimonials && testimonials.length > 0 ? (
-          <motion.div 
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10"
-            variants={gridContainerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.1 }}
-          >
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={testimonial.name + index}
-                variants={cardVariants}
-                whileHover={{ y: -10, scale: 1.03, transition: { duration: 0.25, ease: "backOut" } }}
-              >
-                <TestimonialCard testimonial={testimonial} />
-              </motion.div>
-            ))}
-          </motion.div>
-        ) : (
-          <p className="text-center text-lg text-subtle-light dark:text-subtle-dark">Testimonials are on their way!</p>
-        )}
+    <section id="testimonials" className="py-20 md:py-28 bg-white dark:bg-slate-900/50">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-12 items-center">
+          
+          <div className="lg:col-span-1 text-center lg:text-left">
+            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground">
+              From our community.
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground">
+              Here&apos;s what other professionals had to say about their experience with CareerCrew.
+            </p>
+            <div className="hidden lg:flex items-center gap-4 mt-8">
+              <Button variant="outline" size="icon" onClick={scrollPrev} aria-label="Previous testimonial">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" onClick={scrollNext} aria-label="Next testimonial">
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          <div className="lg:col-span-2 mt-12 lg:mt-0">
+            <div className="overflow-hidden" ref={emblaRef}>
+              <div className="flex">
+                {testimonials.map((testimonial) => (
+                  <TestimonialCard key={testimonial.name} testimonial={testimonial} />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:hidden flex items-center justify-center gap-4 mt-8">
+            <Button variant="outline" size="icon" onClick={scrollPrev} aria-label="Previous testimonial">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" onClick={scrollNext} aria-label="Next testimonial">
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
+          
+        </div>
       </div>
     </section>
   );
