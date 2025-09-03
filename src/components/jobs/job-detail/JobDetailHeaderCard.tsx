@@ -35,7 +35,7 @@ export default function JobDetailHeaderCard({ job, onApplyNow }: JobDetailHeader
           <Button size="lg" onClick={onApplyNow} className="w-full">Apply Now</Button>
         </div>
       </div>
-      
+      {/* Skills / Tags Section */}
       {job.tags && job.tags.length > 0 && (
         <div className="mt-4 pt-4 border-t">
           <h3 className="text-sm font-semibold mb-2">Skills</h3>
