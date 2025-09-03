@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Linkedin, Twitter, Github, Mail, ArrowRight, MapPin, Phone } from 'lucide-react';
+import { Linkedin, Twitter, Mail, ArrowRight } from 'lucide-react';
+// import { Linkedin, Twitter, Mail, ArrowRight, MapPin, Phone } from 'lucide-react';
 
 const footerLinks = {
   jobSeekers: [
@@ -16,12 +17,16 @@ const footerLinks = {
     { name: 'Post a Job', href: '/dashboard/post-job' },
     { name: 'Dashboard', href: '/dashboard' },
   ],
+   legal: [
+    { name: 'Privacy Policy', href: '/privacy-policy' },
+    { name: 'Terms of Service', href: '/terms' },
+  ]
 };
 
 const socialLinks = [
   { icon: Linkedin, href: '#', label: 'LinkedIn' },
   { icon: Twitter, href: '#', label: 'Twitter' },
-  { icon: Github, href: '#', label: 'GitHub' }
+  // { icon: Github, href: '#', label: 'GitHub' }
 ];
 
 export default function Footer() {
@@ -108,12 +113,15 @@ export default function Footer() {
           <div className="flex flex-col lg:flex-row justify-between items-center gap-6 text-sm text-muted-foreground">
             <p>&copy; {new Date().getFullYear()} Career Crew. All rights reserved.</p>
             <div className="flex flex-wrap items-center gap-6">
-              <span className="flex items-center gap-2"><MapPin size={16} />Delhi, India</span>
-              <span className="flex items-center gap-2"><Phone size={16} />+91 (555) 123-4567</span>
+              {/* <span className="flex items-center gap-2"><MapPin size={16} />Delhi, India</span>
+              <span className="flex items-center gap-2"><Phone size={16} />+91 (555) 123-4567</span> */}
             </div>
             <div className="flex space-x-6">
-              <Link href="/privacy" className="hover:text-primary">Privacy Policy</Link>
-              <Link href="/terms" className="hover:text-primary">Terms of Service</Link>
+              {footerLinks.legal.map((link) => (
+                <Link key={link.name} href={link.href} className="hover:text-primary">
+                  {link.name}
+                </Link>
+              ))}
             </div>
           </div>
         </div>

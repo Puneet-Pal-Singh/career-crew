@@ -5,6 +5,7 @@ import RecentJobsSection from '@/components/landing/recent-jobs';
 import ValuePropositionSection from '@/components/landing/value-proposition';
 // Assuming ValuePropositionSection2 is a temporary or alternate component
 import ValuePropositionSection2 from '@/components/landing/value-proposition/ForEmployersSection';
+import StatsSection from '@/components/landing/stats';
 import TestimonialsSection from '@/components/landing/testimonials';
 import FinalCTASection from '@/components/landing/final-cta';
 
@@ -20,6 +21,7 @@ export default async function HomePage() {
       <RecentJobsSection />
       <ValuePropositionSection />
       <ValuePropositionSection2 />
+      <StatsSection />
       <TestimonialsSection testimonials={testimonials} />
       <FinalCTASection />
     </>

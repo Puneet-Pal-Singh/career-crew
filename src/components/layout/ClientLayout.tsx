@@ -23,7 +23,8 @@ export default function ClientLayout({ children, user }: ClientLayoutProps) {
     '/auth/auth-code-error',
     '/forgot-password',
     '/update-password',
-    '/terms' 
+    '/terms',
+    '/privacy-policy' 
   ];
 
   const isDashboardRoute = pathname.startsWith('/dashboard');
