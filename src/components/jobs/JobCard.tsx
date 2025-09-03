@@ -67,6 +67,7 @@ export default function JobCard({ job }: JobCardProps) {
 
         <CardFooter className="p-0 pt-4">
           <div className="flex flex-wrap gap-2">
+            {/* unique key for each tag using index to avoid key collisions  */}
             {job.tags.slice(0, 3).map((tag, idx) => (
               <Badge key={`${slug}-tag-${idx}`} variant="secondary" className="font-normal">{tag}</Badge>
             ))}
