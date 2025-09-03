@@ -45,13 +45,13 @@ export default function AnimatedFinalCTASection() {
           className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-x-6 gap-y-4"
         >
           <Link
-            href="/register?role=seeker"
+            href="/jobs/signup"
             className="w-full sm:w-auto rounded-md bg-white dark:bg-surface-dark px-8 py-3.5 text-base font-semibold text-primary dark:text-primary-dark shadow-lg hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-all duration-150 transform hover:scale-105"
           >
             I&apos;m Looking for a Job
           </Link>
           <Link
-            href="/register?role=employer"
+            href="/employer/signup"
             className="w-full sm:w-auto group text-base font-semibold leading-6 text-white dark:text-content-dark hover:opacity-90 transition-colors duration-150 flex items-center justify-center gap-2 border border-white/80 dark:border-border-dark px-8 py-3.5 rounded-md hover:border-white dark:hover:border-white/70 hover:shadow-md"
           >
             I&apos;m Hiring <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />

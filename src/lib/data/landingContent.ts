@@ -76,9 +76,9 @@ export async function getFeaturedCompaniesData(): Promise<FeaturedCompanyData[]>
 export async function getTestimonialsData(): Promise<TestimonialData[]> {
   // Use actual or better placeholders for avatars and company logos
   return [
-    { quote: "CareerCrew helped me find the perfect frontend role incredibly fast. The platform is intuitive and the opportunities are top-notch!", name: 'Sarah L.', role: 'Senior Frontend Developer', avatarUrl: '/avatars/avatar-1.jpg', companyLogoUrl: '/company-logos/placeholder-logo-1.svg' },
-    { quote: "As a recruiter, finding quality candidates used to be a hassle. CareerCrew streamlined our hiring process significantly.", name: 'John B.', role: 'HR Manager at Zenith Solutions', avatarUrl: '/avatars/avatar-2.jpg', companyLogoUrl: '/company-logos/placeholder-logo-2.svg' },
-    { quote: "The ease of application and the direct connection with employers made all the difference. Highly recommend!", name: 'Alice W.', role: 'UX Designer at QuantumLeap AI', avatarUrl: '/avatars/avatar-3.jpg', companyLogoUrl: '/company-logos/placeholder-logo-3.svg' },
+    { quote: "CareerCrew helped me find the perfect frontend role incredibly fast. The platform is intuitive and the opportunities are top-notch!", name: 'Sarah L.', role: 'Senior Frontend Developer', avatarUrl: '/avatars/girl/2.jpeg', companyLogoUrl: '/company-logos/placeholder-logo-1.svg' },
+    { quote: "As a recruiter, finding quality candidates used to be a hassle. CareerCrew streamlined our hiring process significantly.", name: 'John B.', role: 'HR Manager at Zenith Solutions', avatarUrl: '/avatars/boy/1.jpeg', companyLogoUrl: '/company-logos/placeholder-logo-2.svg' },
+    { quote: "The ease of application and the direct connection with employers made all the difference. Highly recommend!", name: 'Alice W.', role: 'UX Designer at QuantumLeap AI', avatarUrl: '/avatars/girl/3.jpeg', companyLogoUrl: '/company-logos/placeholder-logo-3.svg' },
   ];
 }
 

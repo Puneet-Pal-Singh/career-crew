@@ -25,7 +25,7 @@ export async function getPublishedJobs(
       .from('jobs')
       .select(
         `id, title, company_name, company_logo_url, location, job_type, 
-         is_remote, salary_min, salary_max, salary_currency, created_at`,
+         is_remote, salary_min, salary_max, salary_currency, created_at, tags`,
         { count: 'exact' }
       )
       .eq('status', 'APPROVED');

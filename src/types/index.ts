@@ -24,16 +24,17 @@ export type JobStatus =
 // Interface for data expected by the JobCard component
 export interface JobCardData {
   id: number; // Use number if your job IDs are numeric, or string if they are UUIDs
-  slug: string;
+  // slug: string;
   title: string;
   companyName: string;
   companyLogoUrl?: string | null;
   location: string;
   isRemote: boolean;
-  salary?: string | null; // e.g., "$100k - $120k" or "Competitive"
+  salaryMin?: number | null;
+  salaryMax?: number | null; // e.g., "$100k - $120k" or "Competitive"
   postedDate: string; // e.g., "Posted 2 days ago", "2023-10-26"
-  type?: string; // e.g., "Full-time", "Contract", "Part-time"
-  tags?: string[]; // NEWLY ADDED: Optional array of strings for tags
+  jobType?: string | null; // e.g., "Full-time", "Contract", "Part-time"
+  tags: string[]; // NEWLY ADDED: Optional array of strings for tags
 }
 
 // Interface for displaying an employer's jobs in their dashboard
@@ -84,6 +85,7 @@ export interface JobDetailData {
   requirements?: string | null; // Full requirements
   applicationEmail?: string | null;
   applicationUrl?: string | null;
+  tags: string[]; 
   // Optional: Further company details if you have a separate company profile table later
   // companyDescription?: string;
   // companyWebsite?: string;

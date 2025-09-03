@@ -94,11 +94,11 @@ export default function Header({ user }: HeaderProps) {
                 Jobs
                 <span className={navLinkUnderline}></span>
               </Link>
-              <Link href="/#features-for-seekers" className={navLinkClasses}>
+              <Link href="/#for-job-seekers" className={navLinkClasses}>
                 For Job Seekers
                 <span className={navLinkUnderline}></span>
               </Link>
-              <Link href="/#features-for-companies" className={navLinkClasses}>
+              <Link href="/#for-employers" className={navLinkClasses}>
                 For Companies
                 <span className={navLinkUnderline}></span>
               </Link>
