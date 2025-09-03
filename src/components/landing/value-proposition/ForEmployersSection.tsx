@@ -41,17 +41,27 @@ export default function ForEmployersSection() {
   return (
     <section 
       id="for-employers" 
-      className="py-16 sm:py-20 md:py-28 lg:py-32 bg-surface-light dark:bg-surface-dark relative overflow-hidden"
+      className="py-16 sm:py-20 md:py-28 lg:py-32 bg-gray-50 dark:bg-gray-900 relative overflow-hidden"
     >
+      {/* Enhanced gradient overlay with better visibility */}
       <div 
         aria-hidden="true"
-        className="absolute inset-y-0 right-0 w-full sm:w-3/5 md:w-1/2 lg:w-2/5 xl:w-1/3 
-                   bg-gradient-to-l from-secondary/[.08] via-secondary/[.03] to-transparent 
-                   dark:from-secondary-dark/[.08] dark:via-secondary-dark/[.03] dark:to-transparent 
-                   -z-10 pointer-events-none"
+        className="absolute inset-0 z-0
+                   bg-gradient-to-br from-orange-100/20 via-orange-50/10 to-transparent 
+                   dark:from-orange-900/10 dark:via-orange-800/5 dark:to-transparent 
+                   pointer-events-none"
+      />
+      
+      {/* Additional radial gradient for more visual impact */}
+      <div 
+        aria-hidden="true"
+        className="absolute top-0 right-0 w-full h-full z-0
+                   bg-gradient-to-l from-orange-200/10 via-orange-100/5 to-transparent 
+                   dark:from-orange-800/10 dark:via-orange-900/5 dark:to-transparent 
+                   pointer-events-none"
       />
 
-      <div className="container mx-auto px-4 relative z-0">
+      <div className="container mx-auto px-4 relative z-10">
         <div className="flex flex-col lg:grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           
           <motion.div 
@@ -104,7 +114,6 @@ export default function ForEmployersSection() {
                   variants={itemVariants}
                 >
                   <div className="flex-shrink-0 mt-1 p-2.5 bg-secondary/10 dark:bg-secondary-dark/15 text-secondary dark:text-secondary-dark rounded-lg shadow-sm">
-                    {/* CORRECTED ICON SIZING */}
                     <benefit.icon size={22} strokeWidth={2} />
                   </div>
                   <div>
@@ -121,7 +130,6 @@ export default function ForEmployersSection() {
                 className="group rounded-lg bg-secondary dark:bg-secondary-dark px-7 py-3.5 sm:px-8 sm:py-4 text-sm sm:text-base md:text-lg font-semibold text-white dark:text-gray-900 shadow-lg hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary transition-all duration-150 transform hover:scale-105 inline-flex items-center gap-2"
               >
                 Post a Job Today 
-                {/* CORRECTED ICON SIZING */}
                 <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
               </Link>
             </motion.div>

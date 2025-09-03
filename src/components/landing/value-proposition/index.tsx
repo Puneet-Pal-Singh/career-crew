@@ -64,7 +64,7 @@ export default function ForJobSeekersSection() {
             variants={visualVariants}
           >
             <Image
-              src="/illustrations/job-seeker-focus.svg" 
+              src="/illustrations/rocket.svg" 
               alt="Job seeker actively finding opportunities"
               width={480}
               height={480}
