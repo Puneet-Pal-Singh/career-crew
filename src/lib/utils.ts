@@ -49,8 +49,8 @@ export function generateJobSlug(id: string | number, title: string): string {
   const sanitizedTitle = title
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-    .replace(/\s+/g, '-')         // Replace spaces with hyphens
-    .replace(/-+/g, '-')          // Replace multiple hyphens with a single one
+    .replace(/\s/g, '-')         // Replace spaces with hyphens
+    .replace(/-/g, '-')          // Replace multiple hyphens with a single one
     .trim();
   return `${id}-${sanitizedTitle}`;
 }
@@ -83,20 +83,23 @@ export function isValidInternalPath(path: string | null | undefined): path is st
  * @returns {string} The formatted, human-readable date string.
  */
 export function formatDatePosted(dateStr: string): string {
-  try {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (isNaN(diffDays)) return "Invalid date";
-    if (diffDays <= 1) return 'Posted today';
-    if (diffDays <= 30) return `Posted ${diffDays} days ago`;
-    
-    // For older dates, you might want a different format
-    return `Posted on ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-  } catch (error) {
-    console.error("Failed to format date:", dateStr, error);
+  const date = new Date(dateStr);
+  if (Number.isNaN(date.getTime())){ 
     return "Invalid date";
   }
+  const now = new Date();
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / msPerDay);
+
+  if (diffDays < 0) return "Posted today"; // future dates due to clock skew
+  if (diffDays === 0) return "Posted today";
+  if (diffDays === 1) return "Posted yesterday";
+  if (diffDays <= 30) return `Posted ${diffDays} days ago`;
+
+  const sameYear = now.getFullYear() === date.getFullYear();
+  const opts: Intl.DateTimeFormatOptions = sameYear
+    ? { month: 'short', day: 'numeric' }
+    : { month: 'short', day: 'numeric', year: 'numeric' };
+  return `Posted on ${date.toLocaleDateString('en-US', opts)}`;
 }

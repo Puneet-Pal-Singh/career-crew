@@ -62,8 +62,8 @@ export default function TestimonialsSection({ testimonials }: TestimonialsSectio
           <div className="lg:col-span-2 mt-12 lg:mt-0">
             <div className="overflow-hidden" ref={emblaRef}>
               <div className="flex">
-                {testimonials.map((testimonial) => (
-                  <TestimonialCard key={testimonial.name} testimonial={testimonial} />
+                {testimonials.map((testimonial, idx) => (
+                  <TestimonialCard key={`${testimonial.name}-${idx}`} testimonial={testimonial} />
                 ))}
               </div>
             </div>

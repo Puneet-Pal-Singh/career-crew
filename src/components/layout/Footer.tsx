@@ -41,7 +41,9 @@ export default function Footer() {
 
   const handleNewsletterSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Newsletter signup for:', email);
+    // console.log('Newsletter signup for:', email);
+    // TODO: send `email` to a server action or API route (e.g., /api/newsletter)
+    // setSubmitted(true) should be called after a successful response.
     setSubmitted(true);
   };
 
@@ -100,12 +102,26 @@ export default function Footer() {
                 Get exclusive job opportunities and career insights.
               </p>
               {submitted ? (
-                <div className="text-center p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                <div className="text-center p-4 rounded-lg bg-green-500/10 border border-green-500/20" role="status" aria-live="polite">
                   <p className="font-medium text-green-700 dark:text-green-400">Thank you for subscribing!</p>
                 </div>
               ) : (
                 <form onSubmit={handleNewsletterSubmit} className="space-y-4">
-                  <Input type="email" placeholder="Enter your email address" className="bg-background/50 h-11" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                <label htmlFor="newsletter-email" className="sr-only">Email address</label>  
+                  <Input 
+                   id="newsletter-email"
+                   type="email" 
+                   autoComplete="email"
+                   placeholder="Enter your email address"
+                   className="bg-background/50 h-11"
+                   value={email}
+                   aria-describedby="newsletter-help"
+                   onChange={(e) => setEmail(e.target.value)}
+                   required 
+                  />
+                  <p id="newsletter-help" className="text-xs text-muted-foreground">
+                    We’ll send occasional updates. Unsubscribe anytime.
+                  </p>
                   <Button type="submit" className="w-full h-11 font-semibold group">
                     Subscribe <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>

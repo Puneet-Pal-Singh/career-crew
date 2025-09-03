@@ -126,7 +126,7 @@ export default function ForEmployersSection() {
 
             <motion.div variants={itemVariants}>
               <Link
-                href="/employer/post-job" 
+                href="/dashboard/post-job" 
                 className="group rounded-lg bg-secondary dark:bg-secondary-dark px-7 py-3.5 sm:px-8 sm:py-4 text-sm sm:text-base md:text-lg font-semibold text-white dark:text-gray-900 shadow-lg hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary transition-all duration-150 transform hover:scale-105 inline-flex items-center gap-2"
               >
                 Post a Job Today 
