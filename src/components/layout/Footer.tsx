@@ -24,8 +24,14 @@ const footerLinks = {
 };
 
 const socialLinks = [
-  { icon: Linkedin, href: '#', label: 'LinkedIn' },
-  { icon: Twitter, href: '#', label: 'Twitter' },
+  { icon: Linkedin,
+    href: 'https://www.linkedin.com/company/career-crew-consultants/',
+    label: 'LinkedIn'
+  },
+  { icon: Twitter,
+    href: 'https://x.com/CareerCrewJobs',
+    label: 'Twitter'
+  },
   // { icon: Github, href: '#', label: 'GitHub' }
 ];
 
