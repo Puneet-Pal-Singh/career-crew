@@ -25,7 +25,6 @@ export interface RawJobDataForDetail extends RawJobDataForCard {
   requirements: string | null;
   application_email: string | null;
   application_url: string | null;
-  salary_currency: string | null;
 }
 
 // Create a lookup map for efficiency

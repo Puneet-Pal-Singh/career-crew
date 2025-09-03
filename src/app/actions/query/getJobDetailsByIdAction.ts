@@ -98,7 +98,7 @@ import type { JobDetailData } from '@/types';
 import { mapRawJobToJobDetailData, type RawJobDataForDetail } from '@/app/actions/helpers/jobDataMappers';
 
 export async function getJobDetailsById(jobId: number): Promise<JobDetailData | null> {
-  if (!jobId || isNaN(jobId)) {
+  if (!Number.isFinite(jobId) || jobId <= 0) {
     return null;
   }
 

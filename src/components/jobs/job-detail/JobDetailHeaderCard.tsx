@@ -3,7 +3,7 @@
 
 import type { JobDetailData } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { MapPin, Briefcase } from 'lucide-react';
 

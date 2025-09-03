@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/Badge";
+import { Badge } from "@/components/ui/badge";
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Eye, Edit3, Archive, PlusCircle, Briefcase} from 'lucide-react';

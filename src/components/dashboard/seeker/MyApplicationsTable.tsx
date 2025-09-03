@@ -11,7 +11,7 @@
 //   TableHeader,
 //   TableRow,
 // } from "@/components/ui/table";
-// import { Badge } from "@/components/ui/Badge";
+// import { Badge } from "@/components/ui/badge";
 // import Link from 'next/link';
 // import { Button } from '@/components/ui/button';
 // import { Eye } from 'lucide-react'; // Icons
@@ -117,7 +117,7 @@
 //   TableHeader,
 //   TableRow,
 // } from "@/components/ui/table";
-// import { Badge } from "@/components/ui/Badge";
+// import { Badge } from "@/components/ui/badge";
 // import Link from 'next/link';
 // import { Button } from '@/components/ui/button';
 // import { Eye } from 'lucide-react';
@@ -208,7 +208,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/Badge";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent} from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { 

@@ -5,19 +5,9 @@ import type { JobCardData } from '@/types';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/badge';
 import { MapPin, DollarSign } from 'lucide-react';
-import { generateJobSlug } from '@/lib/utils';
-
-// Helper to format date into "X days ago"
-const formatDatePosted = (dateStr: string): string => {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffTime = Math.abs(now.getTime() - date.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  if (diffDays <= 1) return '1 day ago';
-  return `${diffDays} days ago`;
-};
+import { generateJobSlug, formatDatePosted } from '@/lib/utils';
 
 // Helper to format salary into the "$120k - $160k" format
 const formatSalary = (min?: number | null, max?: number | null): string | null => {
@@ -77,8 +67,8 @@ export default function JobCard({ job }: JobCardProps) {
 
         <CardFooter className="p-0 pt-4">
           <div className="flex flex-wrap gap-2">
-            {job.tags.slice(0, 3).map(tag => (
-              <Badge key={tag} variant="secondary" className="font-normal">{tag}</Badge>
+            {job.tags.slice(0, 3).map((tag, idx) => (
+              <Badge key={`${slug}-tag-${idx}`} variant="secondary" className="font-normal">{tag}</Badge>
             ))}
           </div>
         </CardFooter>

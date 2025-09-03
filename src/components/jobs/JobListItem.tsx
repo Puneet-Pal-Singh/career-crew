@@ -5,7 +5,7 @@ import type { JobCardData } from '@/types';
 import Link from 'next/link';
 import Image from 'next/image';
 // ✅ THE FIX: Import the Badge component from your UI library.
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/badge';
 import { MapPin, Briefcase } from 'lucide-react';
 import { generateJobSlug } from '@/lib/utils';
 
