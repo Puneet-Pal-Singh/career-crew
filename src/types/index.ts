@@ -21,6 +21,17 @@ export type JobStatus =
   | "FILLED" 
   | "DRAFT";
 
+// This constant object allows us to use the statuses as values in our code.
+// The `as const` assertion tells TypeScript that these properties will never change.
+export const JOB_STATUS = {
+  PENDING_APPROVAL: "PENDING_APPROVAL",
+  APPROVED: "APPROVED",
+  REJECTED: "REJECTED",
+  ARCHIVED: "ARCHIVED",
+  FILLED: "FILLED",
+  DRAFT: "DRAFT",
+} as const;  
+
 // Interface for data expected by the JobCard component
 export interface JobCardData {
   id: number; // Use number if your job IDs are numeric, or string if they are UUIDs

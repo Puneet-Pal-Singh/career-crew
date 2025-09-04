@@ -1,4 +1,6 @@
 // src/app/dashboard/page.tsx
+
+import React from 'react';
 import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -7,6 +9,9 @@ import type { Metadata } from 'next';
 import JobSeekerDashboardView from '@/components/dashboard/views/JobSeekerDashboardView';
 import EmployerDashboardView from '@/components/dashboard/views/EmployerDashboardView';
 import AdminDashboardView from '@/components/dashboard/views/AdminDashboardView';
+
+// Import our new server action
+import { getEmployerDashboardStatsAction } from '@/app/actions/employer/getEmployerDashboardStatsAction';
 
 export const metadata: Metadata = {
   title: 'Dashboard - CareerCrew',
@@ -49,7 +54,9 @@ export default async function DashboardPage() {
     case 'JOB_SEEKER':
       return <JobSeekerDashboardView profile={userProfile} />;
     case 'EMPLOYER':
-      return <EmployerDashboardView profile={userProfile} />;
+       // Fetch the real stats and pass them to the component
+      const stats = await getEmployerDashboardStatsAction();
+      return <EmployerDashboardView profile={userProfile} stats={stats} />;
     case 'ADMIN':
       return <AdminDashboardView profile={userProfile} />;
     default:
