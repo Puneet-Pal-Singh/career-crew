@@ -1,17 +1,14 @@
 // src/app/dashboard/page.tsx
-
 import React from 'react';
 import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
-
-// Import your dashboard views directly
 import JobSeekerDashboardView from '@/components/dashboard/views/JobSeekerDashboardView';
 import EmployerDashboardView from '@/components/dashboard/views/EmployerDashboardView';
 import AdminDashboardView from '@/components/dashboard/views/AdminDashboardView';
-
-// Import our new server action
 import { getEmployerDashboardStatsAction } from '@/app/actions/employer/getEmployerDashboardStatsAction';
+import { getJobPerformanceAction } from '@/app/actions/employer/getJobPerformanceAction';
+import { getEmployerRecentApplicationsAction } from '@/app/actions/employer/getEmployerRecentApplicationsAction';
 
 export const metadata: Metadata = {
   title: 'Dashboard - CareerCrew',
@@ -28,39 +25,45 @@ export default async function DashboardPage() {
 
   const { data: userProfile, error } = await supabase
     .from('profiles')
-    .select('*') // Using '*' ensures all required props are fetched
+    .select('*')
     .eq('id', user.id)
     .single();
 
   if (error) {
-    // This error means the user is authenticated, but their profile data is missing.
-    // The safest action is to perform a server-side sign-out to clear the invalid session.
     console.error(`CRITICAL: No profile found for logged-in user ${user.id}. Signing out. Error: ${error.message}`);
-    
-    // 1. Invalidate the user's session on the server.
     await supabase.auth.signOut();
-    
-    // 2. Redirect to the login page with an error message.
     return redirect('/login?error=account_issue');
   }
 
-  // This check remains as a safeguard.
   if (!userProfile.has_completed_onboarding) {
     return redirect('/onboarding/complete-profile');
   }
 
-  // Render the correct view based on the profile role.
   switch (userProfile.role) {
     case 'JOB_SEEKER':
       return <JobSeekerDashboardView profile={userProfile} />;
+    
     case 'EMPLOYER':
-       // Fetch the real stats and pass them to the component
-      const stats = await getEmployerDashboardStatsAction();
-      return <EmployerDashboardView profile={userProfile} stats={stats} />;
+      // Fetch all required data for the employer dashboard in parallel
+      const [stats, jobPerformance, recentApplications] = await Promise.all([
+        getEmployerDashboardStatsAction(),
+        getJobPerformanceAction(),
+        getEmployerRecentApplicationsAction(),
+      ]);
+      
+      return (
+        <EmployerDashboardView 
+          profile={userProfile} 
+          stats={stats}
+          jobPerformance={jobPerformance}
+          recentApplications={recentApplications}
+        />
+      );
+
     case 'ADMIN':
       return <AdminDashboardView profile={userProfile} />;
+
     default:
-      // If the role is somehow invalid, also sign the user out safely.
       console.error(`CRITICAL: Invalid role detected for user ${user.id}. Signing out.`);
       await supabase.auth.signOut();
       return redirect('/login?error=invalid_role');
