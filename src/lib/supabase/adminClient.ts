@@ -1,3 +1,4 @@
+// src/lib/supabase/adminClient.ts
 import { createClient } from '@supabase/supabase-js';
 
 // This client uses the Service Role Key for admin-level access.
