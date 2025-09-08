@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import type { UserRole } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { LayoutDashboard, ListChecks, PlusCircle, FileText, ShieldCheck, Briefcase, PanelLeft, PanelRight } from 'lucide-react';
+import { LayoutDashboard, ListChecks, PlusCircle, FileText, ShieldCheck, Briefcase, PanelLeft, PanelRight, Users } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Define the structure for a dashboard navigation link
@@ -30,6 +30,7 @@ const getNavLinksForRole = (role?: UserRole): DashboardNavLink[] => {
       return [
         { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
         { href: "/dashboard/my-jobs", label: "My Jobs", icon: ListChecks },
+        { href: "/dashboard/applications", label: "All Applications", icon: Users },
         { href: "/dashboard/post-job", label: "Post a New Job", icon: PlusCircle },
       ];
     case 'ADMIN':
