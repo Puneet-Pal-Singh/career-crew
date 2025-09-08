@@ -13,9 +13,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import type { EmployerApplication } from '@/app/actions/employer/getAllApplicationsAction';
+import type { EmployerApplication } from '@/app/actions/employer/applications/getAllApplicationsAction';
 import ApplicationDetailModal from './ApplicationDetailModal'; // Import the modal
 import { Eye } from 'lucide-react';
+import type { ApplicationStatusOption } from '@/types';
 
 interface AllApplicationsTableProps {
   initialApplications: EmployerApplication[];
@@ -27,7 +28,16 @@ export default function AllApplicationsTable({
   initialTotalCount 
 }: AllApplicationsTableProps) {
   // State to manage which application is selected to be viewed in the modal
+  const [applications, setApplications] = useState(initialApplications);
   const [selectedApplicationId, setSelectedApplicationId] = useState<string | null>(null);
+
+  const handleStatusChange = (applicationId: string, newStatus: ApplicationStatusOption) => {
+    setApplications(currentApps => 
+      currentApps.map(app => 
+        app.id === applicationId ? { ...app, status: newStatus } : app
+      )
+    );
+  };
 
   return (
     <>
@@ -51,13 +61,9 @@ export default function AllApplicationsTable({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {initialApplications.length > 0 ? (
-                  initialApplications.map((app) => (
-                    <TableRow 
-                      key={app.id}
-                      onClick={() => setSelectedApplicationId(app.id)}
-                      className="cursor-pointer hover:bg-muted/50" // Add hover effect and pointer cursor
-                    >
+                {applications.length > 0 ? (
+                  applications.map((app) => ( // Use the state variable here
+                    <TableRow key={app.id} onClick={() => setSelectedApplicationId(app.id)} className="cursor-pointer hover:bg-muted/50">
                       <TableCell className="font-medium">{app.applicantName}</TableCell>
                       <TableCell>{app.jobTitle}</TableCell>
                       <TableCell>{app.appliedAt}</TableCell>
@@ -97,6 +103,7 @@ export default function AllApplicationsTable({
         applicationId={selectedApplicationId}
         isOpen={!!selectedApplicationId}
         onClose={() => setSelectedApplicationId(null)}
+        onStatusChange={handleStatusChange}
       />
     </>
   );
