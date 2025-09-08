@@ -53,7 +53,11 @@ export default function AllApplicationsTable({
               <TableBody>
                 {initialApplications.length > 0 ? (
                   initialApplications.map((app) => (
-                    <TableRow key={app.id}>
+                    <TableRow 
+                      key={app.id}
+                      onClick={() => setSelectedApplicationId(app.id)}
+                      className="cursor-pointer hover:bg-muted/50" // Add hover effect and pointer cursor
+                    >
                       <TableCell className="font-medium">{app.applicantName}</TableCell>
                       <TableCell>{app.jobTitle}</TableCell>
                       <TableCell>{app.appliedAt}</TableCell>
