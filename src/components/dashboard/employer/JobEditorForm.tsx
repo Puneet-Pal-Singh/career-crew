@@ -7,8 +7,8 @@ from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { JobPostSchema, type JobPostSchemaType } from '@/lib/formSchemas';
 // Import specific actions
-import { createJobPost } from '@/app/actions/employer/createJobPostAction';
-import { updateJobPost } from '@/app/actions/employer/updateJobPostAction';
+import { createJobPost } from '@/app/actions/employer/jobs/createJobPostAction';
+import { updateJobPost } from '@/app/actions/employer/jobs/updateJobPostAction';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';

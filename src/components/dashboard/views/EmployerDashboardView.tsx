@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { UserProfile } from '@/types';
-import type { EmployerStats } from '@/app/actions/employer/getEmployerDashboardStatsAction';
-import type { JobPerformanceData } from '@/app/actions/employer/getJobPerformanceAction';
-import type { EmployerApplicationPreview } from '@/app/actions/employer/getEmployerRecentApplicationsAction';
+import type { EmployerStats } from '@/app/actions/employer/stats/getEmployerDashboardStatsAction';
+import type { JobPerformanceData } from '@/app/actions/employer/stats/getJobPerformanceAction';
+import type { EmployerApplicationPreview } from '@/app/actions/employer/applications/getEmployerRecentApplicationsAction';
 import { Briefcase, Clock, Archive, ListChecks, PlusCircle, Users, TrendingUp, UserCheck } from 'lucide-react';
 
 // The props interface is now updated to include all our data

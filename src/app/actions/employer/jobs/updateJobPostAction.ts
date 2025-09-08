@@ -1,4 +1,4 @@
-// src/app/actions/employer/updateJobPostAction.ts
+// src/app/actions/employer/jobs/updateJobPostAction.ts
 "use server";
 
 import { getSupabaseServerClient } from '@/lib/supabase/serverClient';

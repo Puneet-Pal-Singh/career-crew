@@ -1,4 +1,4 @@
-// src/app/actions/seeker/getRecentApplicationsAction.ts
+// src/app/actions/seeker/applications/getRecentApplicationsAction.ts
 
 "use server";
 

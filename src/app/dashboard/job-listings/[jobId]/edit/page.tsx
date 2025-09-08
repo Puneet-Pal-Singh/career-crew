@@ -1,6 +1,6 @@
 // src/app/dashboard/my-jobs/[jobId]/edit/page.tsx
 import JobEditorForm from '@/components/dashboard/employer/JobEditorForm';
-import { getEmployerJobByIdForEdit } from '@/app/actions/employer/getEmployerJobByIdForEditAction';
+import { getEmployerJobByIdForEdit } from '@/app/actions/employer/jobs/getEmployerJobByIdForEditAction';
 import type { Metadata } from 'next';
 // import { notFound } from 'next/navigation'; // Keep for actual not found scenarios
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';

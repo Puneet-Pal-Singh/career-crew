@@ -1,6 +1,6 @@
 // src/app/dashboard/applications/page.tsx
 import React from 'react';
-import { getAllApplicationsAction } from '@/app/actions/employer/getAllApplicationsAction';
+import { getAllApplicationsAction } from '@/app/actions/employer/applications/getAllApplicationsAction';
 import AllApplicationsTable from '@/components/dashboard/employer/AllApplicationsTable';
 
 export default async function AllApplicationsPage() {

@@ -6,9 +6,9 @@ import type { Metadata } from 'next';
 import JobSeekerDashboardView from '@/components/dashboard/views/JobSeekerDashboardView';
 import EmployerDashboardView from '@/components/dashboard/views/EmployerDashboardView';
 import AdminDashboardView from '@/components/dashboard/views/AdminDashboardView';
-import { getEmployerDashboardStatsAction } from '@/app/actions/employer/getEmployerDashboardStatsAction';
-import { getJobPerformanceAction } from '@/app/actions/employer/getJobPerformanceAction';
-import { getEmployerRecentApplicationsAction } from '@/app/actions/employer/getEmployerRecentApplicationsAction';
+import { getEmployerDashboardStatsAction } from '@/app/actions/employer/stats/getEmployerDashboardStatsAction';
+import { getJobPerformanceAction } from '@/app/actions/employer/stats/getJobPerformanceAction';
+import { getEmployerRecentApplicationsAction } from '@/app/actions/employer/applications/getEmployerRecentApplicationsAction';
 
 export const metadata: Metadata = {
   title: 'Dashboard - CareerCrew',

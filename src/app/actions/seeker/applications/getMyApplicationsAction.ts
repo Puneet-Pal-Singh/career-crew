@@ -1,4 +1,4 @@
-// src/app/actions/application/getMyApplicationsAction.ts
+// src/app/actions/seeker/applications/getMyApplicationsAction.ts
 
 import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
 import type { ApplicationViewData, ApplicationStatusOption } from '@/types'; // Add new types

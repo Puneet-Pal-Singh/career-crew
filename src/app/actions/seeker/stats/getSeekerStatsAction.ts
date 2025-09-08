@@ -1,4 +1,4 @@
-// src/app/actions/seeker/getSeekerStatsAction.ts
+// src/app/actions/seeker/stats/getSeekerStatsAction.ts
 "use server";
 
 import { getSupabaseServerClient } from "@/lib/supabase/serverClient";

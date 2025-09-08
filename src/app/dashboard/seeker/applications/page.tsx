@@ -1,5 +1,5 @@
 // src/app/dashboard/seeker/applications/page.tsx
-import { getMyApplications } from '@/app/actions/application/getMyApplicationsAction'; // Correct path
+import { getMyApplications } from '@/app/actions/seeker/applications/getMyApplicationsAction'; // Correct path
 import MyApplicationsTable from '@/components/dashboard/seeker/MyApplicationsTable'; // To be created
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FileText, AlertTriangle, Info, PlusCircle } from 'lucide-react';
