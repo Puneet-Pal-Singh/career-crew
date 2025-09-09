@@ -39,66 +39,85 @@ export default function AllApplicationsTable({
     );
   };
 
+  const openModal = (appId: string) => setSelectedApplicationId(appId);
+
   return (
     <>
       <Card>
         <CardHeader>
           <CardTitle>Candidates</CardTitle>
           <CardDescription>
-            Showing {initialApplications.length} of {initialTotalCount} total applications.
+            Showing {applications.length} of {initialTotalCount} total applications.
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* --- RESPONSIVE FIX --- */}
           <div className="border rounded-md">
             <Table>
+              {/* The Table Header is VISUALLY HIDDEN on mobile, but still present for screen readers */}
               <TableHeader>
                 <TableRow>
-                  <TableHead>Applicant Name</TableHead>
-                  <TableHead>Applying For</TableHead>
-                  <TableHead>Date Applied</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="hidden md:table-cell">Applicant</TableHead>
+                  <TableHead className="hidden md:table-cell">Applying For</TableHead>
+                  <TableHead className="hidden md:table-cell">Date Applied</TableHead>
+                  <TableHead className="hidden md:table-cell">Status</TableHead>
+                  <TableHead className="hidden md:table-cell text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
+              {/* The Table Body's display property is changed on mobile */}
               <TableBody>
                 {applications.length > 0 ? (
-                  applications.map((app) => ( // Use the state variable here
-                    <TableRow key={app.id} onClick={() => setSelectedApplicationId(app.id)} className="cursor-pointer hover:bg-muted/50">
-                      <TableCell className="font-medium">{app.applicantName}</TableCell>
-                      <TableCell>{app.jobTitle}</TableCell>
-                      <TableCell>{app.appliedAt}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="capitalize">
-                          {app.status.toLowerCase()}
-                        </Badge>
+                  applications.map((app) => (
+                    // The TableRow is changed into a grid container on mobile
+                    <TableRow 
+                      key={app.id} 
+                      onClick={() => openModal(app.id)} 
+                      className="grid grid-cols-2 md:table-row gap-x-4 gap-y-2 p-4 md:p-0 cursor-pointer hover:bg-muted/50"
+                    >
+                      {/* Each TableCell is a grid item, spanning columns as needed */}
+                      <TableCell className="md:font-medium p-0 md:p-4 col-span-2">
+                        {/* Use a label for mobile view */}
+                        <span className="md:hidden font-medium text-muted-foreground mr-2">Applicant:</span>
+                        {app.applicantName}
                       </TableCell>
-                      <TableCell className="text-right">
-                        <Button 
-                          variant="outline" 
-                          size="icon"
-                          onClick={() => setSelectedApplicationId(app.id)}
-                        >
-                          <Eye className="h-4 w-4" />
-                          <span className="sr-only">View Application</span>
-                        </Button>
+                      
+                      <TableCell className="p-0 md:p-4 col-span-2">
+                        <span className="md:hidden font-medium text-muted-foreground mr-2">Applying for:</span>
+                        {app.jobTitle}
+                      </TableCell>
+
+                      <TableCell className="p-0 md:p-4 col-span-1 text-left">
+                        <span className="md:hidden font-medium text-muted-foreground mr-2">Date:</span>
+                        {app.appliedAt}
+                      </TableCell>
+
+                      <TableCell className="p-0 md:p-4 col-span-1 md:text-left text-right">
+                        <span className="md:hidden font-medium text-muted-foreground mr-2">Status:</span>
+                        <Badge variant="outline" className="capitalize">{app.status.toLowerCase()}</Badge>
+                      </TableCell>
+
+                      <TableCell className="p-0 md:p-4 col-span-2 md:text-right">
+                         <Button 
+                           variant="outline" 
+                           className="w-full md:w-auto md:h-auto md:p-2"
+                           size="sm"
+                           onClick={(e) => { e.stopPropagation(); openModal(app.id); }}>
+                           <Eye className="h-4 w-4 md:mr-0 mr-2" />
+                           <span className="md:sr-only">View Details</span>
+                         </Button>
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
-                  <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                      No applications found.
-                    </TableCell>
-                  </TableRow>
+                  <TableRow><TableCell colSpan={5} className="h-24 text-center">No applications found.</TableCell></TableRow>
                 )}
               </TableBody>
             </Table>
           </div>
-          {/* Placeholder for pagination controls */}
+          {/* --- END RESPONSIVE FIX --- */}
         </CardContent>
       </Card>
 
-      {/* The Modal is rendered here and controlled by the state */}
       <ApplicationDetailModal
         applicationId={selectedApplicationId}
         isOpen={!!selectedApplicationId}
