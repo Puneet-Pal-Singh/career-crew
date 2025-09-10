@@ -20,7 +20,6 @@ interface AllApplicationsTableProps {
   jobOptions: JobOption[];
 }
 
-// Helper function for status badge colors
 const getStatusColor = (status: string) => {
   switch (status.toLowerCase()) {
     case 'interviewing': return 'bg-blue-50 text-blue-700 border-blue-200';
@@ -44,17 +43,17 @@ export default function AllApplicationsTable({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const [jobFilter, setJobFilter] = useState(searchParams.get('jobId') || 'all');
+  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'all');
+
   const currentPage = Number(searchParams.get('page')) || 1;
-  const currentJobId = searchParams.get('jobId') || '';
-  const currentStatus = searchParams.get('status') || '';
-  
   const pageSize = 10;
   const totalPages = Math.ceil(totalCount / pageSize);
 
   useEffect(() => {
     const page = Number(searchParams.get('page')) || 1;
     const jobId = Number(searchParams.get('jobId')) || null;
-    const status = searchParams.get('status') as ApplicationStatusOption || null;
+    const status = searchParams.get('status') as ApplicationStatusOption | null;
       
     startTransition(async () => {
       const { applications: newApplications, totalCount: newTotalCount } = await getAllApplicationsAction({ page, jobId, status });
@@ -62,19 +61,25 @@ export default function AllApplicationsTable({
       setTotalCount(newTotalCount);
     });
   }, [searchParams]);
-
-  const handleUrlChange = (type: 'jobId' | 'status' | 'page', value: string) => {
+  
+  const handleApplyFilters = () => {
     const params = new URLSearchParams(searchParams.toString());
-    if (value && value !== 'all') {
-      params.set(type, value);
-    } else {
-      params.delete(type);
-    }
-    if (type !== 'page') {
-      params.set('page', '1');
-    }
+    
+    if (jobFilter && jobFilter !== 'all') params.set('jobId', jobFilter);
+    else params.delete('jobId');
+
+    if (statusFilter && statusFilter !== 'all') params.set('status', statusFilter);
+    else params.delete('status');
+
+    params.set('page', '1');
     router.push(`${pathname}?${params.toString()}`);
   };
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', String(newPage));
+    router.push(`${pathname}?${params.toString()}`);
+  }
 
   const handleStatusChangeInModal = (applicationId: string, newStatus: ApplicationStatusOption) => {
     setApplications(currentApps => 
@@ -88,7 +93,6 @@ export default function AllApplicationsTable({
 
   return (
     <div className="space-y-6">
-      {/* Filters Section */}
       <Card className="shadow-sm">
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -97,12 +101,13 @@ export default function AllApplicationsTable({
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
             <div>
               <label className="text-sm font-medium text-foreground mb-2 block">Filter by Job</label>
-              <Select value={currentJobId} onValueChange={(value) => handleUrlChange('jobId', value)}>
+              <Select value={jobFilter} onValueChange={setJobFilter}>
                 <SelectTrigger className="w-full"><SelectValue placeholder="All Jobs" /></SelectTrigger>
                 <SelectContent>
+                  {/* Use 'all' as the value */}
                   <SelectItem value="all">All Jobs</SelectItem>
                   {jobOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
                 </SelectContent>
@@ -110,8 +115,12 @@ export default function AllApplicationsTable({
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-2 block">Filter by Status</label>
-              <Select value={currentStatus} onValueChange={(value) => handleUrlChange('status', value)}>
-                <SelectTrigger className="w-full"><SelectValue placeholder="All Statuses" /></SelectTrigger>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="All Statuses">
+                    {statusFilter ? statusFilter.charAt(0) + statusFilter.slice(1).toLowerCase() : 'All Statuses'}
+                  </SelectValue>
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Statuses</SelectItem>
                   {APPLICATION_STATUS_OPTIONS.map(status => <SelectItem key={status} value={status} className="capitalize">{status.toLowerCase()}</SelectItem>)}
@@ -119,20 +128,21 @@ export default function AllApplicationsTable({
               </Select>
             </div>
           </div>
+          <div className="flex justify-end mt-4">
+            <Button onClick={handleApplyFilters} disabled={isPending}>
+              Apply Filters
+            </Button>
+          </div>
         </CardContent>
       </Card>
-
-      {/* Applications Table */}
+      
       <Card className="shadow-sm">
         <CardHeader>
           <CardTitle className="text-xl">Candidates</CardTitle>
-          <CardDescription>
-            Showing {applications.length} of {totalCount} total applications.
-          </CardDescription>
+          <CardDescription>Showing {applications.length} of {totalCount} total applications.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-          {/* <div className={`transition-opacity duration-200 ${isPending ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}> */}
-          <div className={isPending ? 'pointer-events-none' : ''}>
+          <div className={`transition-opacity duration-200 ${isPending ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
             {/* Desktop Table */}
             <div className="hidden md:block">
               <Table>
@@ -140,9 +150,7 @@ export default function AllApplicationsTable({
                   <TableRow className="bg-muted/50 border-b">
                     <TableHead className="py-4 pl-6">Applicant</TableHead>
                     <TableHead>Position</TableHead>
-                    <TableHead>
-                      <div className="flex items-center gap-2"><Calendar className="h-4 w-4" />Date Applied</div>
-                    </TableHead>
+                    <TableHead><div className="flex items-center gap-2"><Calendar className="h-4 w-4" />Date Applied</div></TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="pr-6 text-right">Actions</TableHead>
                   </TableRow>
@@ -160,9 +168,7 @@ export default function AllApplicationsTable({
                       </TableCell>
                       <TableCell>{app.jobTitle}</TableCell>
                       <TableCell>{app.appliedAt}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={`capitalize font-medium ${getStatusColor(app.status)}`}>{app.status.toLowerCase()}</Badge>
-                      </TableCell>
+                      <TableCell><Badge variant="outline" className={`capitalize font-medium ${getStatusColor(app.status)}`}>{app.status.toLowerCase()}</Badge></TableCell>
                       <TableCell className="pr-6 text-right">
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); openModal(app.id); }}>
                           <Eye className="h-4 w-4 text-muted-foreground" />
@@ -170,12 +176,11 @@ export default function AllApplicationsTable({
                       </TableCell>
                     </TableRow>
                   )) : (
-                    <TableRow><TableCell colSpan={5} className="h-32 text-center text-muted-foreground">No applications found for the selected filters.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={5} className="h-32 text-center text-muted-foreground">No applications found.</TableCell></TableRow>
                   )}
                 </TableBody>
               </Table>
             </div>
-
             {/* Mobile Cards */}
             <div className="md:hidden space-y-4 p-4">
               {applications.length > 0 ? applications.map((app) => (
@@ -192,28 +197,24 @@ export default function AllApplicationsTable({
                     </div>
                     <Badge variant="outline" className={`capitalize text-xs font-medium ${getStatusColor(app.status)}`}>{app.status.toLowerCase()}</Badge>
                   </div>
-                  <div className="text-xs text-muted-foreground pt-2 border-t flex items-center gap-1.5">
-                    <Calendar className="h-3 w-3" />Applied on: {app.appliedAt}
-                  </div>
+                  <div className="text-xs text-muted-foreground pt-2 border-t flex items-center gap-1.5"><Calendar className="h-3 w-3" />Applied on: {app.appliedAt}</div>
                 </div>
               )) : (
-                <div className="text-center py-12 text-muted-foreground">No applications found for the selected filters.</div>
+                <div className="text-center py-12 text-muted-foreground">No applications found.</div>
               )}
             </div>
           </div>
-
           {totalPages > 1 && (
             <div className="flex items-center justify-between p-4 border-t bg-muted/50">
               <div className="text-sm text-muted-foreground">Page {currentPage} of {totalPages}</div>
               <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm" onClick={() => handleUrlChange('page', String(currentPage - 1))} disabled={currentPage <= 1 || isPending}>Previous</Button>
-                <Button variant="outline" size="sm" onClick={() => handleUrlChange('page', String(currentPage + 1))} disabled={currentPage >= totalPages || isPending}>Next</Button>
+                <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage <= 1 || isPending}>Previous</Button>
+                <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage >= totalPages || isPending}>Next</Button>
               </div>
             </div>
           )}
         </CardContent>
       </Card>
-
       <ApplicationDetailModal
         applicationId={selectedApplicationId}
         isOpen={!!selectedApplicationId}

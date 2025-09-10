@@ -3,7 +3,7 @@
 
 import { getSupabaseServerClient } from "@/lib/supabase/serverClient";
 import { unstable_noStore as noStore } from 'next/cache';
-import type { ApplicationStatusOption } from '@/types';
+import { APPLICATION_STATUS_OPTIONS, type ApplicationStatusOption } from '@/types'; 
 
 // The final data structure for each application row
 export interface EmployerApplication {
@@ -34,7 +34,7 @@ export async function getAllApplicationsAction(
   params: {
     page: number;
     jobId?: number | null;
-    status?: ApplicationStatusOption | null;
+    status?: string | null;
   }
 ): Promise<PaginatedApplicationsResponse> {
   noStore();
@@ -47,13 +47,18 @@ export async function getAllApplicationsAction(
 
   const pageSize = 10; // Define how many applications per page
 
+  // Validate and cast the status parameter to ensure it's a valid enum value
+  const validStatus = APPLICATION_STATUS_OPTIONS.includes(params.status as ApplicationStatusOption) 
+    ? params.status as ApplicationStatusOption 
+    : null;
+
   // Call the updated RPC with all parameters
   const { data, error } = await supabase.rpc('get_employer_applications', {
     employer_id_param: user.id,
     page_size: pageSize,
     page_number: params.page,
     job_id_filter: params.jobId,
-    status_filter: params.status,
+    status_filter: validStatus,
   });
 
   if (error) {
