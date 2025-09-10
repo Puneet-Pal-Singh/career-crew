@@ -1,66 +1,58 @@
 // src/app/jobs/[jobSlug]/page.tsx
-import { getJobDetailsById } from '@/app/actions/query/getJobDetailsByIdAction';
+import { getJobDetailsByIdAction } from '@/app/actions/query/getJobDetailsByIdAction';
 import JobDetailView from '@/components/jobs/JobDetailView';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { getSupabaseServerClient } from '@/lib/supabase/serverClient'; // Import the client
+import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
 
+// Updated interface for Next.js 15 - params is now a Promise
 interface JobDetailsPageProps {
   params: Promise<{
     jobSlug: string;
   }>;
 }
 
-// Helper function to safely parse the job ID from the slug
 function parseJobIdFromSlug(slug: string): number | null {
   const jobIdStr = slug.split('-')[0];
   if (!jobIdStr) return null;
-
   const jobId = parseInt(jobIdStr, 10);
   return isNaN(jobId) ? null : jobId;
 }
 
-export async function generateMetadata({ params: paramsPromise }: JobDetailsPageProps): Promise<Metadata> {
-  const params = await paramsPromise;
-  // FIX: Use the helper to get a number or null
-  const jobId = parseJobIdFromSlug(params.jobSlug);
+export async function generateMetadata({ params }: JobDetailsPageProps): Promise<Metadata> {
+  // Await the params promise
+  const { jobSlug } = await params;
+  const jobId = parseJobIdFromSlug(jobSlug);
+  if (!jobId) return { title: 'Invalid Job - CareerCrew' };
 
-  if (jobId === null) {
-    return { title: 'Invalid Job Post - CareerCrew' };
-  }
-
-  // The server action now receives the correct type (number)
-  const job = await getJobDetailsById(jobId);
-
-  if (!job) {
+  const result = await getJobDetailsByIdAction(jobId);
+  if (!result.success || !result.job) {
     return { title: 'Job Not Found - CareerCrew' };
   }
   return { 
-    title: `${job.title} at ${job.companyName} - CareerCrew`,
-    description: job.description.substring(0, 160),
+    title: `${result.job.title} at ${result.job.companyName} - CareerCrew`,
+    description: result.job.description.substring(0, 160),
   };
 }
 
-export default async function JobDetailsPage({ params: paramsPromise }: JobDetailsPageProps) {
-  const params = await paramsPromise;
-  const jobId = parseJobIdFromSlug(params.jobSlug);
-
+export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
+  // Await the params promise
+  const { jobSlug } = await params;
+  const jobId = parseJobIdFromSlug(jobSlug);
   if (jobId === null) {
     notFound();
   }
   
-  // FIX: Use the server client to fetch job details and user data
+  // Fetch job details and the current user's session in parallel for performance.
+  const jobResultPromise = getJobDetailsByIdAction(jobId);
   const supabase = await getSupabaseServerClient();
-  const jobPromise = getJobDetailsById(jobId);
   const userPromise = supabase.auth.getUser();
 
-  // Await both promises in parallel.
-  const [job, { data: userData }] = await Promise.all([jobPromise, userPromise]);
+  const [result, { data: userData }] = await Promise.all([jobResultPromise, userPromise]);
 
-  if (!job) {
+  if (!result.success || !result.job) {
     notFound();
   }
 
-  // ✅ Pass the session (which can be null for logged-out users) as a prop.
-  return <JobDetailView job={job} user={userData.user} />;
+  return <JobDetailView job={result.job} user={userData.user} />;
 }

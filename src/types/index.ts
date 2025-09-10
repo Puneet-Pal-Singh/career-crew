@@ -97,6 +97,10 @@ export interface JobDetailData {
   applicationEmail?: string | null;
   applicationUrl?: string | null;
   tags: string[]; 
+  // Add the status so the view component can check for preview mode.
+  status: JobStatus;
+  // Add the employer_id for security checks.
+  employer_id: string;
   // Optional: Further company details if you have a separate company profile table later
   // companyDescription?: string;
   // companyWebsite?: string;

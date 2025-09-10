@@ -1,5 +1,5 @@
 // src/app/actions/helpers/jobDataMappers.ts
-import type { JobCardData, JobTypeOption, JobDetailData } from '@/types';
+import type { JobCardData, JobTypeOption, JobStatus, JobDetailData } from '@/types';
 import { JOB_TYPE_OPTIONS } from '@/lib/constants'; // <-- Import the constant
 // import { generateJobSlug } from '@/lib/utils';
 
@@ -17,6 +17,8 @@ export interface RawJobDataForCard {
   salary_currency: string | null;
   created_at: string; // ISO string timestamp
   tags: string[] | null;  // It can be a string array or null if the column is empty.
+  status: JobStatus;
+  employer_id: string;
 }
 
 // A new interface for the full job detail data from the database.
@@ -81,5 +83,7 @@ export const mapRawJobToJobDetailData = (rawJob: RawJobDataForDetail): JobDetail
     applicationEmail: rawJob.application_email,
     applicationUrl: rawJob.application_url,
     tags: rawJob.tags || [],
+    status: rawJob.status,
+    employer_id: rawJob.employer_id,
   };
 };

@@ -87,8 +87,10 @@ export default function EmployerJobTable({ jobs }: EmployerJobTableProps) {
                   <TableCell><Badge variant={getStatusBadgeVariant(job.status)}>{formatStatusText(job.status)}</Badge></TableCell>
                   <TableCell>{job.createdAt}</TableCell>
                   <TableCell className="text-right space-x-2">
-                    <Button variant="outline" size="icon" asChild={canBeViewedPublicly} disabled={!canBeViewedPublicly} title="View Public Listing">
-                      {canBeViewedPublicly ? <Link href={`/jobs/${generateJobSlug(job.id, job.title)}`} target="_blank"><Eye className="h-4 w-4" /></Link> : <Eye className="h-4 w-4 text-muted" />}
+                    <Button variant="outline" size="icon" asChild title={canBeViewedPublicly ? "View Public Listing" : "Preview Job"}>
+                      <Link href={`/jobs/${generateJobSlug(job.id, job.title)}`} target="_blank">
+                        <Eye className="h-4 w-4" />
+                      </Link>
                     </Button>
                     <Button variant="outline" size="icon" asChild={canBeEdited} disabled={!canBeEdited} title="Edit Job">
                       {canBeEdited ? <Link href={`/dashboard/my-jobs/${job.id}/edit`}><Edit3 className="h-4 w-4" /></Link> : <Edit3 className="h-4 w-4 text-muted" />}
@@ -135,13 +137,11 @@ export default function EmployerJobTable({ jobs }: EmployerJobTableProps) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem asChild disabled={!canBeViewedPublicly}>
-                        {canBeViewedPublicly ? 
-                          <Link href={`/jobs/${generateJobSlug(job.id, job.title)}`} target="_blank">
-                            <Eye className="mr-2 h-4 w-4" /> View Listing
-                          </Link> : 
-                          <span><Eye className="mr-2 h-4 w-4" /> View Listing</span>
-                        }
+                      <DropdownMenuItem asChild>
+                        <Link href={`/jobs/${generateJobSlug(job.id, job.title)}`} target="_blank">
+                          <Eye className="mr-2 h-4 w-4" />
+                          {canBeViewedPublicly ? "View Listing" : "Preview Job"}
+                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild disabled={!canBeEdited}>
                         {canBeEdited ? 
