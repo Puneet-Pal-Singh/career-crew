@@ -122,6 +122,16 @@ export type ApplicationStatusOption =
   | "OFFERED" 
   | "HIRED" 
   | "REJECTED";
+
+// This is the single source of truth for the list of available statuses.
+export const APPLICATION_STATUS_OPTIONS: ApplicationStatusOption[] = [
+  "SUBMITTED", 
+  "VIEWED", 
+  "INTERVIEWING", 
+  "OFFERED", 
+  "HIRED", 
+  "REJECTED"
+];  
   
 // Interface for displaying a seeker's application in their dashboard
 export interface ApplicationViewData {

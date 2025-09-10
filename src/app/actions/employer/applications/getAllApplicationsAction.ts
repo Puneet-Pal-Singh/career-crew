@@ -31,7 +31,11 @@ type RpcResponse = {
 };
 
 export async function getAllApplicationsAction(
-  page: number = 1
+  params: {
+    page: number;
+    jobId?: number | null;
+    status?: ApplicationStatusOption | null;
+  }
 ): Promise<PaginatedApplicationsResponse> {
   noStore();
   const supabase = await getSupabaseServerClient();
@@ -43,10 +47,13 @@ export async function getAllApplicationsAction(
 
   const pageSize = 10; // Define how many applications per page
 
+  // Call the updated RPC with all parameters
   const { data, error } = await supabase.rpc('get_employer_applications', {
     employer_id_param: user.id,
     page_size: pageSize,
-    page_number: page,
+    page_number: params.page,
+    job_id_filter: params.jobId,
+    status_filter: params.status,
   });
 
   if (error) {
