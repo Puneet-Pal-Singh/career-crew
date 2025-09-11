@@ -1,8 +1,8 @@
 // src/components/dashboard/views/JobSeekerDashboardView.tsx
 
 import StatCard from '@/components/dashboard/StatCard';
-import { getSeekerDashboardStats } from '@/app/actions/seeker/getSeekerStatsAction';
-import { getRecentApplicationsAction } from '@/app/actions/seeker/getRecentApplicationsAction';
+import { getSeekerDashboardStats } from '@/app/actions/seeker/stats/getSeekerStatsAction';
+import { getRecentApplicationsAction } from '@/app/actions/seeker/applications/getRecentApplicationsAction';
 import ProfileSummaryCard from '@/components/dashboard/ProfileSummaryCard';
 import RecentApplicationsPreview from '@/components/dashboard/seeker/RecentApplicationsPreview';
 import { FileText, Bookmark, Briefcase as BriefcaseIcon } from 'lucide-react';

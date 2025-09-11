@@ -3,43 +3,23 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription, SheetHeader } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
 import UserNav from '@/components/layout/Header/UserNav';
 import { usePathname } from 'next/navigation'; // Import for mobile nav active state
 import { cn } from '@/lib/utils';
 import type { User } from '@supabase/supabase-js';
-import type { UserRole, UserProfile } from '@/types';
-import { LayoutDashboard, ListChecks, PlusCircle, FileText, ShieldCheck } from 'lucide-react';
+import type { UserProfile } from '@/types';
+import { getNavLinksForRole } from '@/lib/dashboardNavLinks';
 
-// A helper function for nav links, can be co-located or imported
-const getNavLinksForRole = (role?: UserRole) => {
-  switch (role) {
-    case 'JOB_SEEKER':
-      return [
-        { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-        { href: "/dashboard/seeker/applications", label: "My Applications", icon: FileText },
-      ];
-    case 'EMPLOYER':
-      return [
-        { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-        { href: "/dashboard/my-jobs", label: "My Jobs", icon: ListChecks },
-        { href: "/dashboard/post-job", label: "Post a New Job", icon: PlusCircle },
-      ];
-    case 'ADMIN':
-      return [
-        { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-        { href: "/dashboard/admin/pending-approvals", label: "Pending Jobs", icon: ShieldCheck },
-      ];
-    default:
-      return [];
-  }
-};
-
+interface MobileSidebarNavProps {
+  role?: UserProfile['role'];
+  onLinkClick: () => void;
+}
 
 // The navigation component for the mobile sheet menu
-function MobileSidebarNav({ role }: { role?: UserRole }) {
+function MobileSidebarNav({ role, onLinkClick }: MobileSidebarNavProps){
   const pathname = usePathname();
   const availableLinks = getNavLinksForRole(role);
 
@@ -54,6 +34,7 @@ function MobileSidebarNav({ role }: { role?: UserRole }) {
           <Link
             key={link.href}
             href={link.href}
+            onClick={onLinkClick}
             className={cn(
               "flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground",
               isActive && "bg-muted text-foreground"
@@ -72,12 +53,23 @@ function MobileSidebarNav({ role }: { role?: UserRole }) {
 interface DashboardHeaderProps {
   user: User;
   profile: UserProfile | null;
+  isMobileMenuOpen: boolean;
+  setIsMobileMenuOpen: (isOpen: boolean) => void;
+  isSideBarCollapsed: boolean;
 }
 
-export default function DashboardHeader({ user, profile }: DashboardHeaderProps) {
+export default function DashboardHeader({ user, profile, isMobileMenuOpen, setIsMobileMenuOpen, isSideBarCollapsed }: DashboardHeaderProps){
   return (
-    <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
-      <Sheet>
+    <header className={cn(
+      "fixed top-0 right-0 z-20 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:h-[60px] lg:px-6 transition-all duration-300 ease-in-out",
+      // Use the same dynamic left offset as the layout's padding
+      // "left-0 md:left-auto", // Full width on mobile, offset on desktop
+      "left-0", // Full width on mobile, offset on desktop
+      isSideBarCollapsed 
+      ? "md:left-[70px]"  // If collapsed, the header starts 70px from the left
+      : "md:left-[220px] lg:left-[280px]" // If expanded, it starts at the sidebar's width
+    )}>
+      <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
         <SheetTrigger asChild>
           <Button variant="outline" size="icon" className="shrink-0 md:hidden">
             <Menu className="h-5 w-5" />
@@ -85,7 +77,14 @@ export default function DashboardHeader({ user, profile }: DashboardHeaderProps)
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="flex flex-col">
-          <MobileSidebarNav role={profile?.role} />
+          {/* We keep the header for semantic structure, but the key is associating it with SheetContent */}
+          <SheetHeader className="text-left sr-only">
+            <SheetTitle>Navigation Menu</SheetTitle>
+            <SheetDescription>Main navigation links for the CareerCrew dashboard.</SheetDescription>
+          </SheetHeader>
+          {/* The props below are what actually fix the console warning */}
+          <div aria-describedby={undefined} />
+          <MobileSidebarNav role={profile?.role} onLinkClick={() => setIsMobileMenuOpen(false)} />
         </SheetContent>
       </Sheet>
 

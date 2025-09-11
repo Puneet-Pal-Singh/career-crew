@@ -21,6 +21,17 @@ export type JobStatus =
   | "FILLED" 
   | "DRAFT";
 
+// This constant object allows us to use the statuses as values in our code.
+// The `as const` assertion tells TypeScript that these properties will never change.
+export const JOB_STATUS = {
+  PENDING_APPROVAL: "PENDING_APPROVAL",
+  APPROVED: "APPROVED",
+  REJECTED: "REJECTED",
+  ARCHIVED: "ARCHIVED",
+  FILLED: "FILLED",
+  DRAFT: "DRAFT",
+} as const;  
+
 // Interface for data expected by the JobCard component
 export interface JobCardData {
   id: number; // Use number if your job IDs are numeric, or string if they are UUIDs
@@ -86,6 +97,10 @@ export interface JobDetailData {
   applicationEmail?: string | null;
   applicationUrl?: string | null;
   tags: string[]; 
+  // Add the status so the view component can check for preview mode.
+  status: JobStatus;
+  // Add the employer_id for security checks.
+  employerId: string;
   // Optional: Further company details if you have a separate company profile table later
   // companyDescription?: string;
   // companyWebsite?: string;
@@ -107,6 +122,16 @@ export type ApplicationStatusOption =
   | "OFFERED" 
   | "HIRED" 
   | "REJECTED";
+
+// This is the single source of truth for the list of available statuses.
+export const APPLICATION_STATUS_OPTIONS: ApplicationStatusOption[] = [
+  "SUBMITTED", 
+  "VIEWED", 
+  "INTERVIEWING", 
+  "OFFERED", 
+  "HIRED", 
+  "REJECTED"
+];  
   
 // Interface for displaying a seeker's application in their dashboard
 export interface ApplicationViewData {

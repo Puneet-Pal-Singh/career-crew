@@ -1,8 +1,8 @@
 // src/app/dashboard/my-jobs/page.tsx
-import { getEmployerJobs } from '@/app/actions/employer/getEmployerJobsAction';
+import { getEmployerJobs } from '@/app/actions/employer/jobs/getEmployerJobsAction';
 import EmployerJobTable from '@/components/dashboard/employer/EmployerJobTable';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, Briefcase } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -18,41 +18,31 @@ export const dynamic = 'force-dynamic';
 export default async function MyJobsPage() {
   const result = await getEmployerJobs();
 
-  if (!result.success || !result.jobs) {
-    return (
-      <div className="container mx-auto py-8 px-4">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold flex items-center">
-            <Briefcase className="mr-3 h-8 w-8 text-primary" />
-            My Job Postings
-          </h1>
-          <Button asChild>
-            <Link href="/dashboard/post-job">Post New Job</Link>
-          </Button>
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">My Job Postings</h1>
+          <p className="text-muted-foreground mt-1">
+            Manage, edit, and view the status of your job listings.
+          </p>
         </div>
+        <Button asChild>
+          <Link href="/dashboard/post-job">Post a New Job</Link>
+        </Button>
+      </div>
+
+      {result.success === false || !result.jobs ? (
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
           <AlertDescription>
-            {result.error || "Could not load your job postings. Please try again later."}
+            {result.error || "Could not load your job postings."}
           </AlertDescription>
         </Alert>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold flex items-center">
-          <Briefcase className="mr-3 h-8 w-8 text-primary" />
-          My Job Postings
-        </h1>
-        <Button asChild>
-          <Link href="/dashboard/post-job">Post New Job</Link>
-        </Button>
-      </div>
-      <EmployerJobTable jobs={result.jobs} />
+      ) : (
+        <EmployerJobTable jobs={result.jobs} />
+      )}
     </div>
   );
 }
