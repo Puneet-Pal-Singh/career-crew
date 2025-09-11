@@ -29,7 +29,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, ExternalLink, ChevronDown } from 'lucide-react';
 
 // Import the specific type from your main types file
-import type { ApplicationStatusOption } from '@/types';
+import { APPLICATION_STATUS_OPTIONS, type ApplicationStatusOption } from '@/types';
 
 interface ApplicationDetailModalProps {
   applicationId: string | null;
@@ -46,16 +46,6 @@ const DetailRow = ({ label, value }: { label: string, value: React.ReactNode }) 
     <dd className="col-span-1 sm:col-span-2 text-sm text-foreground">{value || 'N/A'}</dd>
   </div>
 );
-
-// Use the imported type as the single source of truth for the available statuses.
-const APPLICATION_STATUSES: ApplicationStatusOption[] = [
-  "SUBMITTED", 
-  "VIEWED", 
-  "INTERVIEWING", 
-  "OFFERED", 
-  "HIRED", 
-  "REJECTED"
-];
 
 export default function ApplicationDetailModal({ applicationId, isOpen, onClose, onStatusChange }: ApplicationDetailModalProps) {
   const [details, setDetails] = useState<ApplicationDetails | null>(null);
@@ -97,7 +87,7 @@ export default function ApplicationDetailModal({ applicationId, isOpen, onClose,
           setDetails(prev => prev ? { ...prev, status: newStatus } : null);
           onStatusChange(details.id, newStatus);
         } else {
-          toast.error(result.message);
+          toast.error(result.error);
         }
       });
     });
@@ -142,7 +132,7 @@ export default function ApplicationDetailModal({ applicationId, isOpen, onClose,
                   <DropdownMenuContent align="start">
                     <DropdownMenuLabel>Change Status</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    {APPLICATION_STATUSES.map(status => (
+                    {APPLICATION_STATUS_OPTIONS.map(status => (
                       <DropdownMenuItem 
                         key={status} 
                         disabled={isPending || details.status === status}
@@ -179,7 +169,8 @@ export default function ApplicationDetailModal({ applicationId, isOpen, onClose,
   // 6. Use the media query to render either a Dialog or a Drawer
   if (isDesktop) {
     return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
+      // Like the ConfirmationDialog, pass the boolean to close on false
+      <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Application Details</DialogTitle>
@@ -195,7 +186,7 @@ export default function ApplicationDetailModal({ applicationId, isOpen, onClose,
   }
 
   return (
-    <Drawer open={isOpen} onOpenChange={onClose}>
+    <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DrawerContent>
         <DrawerHeader className="text-left">
           <DrawerTitle>Application Details</DrawerTitle>

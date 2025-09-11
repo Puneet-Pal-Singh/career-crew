@@ -21,7 +21,7 @@ interface EmployerDashboardViewProps {
 }
 
 export default function EmployerDashboardView({ profile, stats, jobPerformance, recentApplications }: EmployerDashboardViewProps) {
-  const firstName = profile?.full_name?.split(' ')[0] || 'Employer';
+  const firstName = profile?.full_name?.split(' ')[0] ?? 'Employer';
 
   const statCards = [
     { title: "Active Jobs", value: stats.activeJobs, icon: Briefcase, color: "text-green-500", bgColor: "bg-green-100" },

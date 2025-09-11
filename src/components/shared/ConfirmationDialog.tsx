@@ -33,7 +33,8 @@ export default function ConfirmationDialog({
   cancelText = "Cancel",
 }: ConfirmationDialogProps) {
   return (
-    <AlertDialog open={isOpen} onOpenChange={onClose}>
+    // Passing onClose directly drops the open boolean argument; wire it through to close only on false
+    <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>

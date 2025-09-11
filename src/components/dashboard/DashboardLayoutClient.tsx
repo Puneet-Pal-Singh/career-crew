@@ -46,6 +46,7 @@ export default function DashboardLayoutClient({ children, user, profile }: Dashb
           profile={profile}
           isMobileMenuOpen={isMobileMenuOpen}
           setIsMobileMenuOpen={setIsMobileMenuOpen}
+          isSideBarCollapsed={isCollapsed} 
         />
 
         <main className="flex-1 p-4 pt-20 md:p-6 lg:p-8 lg:pt-24">

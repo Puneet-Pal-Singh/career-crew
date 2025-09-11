@@ -55,15 +55,19 @@ interface DashboardHeaderProps {
   profile: UserProfile | null;
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (isOpen: boolean) => void;
+  isSideBarCollapsed: boolean;
 }
 
-export default function DashboardHeader({ user, profile, isMobileMenuOpen, setIsMobileMenuOpen }: DashboardHeaderProps){
+export default function DashboardHeader({ user, profile, isMobileMenuOpen, setIsMobileMenuOpen, isSideBarCollapsed }: DashboardHeaderProps){
   return (
     <header className={cn(
       "fixed top-0 right-0 z-20 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:h-[60px] lg:px-6 transition-all duration-300 ease-in-out",
       // Use the same dynamic left offset as the layout's padding
-      "left-0 md:left-auto", // Full width on mobile, offset on desktop
-      "md:w-[calc(100%-220px)] lg:w-[calc(100%-280px)]"
+      // "left-0 md:left-auto", // Full width on mobile, offset on desktop
+      "left-0", // Full width on mobile, offset on desktop
+      isSideBarCollapsed 
+      ? "md:left-[70px]"  // If collapsed, the header starts 70px from the left
+      : "md:left-[220px] lg:left-[280px]" // If expanded, it starts at the sidebar's width
     )}>
       <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
         <SheetTrigger asChild>

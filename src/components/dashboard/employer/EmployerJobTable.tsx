@@ -58,14 +58,22 @@ export default function EmployerJobTable({ jobs }: EmployerJobTableProps) {
 
     startArchiveTransition(() => {
       toast.info("Archiving job...");
-      archiveJobAction(jobToArchive.id).then(result => {
-        if (result.success) {
-          toast.success(result.message);
-        } else {
-          toast.error(result.message);
-        }
-        setJobToArchive(null); // Close the dialog
-      });
+      // Added .catch() and .finally() for better error handling
+      archiveJobAction(jobToArchive.id)
+        .then(result => {
+          if (result.success) {
+            toast.success(result.message);
+          } else {
+            toast.error(result.message);
+          }
+        })
+        .catch((err) => {
+          console.error("Archive failed:", err);
+          toast.error("Something went wrong while archiving. Please try again.");
+        })
+        .finally(() => {
+          setJobToArchive(null); // Close the dialog always
+        });
     });
   };
 
@@ -116,7 +124,7 @@ export default function EmployerJobTable({ jobs }: EmployerJobTableProps) {
                     <TableCell>{job.createdAt}</TableCell>
                     <TableCell className="text-right space-x-2">
                       <Button variant="outline" size="icon" asChild title={canBeViewedPublicly ? "View Public Listing" : "Preview Job"}>
-                        <Link href={`/jobs/${generateJobSlug(job.id, job.title)}`} target="_blank">
+                        <Link href={`/jobs/${generateJobSlug(job.id, job.title)}`} target="_blank" rel="noopener noreferrer">
                           <Eye className="h-4 w-4" />
                         </Link>
                       </Button>
@@ -173,19 +181,23 @@ export default function EmployerJobTable({ jobs }: EmployerJobTableProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
-                          <Link href={`/jobs/${generateJobSlug(job.id, job.title)}`} target="_blank">
+                          <Link href={`/jobs/${generateJobSlug(job.id, job.title)}`} target="_blank" rel="noopener noreferrer">
                             <Eye className="mr-2 h-4 w-4" />
                             {canBeViewedPublicly ? "View Listing" : "Preview Job"}
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem asChild disabled={!canBeEdited}>
-                          {canBeEdited ? 
+                        {/* Fix disabled and asChild Semantics */}
+                        {canBeEdited ? (
+                          <DropdownMenuItem asChild>
                             <Link href={`/dashboard/my-jobs/${job.id}/edit`}>
                               <Edit3 className="mr-2 h-4 w-4" /> Edit Job
-                            </Link> :
-                            <span><Edit3 className="mr-2 h-4 w-4" /> Edit Job</span>
-                          }
-                        </DropdownMenuItem>
+                            </Link>
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem disabled>
+                            <Edit3 className="mr-2 h-4 w-4" /> Edit Job
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem 
                           disabled={!canBeArchived || isArchivePending} 
                           onClick={() => handleArchiveClick(job)}

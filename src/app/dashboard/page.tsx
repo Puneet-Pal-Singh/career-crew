@@ -40,16 +40,23 @@ export default async function DashboardPage() {
   }
 
   switch (userProfile.role) {
-    case 'JOB_SEEKER':
+    case 'JOB_SEEKER': {
       return <JobSeekerDashboardView profile={userProfile} />;
+    }
     
-    case 'EMPLOYER':
+    case 'EMPLOYER': {
       // Fetch all required data for the employer dashboard in parallel
-      const [stats, jobPerformance, recentApplications] = await Promise.all([
+      const [statsResult, jobPerformanceResult, recentApplicationsResult] = await Promise.all([
         getEmployerDashboardStatsAction(),
         getJobPerformanceAction(),
         getEmployerRecentApplicationsAction(),
       ]);
+    
+
+      // Handle potential errors from actions
+      const stats = statsResult.success ? statsResult.stats : { activeJobs: 0, pendingJobs: 0, archivedJobs: 0, totalJobs: 0 };
+      const jobPerformance = jobPerformanceResult.success ? jobPerformanceResult.jobs : [];
+      const recentApplications = recentApplicationsResult.success ? recentApplicationsResult.data : [];
       
       return (
         <EmployerDashboardView 
@@ -59,13 +66,16 @@ export default async function DashboardPage() {
           recentApplications={recentApplications}
         />
       );
+    }
 
-    case 'ADMIN':
+    case 'ADMIN': {
       return <AdminDashboardView profile={userProfile} />;
+    }
 
-    default:
+    default: {
       console.error(`CRITICAL: Invalid role detected for user ${user.id}. Signing out.`);
       await supabase.auth.signOut();
       return redirect('/login?error=invalid_role');
+    }
   }
 }
