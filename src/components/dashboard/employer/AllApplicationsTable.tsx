@@ -56,9 +56,21 @@ export default function AllApplicationsTable({
     const status = searchParams.get('status') as ApplicationStatusOption | null;
       
     startTransition(async () => {
-      const { applications: newApplications, totalCount: newTotalCount } = await getAllApplicationsAction({ page, jobId, status });
-      setApplications(newApplications);
-      setTotalCount(newTotalCount);
+      // 1. Call the action
+      const result = await getAllApplicationsAction({ page, jobId, status });
+
+      // 2. Check if the action was successful
+      if (result.success) {
+        // 3. If successful, destructure from the nested 'data' property
+        setApplications(result.data.applications);
+        setTotalCount(result.data.totalCount);
+      } else {
+        // 4. If it failed, you could show an error toast or log the error
+        console.error(result.error);
+        // Optionally, reset the state to empty
+        setApplications([]);
+        setTotalCount(0);
+      }
     });
   }, [searchParams]);
   
