@@ -6,7 +6,6 @@ import AllApplicationsTable from '@/components/dashboard/employer/AllApplication
 import type { ApplicationStatusOption } from '@/types';
 import { Users } from 'lucide-react';
 
-// --- FIX START: Update the interface for Next.js 15 ---
 interface AllApplicationsPageProps {
   searchParams: Promise<{
     page?: string;
@@ -14,22 +13,31 @@ interface AllApplicationsPageProps {
     status?: string;
   }>;
 }
-// --- FIX END ---
+
 
 export default async function AllApplicationsPage({ searchParams: searchParamsPromise }: AllApplicationsPageProps) {
-  // --- FIX START: Await the promise to get the search params object ---
+  // Await the promise to get the search params object ---
   const searchParams = await searchParamsPromise;
-  // --- FIX END ---
-  
-  const page = Number(searchParams.page) || 1;
-  const jobId = Number(searchParams.jobId) || null;
-  const status = searchParams.status as ApplicationStatusOption || null;
+
+  // Coderabbit Suggestion: More robust parsing
+  const pageNum = Number(searchParams.page);
+  const page = Number.isFinite(pageNum) && pageNum > 0 ? pageNum : 1;
+
+  const jobIdNum = Number(searchParams.jobId);
+  const jobId = Number.isFinite(jobIdNum) ? jobIdNum : null;
+
+  const rawStatus = searchParams.status;
+  const status = rawStatus && rawStatus !== 'all' ? rawStatus.toUpperCase() as ApplicationStatusOption : null;
 
   // Fetch all necessary data in parallel
-  const [initialData, jobOptions] = await Promise.all([
+  const [initialDataResult, jobOptionsResult] = await Promise.all([
     getAllApplicationsAction({ page, jobId, status }),
     getEmployerJobOptionsAction(),
   ]);
+
+  // Handle potential errors from the actions
+  const initialData = initialDataResult.success ? initialDataResult.data : { applications: [], totalCount: 0 };
+  const jobOptions = jobOptionsResult.success ? jobOptionsResult.options : [];
 
   return (
     <div className="space-y-6">

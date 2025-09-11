@@ -21,13 +21,18 @@ type SupabaseJobPerformanceResponse = {
   applications: { count: number }[];
 };
 
-export async function getJobPerformanceAction(): Promise<JobPerformanceData[]> {
+// Use a Discriminated Union
+type GetJobPerformanceResult =
+  | { success: true; jobs: JobPerformanceData[] }
+  | { success: false; error: string };
+
+export async function getJobPerformanceAction(): Promise<GetJobPerformanceResult> {
   noStore();
   const supabase = await getSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new Error("Authentication required.");
+    return { success: false, error: "Authentication required." };
   }
 
   // Fetch jobs and a count of their related applications.
@@ -43,18 +48,20 @@ export async function getJobPerformanceAction(): Promise<JobPerformanceData[]> {
 
   if (error) {
     console.error("Error fetching job performance:", error.message);
-    return [];
+    return { success: false, error: "Failed to fetch job performance." };
   }
   if (!jobs) {
-    return [];
+    return { success: true, jobs: [] };
   }
-
-  // Map the Supabase response to our clean, flat data structure
-  return jobs.map((job): JobPerformanceData => ({
+  
+  // Coderabbit Suggestion: Safely map the data
+  const mappedJobs: JobPerformanceData[] = jobs.map(job => ({
     id: job.id,
     title: job.title,
-    status: job.status as JobStatus, // Safe to cast as we know the possible values
-    // Supabase returns the count in an array; safely access it here
-    applicationCount: job.applications[0]?.count ?? 0,
+    status: job.status as JobStatus,
+    // Safely access the nested array to prevent crashes
+    applicationCount: job.applications?.[0]?.count ?? 0,
   }));
+
+  return { success: true, jobs: mappedJobs };
 }

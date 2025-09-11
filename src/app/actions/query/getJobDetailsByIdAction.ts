@@ -7,11 +7,10 @@ import type { JobDetailData } from '@/types';
 import { mapRawJobToJobDetailData, type RawJobDataForDetail } from '@/app/actions/helpers/jobDataMappers';
 import { unstable_noStore as noStore } from 'next/cache';
 
-interface ActionResult {
-  success: boolean;
-  job?: JobDetailData;
-  error?: 'NOT_FOUND' | 'NOT_PERMITTED';
-}
+// Use a Discriminated Union
+type ActionResult = 
+  | { success: true; job: JobDetailData }
+  | { success: false; error: 'NOT_FOUND' | 'NOT_PERMITTED' };
 
 export async function getJobDetailsByIdAction(jobId: number): Promise<ActionResult> {
   noStore();

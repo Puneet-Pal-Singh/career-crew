@@ -84,6 +84,6 @@ export const mapRawJobToJobDetailData = (rawJob: RawJobDataForDetail): JobDetail
     applicationUrl: rawJob.application_url,
     tags: rawJob.tags || [],
     status: rawJob.status,
-    employer_id: rawJob.employer_id,
+    employerId: rawJob.employer_id,
   };
 };
