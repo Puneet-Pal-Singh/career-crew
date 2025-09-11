@@ -3,7 +3,7 @@
 
 import { getSupabaseServerClient } from "@/lib/supabase/serverClient";
 import { revalidatePath } from 'next/cache';
-import type { ApplicationStatusOption } from '@/types';
+import { APPLICATION_STATUS_OPTIONS, type ApplicationStatusOption } from '@/types'; 
 
 // Use a discriminated union for success and error cases
 type ActionResult = 
@@ -19,6 +19,11 @@ export async function updateApplicationStatusAction(
 
   if (!user) {
     return { success: false, error: "Authentication required." };
+  }
+
+  // Runtime validation for the input status
+  if (!APPLICATION_STATUS_OPTIONS.includes(newStatus)) {
+    return { success: false, error: "Invalid application status provided." };
   }
 
   // --- Security Check ---
