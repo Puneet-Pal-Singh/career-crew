@@ -3,7 +3,7 @@
 
 import { getSupabaseServerClient } from "@/lib/supabase/serverClient";
 import { unstable_noStore as noStore } from 'next/cache';
-import { JOB_STATUS } from '@/types'; // <-- Import the new constant
+import { JOB_STATUS } from '@/types'; // Import the constant
 
 export interface EmployerStats {
   activeJobs: number;
@@ -12,13 +12,18 @@ export interface EmployerStats {
   totalJobs: number;
 }
 
-export async function getEmployerDashboardStatsAction(): Promise<EmployerStats> {
+// Use a Discriminated Union
+type GetEmployerDashboardStatsResult =
+  | { success: true; stats: EmployerStats }
+  | { success: false; error: string };
+
+export async function getEmployerDashboardStatsAction(): Promise<GetEmployerDashboardStatsResult> {
   noStore(); 
   const supabase = await getSupabaseServerClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    throw new Error("Authentication required.");
+    return { success: false, error: "Authentication required." };
   }
 
   const [
@@ -37,9 +42,12 @@ export async function getEmployerDashboardStatsAction(): Promise<EmployerStats> 
   ]);
 
   return {
-    activeJobs: activeJobs ?? 0,
-    pendingJobs: pendingJobs ?? 0,
-    archivedJobs: archivedJobs ?? 0,
-    totalJobs: totalJobs ?? 0,
+    success: true,
+    stats: {
+      activeJobs: activeJobs ?? 0,
+      pendingJobs: pendingJobs ?? 0,
+      archivedJobs: archivedJobs ?? 0,
+      totalJobs: totalJobs ?? 0,
+    }
   };
 }

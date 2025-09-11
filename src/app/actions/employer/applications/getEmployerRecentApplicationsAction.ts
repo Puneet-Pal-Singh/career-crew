@@ -24,7 +24,12 @@ type RpcResponse = {
   status: ApplicationStatusOption;
 };
 
-export async function getEmployerRecentApplicationsAction(): Promise<EmployerApplicationPreview[]> {
+// Use a discriminated union for success and error cases
+type ActionResult = 
+  | { success: true; data: EmployerApplicationPreview[] }
+  | { success: false; error: string };
+
+export async function getEmployerRecentApplicationsAction(): Promise<ActionResult> {
   noStore();
   const supabase = await getSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -40,11 +45,11 @@ export async function getEmployerRecentApplicationsAction(): Promise<EmployerApp
     });
 
   if (error) {
-    console.error("Error calling RPC get_employer_recent_applications:", error.message);
-    return [];
+    console.error("Error calling RPC:", error.message);
+    return { success: false, error: "Failed to load recent applications." };
   }
   if (!data) {
-    return [];
+    return { success: true, data: [] };
   }
 
   // Cast the untyped 'data' from the RPC call to our specific RpcResponse type.
@@ -53,11 +58,13 @@ export async function getEmployerRecentApplicationsAction(): Promise<EmployerApp
 
   // Now, when we map over 'typedData', the 'app' parameter is fully typed,
   // giving us autocomplete and type safety.
-  return typedData.map((app: RpcResponse) => ({
+  const mappedApplications = typedData.map((app: RpcResponse) => ({
     id: app.id,
     applicantName: app.applicant_name || 'Unnamed Applicant',
     jobTitle: app.job_title,
     appliedAt: new Date(app.applied_at).toLocaleDateString(),
     status: app.status,
   }));
+
+  return { success: true, data: mappedApplications };
 }

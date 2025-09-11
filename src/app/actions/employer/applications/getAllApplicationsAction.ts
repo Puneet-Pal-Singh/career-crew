@@ -15,10 +15,15 @@ export interface EmployerApplication {
 }
 
 // The complete result, including pagination info
-export interface PaginatedApplicationsResponse {
+export type PaginatedApplicationsResponse = {
   applications: EmployerApplication[];
   totalCount: number;
-}
+};
+
+// Use a discriminated union for success and error cases
+type ActionResult = 
+  | { success: true; data: PaginatedApplicationsResponse }
+  | { success: false; error: string };
 
 // The type for the raw data returned by our SQL function
 type RpcResponse = {
@@ -36,7 +41,7 @@ export async function getAllApplicationsAction(
     jobId?: number | null;
     status?: string | null;
   }
-): Promise<PaginatedApplicationsResponse> {
+): Promise<ActionResult> {
   noStore();
   const supabase = await getSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -63,12 +68,12 @@ export async function getAllApplicationsAction(
 
   if (error) {
     console.error("Error calling RPC get_employer_applications:", error.message);
-    return { applications: [], totalCount: 0 };
+    return { success: false, error: "Failed to load applications." };
   }
 
   const typedData = data as RpcResponse[];
   if (!typedData || typedData.length === 0) {
-    return { applications: [], totalCount: 0 };
+    return { success: true, data: { applications: [], totalCount: 0 } };
   }
 
   const applications = typedData.map((app): EmployerApplication => ({
@@ -82,5 +87,5 @@ export async function getAllApplicationsAction(
   // The total count is the same for every row, so we take it from the first one.
   const totalCount = typedData[0].total_count;
 
-  return { applications, totalCount };
+  return { success: true, data: { applications, totalCount } };
 }

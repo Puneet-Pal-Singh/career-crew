@@ -5,10 +5,10 @@ import { getSupabaseServerClient } from "@/lib/supabase/serverClient";
 import { revalidatePath } from 'next/cache';
 import type { ApplicationStatusOption } from '@/types';
 
-interface ActionResult {
-  success: boolean;
-  message: string;
-}
+// Use a discriminated union for success and error cases
+type ActionResult = 
+  | { success: true; message: string }
+  | { success: false; error: string };
 
 export async function updateApplicationStatusAction(
   applicationId: string,
@@ -18,7 +18,7 @@ export async function updateApplicationStatusAction(
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    return { success: false, message: "Authentication required." };
+    return { success: false, error: "Authentication required." };
   }
 
   // --- Security Check ---
@@ -30,14 +30,14 @@ export async function updateApplicationStatusAction(
     .single();
 
   if (fetchError || !application) {
-    return { success: false, message: "Application not found." };
+    return { success: false, error: "Application not found." };
   }
   
   const job = Array.isArray(application.job) ? application.job[0] : application.job;
   
   // Now, verify that the employer_id on the job matches the current user's ID.
   if (job?.employer_id !== user.id) {
-    return { success: false, message: "Unauthorized: You do not have permission to modify this application." };
+    return { success: false, error: "Unauthorized: You do not have permission to modify this application." };
   }
   // --- End Security Check ---
 
@@ -49,7 +49,7 @@ export async function updateApplicationStatusAction(
 
   if (updateError) {
     console.error("Error updating application status:", updateError.message);
-    return { success: false, message: "Failed to update application status." };
+    return { success: false, error: "Failed to update application status." };
   }
 
   // On success, revalidate the applications page path to refresh the data on the client.
