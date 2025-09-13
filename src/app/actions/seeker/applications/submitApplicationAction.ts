@@ -2,135 +2,110 @@
 "use server";
 
 import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
-import { type ApplicationFormSchemaType } from '@/lib/formSchemas'; // Correct type for form data
-// import type { User } from '@supabase/supabase-js'; // Not explicitly needed if using user from getUser()
+import { revalidatePath } from 'next/cache';
 
-interface SubmitApplicationResult {
-  success: boolean;
-  applicationId?: string;
-  error?: string;
-}
+// Using a discriminated union for the return type is a best practice.
+type ActionResult = 
+  | { success: true; applicationId: string }
+  | { success: false; error: string };
 
 /**
- * Server Action for submitting a job application.
- * @param formData - The application form data (does NOT include jobId).
- * @param jobId - The ID of the job being applied to.
- * @returns {Promise<SubmitApplicationResult>} Result of the operation.
+ * Server Action for submitting a job application, now handling file uploads.
+ * @param formData - The FormData object from the application form.
+ * @returns {Promise<ActionResult>} Result of the operation.
  */
-export async function submitApplication(
-  formData: ApplicationFormSchemaType, // Data from the form fields
-  jobId: string                        // JobId passed separately
-): Promise<SubmitApplicationResult> {
+export async function submitApplicationAction(formData: FormData): Promise<ActionResult> {
   const supabase = await getSupabaseServerClient();
-  const actionName = "submitApplication";
+  const actionName = "submitApplicationAction";
   
-  // Log carefully, avoid logging full PII like cover letter unless necessary for debugging
-  console.log(`Server Action (${actionName}): Attempting application for job ID ${jobId} with data:`, {
-    fullName: formData.fullName,
-    email: formData.email,
-    hasResumeUrl: !!formData.resumeUrl,
-    hasCoverLetter: !!formData.coverLetterNote
-  });
+  // 1. Authenticate the user
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, error: "Authentication required. Please log in to apply." };
+  }
 
-  if (!jobId) { // Basic validation for jobId
-    console.error(`Server Action (${actionName}): Job ID is missing.`);
-    return { success: false, error: "Job ID is required to submit an application." };
+  // 2. Extract and validate data from FormData
+  const jobId = formData.get('jobId') as string;
+  const coverLetter = formData.get('coverLetter') as string | null;
+  const linkedinUrl = formData.get('linkedinUrl') as string | null;
+  const resumeFile = formData.get('resumeFile') as File | null;
+
+  if (!jobId) {
+    return { success: false, error: "Job ID is missing. Cannot submit application." };
+  }
+  if (!resumeFile || resumeFile.size === 0) {
+    return { success: false, error: "A resume file is required to apply." };
   }
 
   try {
-    // 1. Get current authenticated user (applicant)
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+    // 3. Perform security and business logic checks in parallel
+    const [jobResult, existingApplicationResult] = await Promise.all([
+      // Check if the job is valid for application
+      supabase.from('jobs').select('status, employer_id').eq('id', jobId).single(),
+      // Check if the user has already applied
+      supabase.from('applications').select('id', { count: 'exact', head: true }).eq('job_id', jobId).eq('seeker_id', user.id)
+    ]);
 
-    if (authError) {
-      console.error(`Server Action (${actionName}): Supabase auth error.`, authError);
-      return { success: false, error: "Could not verify your session. Please try logging in again." };
-    }
-    if (!authUser) {
-      console.warn(`Server Action (${actionName}): No authenticated user. Application requires login.`);
-      return { success: false, error: "You must be logged in to apply for this job." };
-    }
-
-    // 2. Verify the job exists, is 'APPROVED', and user is not the employer
-    const { data: jobData, error: jobFetchError } = await supabase
-      .from('jobs')
-      .select('id, status, employer_id')
-      .eq('id', jobId)
-      .single(); // Fetches the job or null/error if not found
-
-    if (jobFetchError || !jobData) {
-      console.error(`Server Action (${actionName}): Job ID ${jobId} not found or DB error.`, jobFetchError);
+    const { data: jobData, error: jobError } = jobResult;
+    if (jobError || !jobData) {
       return { success: false, error: "This job posting could not be found." };
     }
     if (jobData.status !== 'APPROVED') {
-      console.warn(`Server Action (${actionName}): Job ID ${jobId} is not 'APPROVED' (status: ${jobData.status}).`);
       return { success: false, error: "This job is no longer accepting applications." };
     }
-    if (jobData.employer_id === authUser.id) {
-      console.warn(`Server Action (${actionName}): Employer ${authUser.id} attempting to apply to their own job ${jobId}.`);
+    if (jobData.employer_id === user.id) {
       return { success: false, error: "You cannot apply to your own job posting." };
     }
 
-    // 3. Check for existing application by this user for this job
-    const { count: existingApplicationCount, error: checkError } = await supabase
-      .from('applications')
-      .select('id', { count: 'exact', head: true }) // More efficient: just check if count > 0
-      .eq('job_id', jobId)
-      .eq('seeker_id', authUser.id);
-
-    if (checkError) {
-      console.error(`Server Action (${actionName}): Error checking for existing application for job ${jobId}, user ${authUser.id}.`, checkError);
-      return { success: false, error: "Could not verify previous applications. Please try again." };
-    }
-
-    if (existingApplicationCount !== null && existingApplicationCount > 0) { // This is the key
-      console.log(`Server Action (${actionName}): User ${authUser.id} has already applied to job ${jobId}. Duplicate attempt.`);
+    const { count: existingCount, error: checkError } = existingApplicationResult;
+    if (checkError) throw checkError; // Let the catch block handle unexpected DB errors
+    if (existingCount !== null && existingCount > 0) {
       return { success: false, error: "You have already applied for this job." };
     }
-    // if (existingApplication) {
-    //   console.log(`Server Action (${actionName}): User ${authUser.id} has already applied to job ${jobId}.`);
-    //   return { success: false, error: "You have already applied for this job." };
-    // }
 
-    // 4. Construct application data for insertion
-    const applicationDataToInsert = {
-      job_id: jobId, // Use the jobId argument
-      seeker_id: authUser.id,
-      // 'status' defaults to 'SUBMITTED' in your DB schema. If not, set it here:
-      // status: 'SUBMITTED', 
-      cover_letter_snippet: formData.coverLetterNote || null,
-      resume_url: formData.resumeUrl || null,
-      // 'created_at' will use its DB default.
-    };
+    // 4. Handle the resume file upload to Supabase Storage
+    const fileExt = resumeFile.name.split('.').pop();
+    const fileName = `${user.id}-${jobId}-${Date.now()}.${fileExt}`;
+    const filePath = `${user.id}/${fileName}`; // Organize files by user ID
 
-    console.log(`Server Action (${actionName}): Inserting application for job ${jobId}, user ${authUser.id}.`);
+    const { error: uploadError } = await supabase.storage
+      .from('resumes')
+      .upload(filePath, resumeFile);
 
-    // 5. Insert into 'applications' table
+    if (uploadError) {
+      console.error(`(${actionName}) Supabase storage error:`, uploadError);
+      return { success: false, error: "Error uploading your resume. Please try again." };
+    }
+
+    // 5. Insert the application record into the database
     const { data: newApplication, error: insertError } = await supabase
       .from('applications')
-      .insert(applicationDataToInsert)
-      .select('id') // Select the ID of the newly created application
-      .single();   // Expect a single record to be returned
-
+      .insert({
+        job_id: Number(jobId),
+        seeker_id: user.id,
+        cover_letter_snippet: coverLetter,
+        linkedin_profile_url: linkedinUrl, // Use the new column name
+        resume_file_path: filePath,       // Store the path, not the full URL
+      })
+      .select('id')
+      .single();
+    
     if (insertError) {
-      console.error(`Server Action (${actionName}): Supabase insert error for application (job ${jobId}, user ${authUser.id}).`, insertError);
-      if (insertError.code === '23505') { // Specifically for unique constraint violation
-        return { success: false, error: "It seems you've applied for this job. Please check 'My Applications'." };
-      }
-      return { success: false, error: "Failed to submit your application. Please try again. Code: " + insertError.code };
-    }
-    if (!newApplication || !newApplication.id) {
-      console.error(`Server Action (${actionName}): Application submitted for job ${jobId} but no ID returned.`);
-      return { success: false, error: "Application submitted but failed to get confirmation." };
+      // If the insert fails, we should try to clean up the uploaded file
+      await supabase.storage.from('resumes').remove([filePath]);
+      console.error(`(${actionName}) Supabase insert error:`, insertError);
+      return { success: false, error: "A database error occurred while submitting." };
     }
 
-    console.log(`Server Action (${actionName}): Application submitted successfully. App ID: ${newApplication.id} for job ${jobId}, user ${authUser.id}.`);
-    // Consider revalidating paths if this application should appear immediately somewhere.
-    // revalidatePath(`/dashboard/seeker/applications`); // Example
+    // 6. On success, revalidate paths and return the new application ID
+    revalidatePath(`/jobs/${jobId}`);
+    revalidatePath('/dashboard/seeker/applications');
+    
     return { success: true, applicationId: newApplication.id };
 
-  } catch (err: unknown) {
+  } catch (err) {
     const message = err instanceof Error ? err.message : "An unexpected error occurred.";
-    console.error(`Server Action (${actionName}): Unexpected error for job ${jobId}. Message:`, message, err);
-    return { success: false, error: "An unexpected server error occurred. Please try again." };
+    console.error(`(${actionName}) Unexpected error for job ${jobId}, user ${user.id}:`, message);
+    return { success: false, error: "An unexpected server error occurred." };
   }
 }
