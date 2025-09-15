@@ -4,6 +4,14 @@
 import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
 import { revalidatePath } from 'next/cache';
 
+// Constants for validation
+const MAX_RESUME_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+const ACCEPTED_RESUME_MIME_TYPES = new Set([
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+]);
+
 // Using a discriminated union for the return type is a best practice.
 type ActionResult = 
   | { success: true; applicationId: string }
@@ -35,6 +43,17 @@ export async function submitApplicationAction(formData: FormData): Promise<Actio
   }
   if (!resumeFile || resumeFile.size === 0) {
     return { success: false, error: "A resume file is required to apply." };
+  }
+
+  // Server-side file validation
+  if (!resumeFile || resumeFile.size === 0) {
+    return { success: false, error: "A resume file is required to apply." };
+  }
+  if (resumeFile.size > MAX_RESUME_SIZE_BYTES) {
+    return { success: false, error: "Resume file size cannot exceed 5MB." };
+  }
+  if (!ACCEPTED_RESUME_MIME_TYPES.has(resumeFile.type)) {
+    return { success: false, error: "Unsupported file type. Only PDF, DOC, and DOCX are allowed." };
   }
 
   try {
