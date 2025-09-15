@@ -15,7 +15,8 @@ export interface ApplicationDetails {
   appliedAt: string;
   status: ApplicationStatusOption;
   coverLetterSnippet: string | null;
-  resumeUrl: string | null;
+  resumeUrl: string | null; // This will now be a temporary signed URL for the file
+  linkedinProfileUrl: string | null; // The new dedicated field
 }
 
 // The type for our function's result, handling success and error cases
@@ -35,11 +36,20 @@ export async function getApplicationDetailsAction(applicationId: string): Promis
     return { success: false, error: "Authentication required." };
   }
 
-  // Step 1: Fetch the core application data using the user's permissions.
+  // Step 1: Fetch the application using the user's permissions
   // This query also fetches the related job to perform a security check.
   const { data: applicationData, error: applicationError } = await supabase
     .from('applications')
-    .select(`id, created_at, status, cover_letter_snippet, resume_url, seeker_id, job:jobs!inner(title, employer_id)`)
+    .select(`
+      id,
+      created_at,
+      status,
+      cover_letter_snippet,
+      linkedin_profile_url,
+      resume_file_path,
+      seeker_id,
+      job:jobs!inner(title, employer_id)
+    `)
     .eq('id', applicationId)
     .single();
 
@@ -76,7 +86,23 @@ export async function getApplicationDetailsAction(applicationId: string): Promis
     return { success: false, error: "Applicant profile not found." };
   }
 
-  // Step 3: Combine the data from our two successful queries into one clean object.
+  // STEP 3: Securely generate a temporary URL for the resume file
+  let signedResumeUrl: string | null = null;
+  if (applicationData.resume_file_path) {
+    const { data, error: urlError } = await supabase.storage
+      .from('resumes')
+      .createSignedUrl(applicationData.resume_file_path, 60); // URL is valid for 60 seconds
+
+    if (urlError) {
+      console.error("Error creating signed URL for resume:", urlError);
+      // Don't fail the whole request, just proceed without the resume URL
+      signedResumeUrl = null;
+    } else {
+      signedResumeUrl = data.signedUrl;
+    }
+  }
+
+  // Step 3: Combine all the data into one clean object.
   const applicationDetails: ApplicationDetails = {
     id: applicationData.id,
     applicantName: profileData.full_name,
@@ -85,7 +111,8 @@ export async function getApplicationDetailsAction(applicationId: string): Promis
     appliedAt: new Date(applicationData.created_at).toLocaleDateString(),
     status: applicationData.status as ApplicationStatusOption,
     coverLetterSnippet: applicationData.cover_letter_snippet,
-    resumeUrl: applicationData.resume_url,
+    resumeUrl: signedResumeUrl,
+    linkedinProfileUrl: applicationData.linkedin_profile_url,
   };
 
   return { success: true, data: applicationDetails };
