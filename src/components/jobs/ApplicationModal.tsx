@@ -1,30 +1,20 @@
 // src/components/jobs/ApplicationModal.tsx
 "use client";
 
-import React, { useState, useEffect, useTransition, useMemo, useCallback } from 'react';
-import { useForm, Controller, SubmitHandler } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { ApplicationFormSchema, type ApplicationFormSchemaType } from '@/lib/formSchemas';
-import { submitApplication } from '@/app/actions/seeker/applications/submitApplicationAction';
-import { useAuth } from '@/contexts/AuthContext';
-import { useUserProfile } from '@/contexts/UserProfileContext';
-
+import React, { useState, useTransition, useEffect } from 'react';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Send, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { submitApplicationAction } from '@/app/actions/seeker/applications/submitApplicationAction';
+import { toast } from 'sonner';
+import { Upload, FileText, Send, Loader2, CheckCircle } from 'lucide-react';
 
 interface ApplicationModalProps {
   isOpen: boolean;
@@ -33,199 +23,165 @@ interface ApplicationModalProps {
   jobTitle: string;
 }
 
-// Define the type for default values more explicitly if needed, but relying on RHF's inference with Zod is usually okay
-// type ApplicationFormDefaults = Partial<ApplicationFormSchemaType>;
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ACCEPTED_FILE_TYPES = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+
+const applicationSchema = z.object({
+  fullName: z.string().min(2, "Full name is required."),
+  email: z.string().email("Please enter a valid email address."),
+  linkedinUrl: z.string().url("Please enter a valid URL.").optional().or(z.literal('')),
+  resumeFile: z
+    .instanceof(File, { message: "A resume file is required." })
+    .refine((file) => file.size <= MAX_FILE_SIZE, `Max file size is 5MB.`)
+    .refine((file) => ACCEPTED_FILE_TYPES.includes(file.type), "Only .pdf, .doc, and .docx formats are supported."),
+  coverLetter: z.string().max(1000, "Note cannot exceed 1000 characters.").optional(),
+});
 
 export default function ApplicationModal({ isOpen, onOpenChange, jobId, jobTitle }: ApplicationModalProps) {
-  const { user } = useAuth();
-  const { userProfile } = useUserProfile();
+  const [isPending, startTransition] = useTransition();
+  const [isSuccess, setIsSuccess] = useState(false);
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
-  const [isSubmitting, startTransition] = useTransition();
-  const [submissionError, setSubmissionError] = useState<string | null>(null);
-  const [submissionSuccess, setSubmissionSuccess] = useState<boolean>(false);
-  
-  // Memoize defaultValues to stabilize them for react-hook-form and useEffect dependencies.
-  // These are the "blank slate" defaults.
-  const memoizedDefaultValues = useMemo(() => ({
-    fullName: "",
-    email: "",
-    coverLetterNote: "",
-    resumeUrl: "",
-    consent: false,
-  }), []);
-
-  const form = useForm<ApplicationFormSchemaType>({
-    resolver: zodResolver(ApplicationFormSchema),
-    defaultValues: memoizedDefaultValues,
+  const form = useForm<z.infer<typeof applicationSchema>>({
+    resolver: zodResolver(applicationSchema),
+    defaultValues: { fullName: "", email: "", coverLetter: "", linkedinUrl: "" },
   });
 
-  const { register, handleSubmit, control, formState: { errors }, reset } = form;
-
-  // Effect to pre-fill and reset form when modal visibility or user changes
   useEffect(() => {
     if (isOpen) {
-      // When modal opens, reset with potentially updated defaults (e.g., user logged in)
-      // Pre-fill with user data if available, otherwise use the blank slate defaults.
-      reset({
-        fullName: userProfile?.full_name || (user?.user_metadata?.full_name) || memoizedDefaultValues.fullName,
-        email: user?.email || memoizedDefaultValues.email,
-        coverLetterNote: memoizedDefaultValues.coverLetterNote,
-        resumeUrl: memoizedDefaultValues.resumeUrl,
-        consent: memoizedDefaultValues.consent,
-      });
-      setSubmissionError(null);
-      setSubmissionSuccess(false);
+      form.reset();
+      setIsSuccess(false);
     }
-  }, [isOpen, user, userProfile, reset, memoizedDefaultValues]); // Add all stable dependencies
+  }, [isOpen, form]);
 
+  const onSubmit = (values: z.infer<typeof applicationSchema>) => {
+    const formData = new FormData();
+    formData.append('fullName', values.fullName);
+    formData.append('email', values.email);
+    formData.append('jobId', jobId);
+    if (values.linkedinUrl) formData.append('linkedinUrl', values.linkedinUrl);
+    if (values.resumeFile) formData.append('resumeFile', values.resumeFile);
+    if (values.coverLetter) formData.append('coverLetter', values.coverLetter);
 
-  const onSubmit: SubmitHandler<ApplicationFormSchemaType> = async (formData) => {
-    setSubmissionError(null);
-    setSubmissionSuccess(false);
-
-    startTransition(async () => {
-      console.log("Submitting application for job:", jobId, "Data:", formData);
-      const result = await submitApplication(formData, jobId); 
-      if (result.success) {
-        setSubmissionSuccess(true);
-        // Form will be reset by the useEffect when isOpen becomes false after timeout
-        setTimeout(() => {
-          onOpenChange(false); // Close modal on success
-        }, 2500); 
-      } else {
-        setSubmissionError(result.error || "An unknown error occurred while submitting your application.");
-      }
+    startTransition(() => {
+      toast.info("Submitting application...");
+      submitApplicationAction(formData).then(result => {
+        if (result.success) {
+          toast.success("Application submitted successfully!");
+          setIsSuccess(true);
+        } else {
+          toast.error(result.error);
+        }
+      });
     });
   };
 
-  // This function is called by the Dialog when its open state changes (e.g. overlay click, Esc key)
-  const handleExternalOpenChange = useCallback((open: boolean) => {
-    onOpenChange(open); // Propagate state up to parent
-    if (!open) {
-      // If modal is closing (and not due to successful submission which handles its own reset via useEffect on isOpen)
-      // Reset form to initial defaults and clear states
-      if (!submissionSuccess) { // Only reset if not closed due to success message auto-close
-          reset(memoizedDefaultValues);
-          setSubmissionError(null);
-      }
-      // submissionSuccess will be reset by useEffect when isOpen becomes true next time
-    }
-  }, [onOpenChange, reset, memoizedDefaultValues, submissionSuccess]);
+  const ModalContent = () => (
+    isSuccess ? (
+      <div className="py-8 text-center flex flex-col items-center">
+        <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
+        <h3 className="text-xl font-semibold">Application Submitted!</h3>
+        <p className="text-muted-foreground mt-2">The employer has received your application.</p>
+      </div>
+    ) : (
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField name="fullName" control={form.control} render={({ field }) => (
+              <FormItem><FormLabel>Full Name *</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+            )} />
+            <FormField name="email" control={form.control} render={({ field }) => (
+              <FormItem><FormLabel>Email Address *</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
+            )} />
+          </div>
+          <FormField name="linkedinUrl" control={form.control} render={({ field }) => (
+            <FormItem><FormLabel>LinkedIn Profile</FormLabel><FormControl><Input {...field} placeholder="https://linkedin.com/in/..." /></FormControl><FormMessage /></FormItem>
+          )} />
+          <FormField 
+            name="resumeFile" 
+            control={form.control} 
+            render={({ field: { onChange, value, ...rest } }) => (
+              <FormItem>
+                <FormLabel>Resume (PDF, DOCX up to 5MB) *</FormLabel>
+                <FormControl>
+                  <div className="relative border-2 border-dashed rounded-lg p-6 text-center hover:border-primary transition-colors">
+                    <label 
+                      htmlFor="resume-upload" 
+                      className="flex flex-col items-center justify-center gap-2 text-muted-foreground cursor-pointer"
+                    >
+                      {value?.name ? (
+                        <div className="flex items-center justify-center gap-2 text-primary font-medium">
+                          <FileText className="h-5 w-5" />
+                          <span>{value.name}</span>
+                        </div>
+                      ) : (
+                        <>
+                          <Upload className="h-8 w-8" />
+                          <span>Click or drag & drop to upload</span>
+                        </>
+                      )}
+                    </label>
+                    <Input 
+                      id="resume-upload"
+                      type="file" 
+                      className="hidden"
+                      accept={ACCEPTED_FILE_TYPES.join(",")}
+                      // React Hook Form's 'rest' contains the necessary ref and name
+                      {...rest}
+                      onChange={(e) => onChange(e.target.files?.[0])}
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} 
+          />
+          <FormField name="coverLetter" control={form.control} render={({ field }) => (
+            <FormItem><FormLabel>Cover Letter Note</FormLabel><FormControl><Textarea {...field} rows={3} /></FormControl><FormMessage /></FormItem>
+          )} />
+        </form>
+      </Form>
+    )
+  );
+
+  const FormActions = () => (
+    isSuccess ? (
+      <Button onClick={() => onOpenChange(false)} className="w-full">Close</Button>
+    ) : (
+      <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 gap-2">
+        <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={isPending}>Cancel</Button>
+        <Button type="submit" form="applicationForm" disabled={isPending} onClick={form.handleSubmit(onSubmit)}>
+          {isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...</> : <><Send className="mr-2 h-4 w-4" /> Submit Application</>}
+        </Button>
+      </div>
+    )
+  );
+  
+  if (isDesktop) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Apply to: {jobTitle}</DialogTitle>
+            <DialogDescription>Please fill in your details below. Good luck!</DialogDescription>
+          </DialogHeader>
+          <div className="py-4"><ModalContent /></div>
+          <DialogFooter><FormActions /></DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleExternalOpenChange}>
-      <DialogContent className="sm:max-w-lg" onPointerDownOutside={(e) => {
-          // Prevent closing if currently submitting to avoid interrupting the submission process.
-          if (isSubmitting) e.preventDefault();
-      }}>
-        <DialogHeader>
-          <DialogTitle className="text-2xl">Apply for: {jobTitle}</DialogTitle>
-          {!submissionSuccess && ( // Hide description if success message is shown
-            <DialogDescription>
-              Fill in your details below to submit your application.
-            </DialogDescription>
-          )}
-        </DialogHeader>
-
-        {submissionSuccess ? (
-          <div className="py-8 text-center flex flex-col items-center">
-            <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
-            <h3 className="text-xl font-semibold text-foreground">Application Submitted!</h3>
-            <p className="text-muted-foreground mt-2 max-w-sm">
-              The employer has received your application. You will be contacted if you are a good fit.
-            </p>
-            <Button onClick={() => onOpenChange(false)} className="mt-6 w-full sm:w-auto">
-              Close
-            </Button>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-2">
-            {submissionError && (
-              <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Application Error</AlertTitle>
-                <AlertDescription>{submissionError}</AlertDescription>
-              </Alert>
-            )}
-
-            <div>
-              <Label htmlFor="fullName">Full Name *</Label>
-              <Input id="fullName" {...register("fullName")} placeholder="Your full name" autoComplete="name"/>
-              {errors.fullName && <p className="text-sm text-destructive mt-1">{errors.fullName.message}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="email">Email Address *</Label>
-              <Input id="email" type="email" {...register("email")} placeholder="your@email.com" autoComplete="email"/>
-              {errors.email && <p className="text-sm text-destructive mt-1">{errors.email.message}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="coverLetterNote">Cover Letter Note (Optional)</Label>
-              <Textarea 
-                id="coverLetterNote" 
-                {...register("coverLetterNote")} 
-                placeholder="Briefly tell us why you're a good fit for this role..." 
-                rows={4} 
-              />
-              {errors.coverLetterNote && <p className="text-sm text-destructive mt-1">{errors.coverLetterNote.message}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="resumeUrl">Resume/Profile URL (Optional)</Label>
-              <Input 
-                id="resumeUrl" 
-                type="url" 
-                {...register("resumeUrl")} 
-                placeholder="e.g., https://linkedin.com/in/yourprofile" 
-              />
-              {errors.resumeUrl && <p className="text-sm text-destructive mt-1">{errors.resumeUrl.message}</p>}
-            </div>
-
-            <div className="flex items-start space-x-3 pt-2"> {/* Increased space-x for better alignment */}
-              <Controller
-                  name="consent"
-                  control={control}
-                  render={({ field }) => (
-                      <Checkbox
-                          id="consent"
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          className="mt-1 flex-shrink-0" // Prevent checkbox from shrinking
-                      />
-                  )}
-              />
-              <div className="grid gap-1.5 leading-none">
-                <Label htmlFor="consent" className="cursor-pointer font-normal text-sm">
-                  I consent to my application details being shared with the employer for hiring purposes. *
-                </Label>
-                {errors.consent && <p className="text-xs text-destructive">{errors.consent.message}</p>}
-              </div>
-            </div>
-
-            <DialogFooter className="pt-6 sm:justify-between">
-                <DialogClose asChild>
-                    <Button type="button" variant="outline" disabled={isSubmitting} className="w-full sm:w-auto order-last sm:order-first mt-2 sm:mt-0">
-                    Cancel
-                    </Button>
-                </DialogClose>
-              <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    <Send className="mr-2 h-4 w-4" />
-                    Submit Application
-                  </>
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        )}
-      </DialogContent>
-    </Dialog>
+    <Drawer open={isOpen} onOpenChange={onOpenChange}>
+      <DrawerContent>
+        <DrawerHeader className="text-left">
+          <DrawerTitle className="text-2xl">Apply to: {jobTitle}</DrawerTitle>
+          <DrawerDescription>Please fill in your details below. Good luck!</DrawerDescription>
+        </DrawerHeader>
+        <div className="p-4"><ModalContent /></div>
+        <DrawerFooter className="pt-2"><FormActions /></DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }
