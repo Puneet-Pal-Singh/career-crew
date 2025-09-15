@@ -14,9 +14,8 @@ interface JobDescriptionFieldsProps {
 
 export default function JobDescriptionFields({ register, errors }: JobDescriptionFieldsProps) {
   return (
-    <fieldset className="space-y-6 border p-4 rounded-md">
-      <legend className="text-lg font-semibold px-1">Job Description & Requirements</legend>
-      
+    // CHANGED: Replaced <fieldset> with a simple div
+    <div className="space-y-6">
       {/* Description */}
       <div>
         <Label htmlFor="description">Job Description *</Label>
@@ -30,6 +29,6 @@ export default function JobDescriptionFields({ register, errors }: JobDescriptio
         <Textarea id="requirements" {...register("requirements")} placeholder="List key skills, experience, and qualifications required for this role..." rows={6} />
         {errors.requirements && <p className="text-sm text-destructive mt-1">{errors.requirements.message}</p>}
       </div>
-    </fieldset>
+    </div>
   );
 }

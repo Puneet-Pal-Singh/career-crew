@@ -2,8 +2,7 @@
 "use client";
 
 import React, { useState, useTransition, useEffect } from 'react';
-import { useForm, SubmitHandler } // No need for Controller if sub-components handle it
-from 'react-hook-form';
+import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { JobPostSchema, type JobPostSchemaType } from '@/lib/formSchemas';
 // Import specific actions
@@ -21,6 +20,7 @@ import JobPrimaryDetailsFields from './form-fields/JobPrimaryDetailsFields';
 import JobDescriptionFields from './form-fields/JobDescriptionFields';
 import JobSalaryFields from './form-fields/JobSalaryFields';
 import JobApplicationFields from './form-fields/JobApplicationFields';
+import SkillsInput from './form-fields/SkillsInput';
 
 interface JobEditorFormProps {
   mode: 'create' | 'edit';
@@ -132,20 +132,22 @@ export default function JobEditorForm({ mode, jobId, initialData }: JobEditorFor
   const TitleIcon = mode === 'edit' ? Edit3 : Briefcase;
 
   return ( 
-    <Card className="w-full max-w-3xl mx-auto my-8">
+    <Card className="w-full max-w-3xl mx-auto my-8 border-none shadow-none"> {/* Optional: remove border/shadow for an even cleaner integration into the dashboard */}
       <CardHeader>
         <CardTitle className="flex items-center text-2xl font-bold">
-          <TitleIcon className="mr-3 h-7 w-7 text-primary" />
+          {/* Using a generic icon now, as the title is more direct */}
+          <Briefcase className="mr-3 h-7 w-7 text-primary" />
           {cardTitleText}
         </CardTitle>
         <CardDescription>
           {mode === 'edit' 
             ? 'Modify the details of your job opening below.' 
-            : 'Fill in the details to create a new job listing. It will be submitted for approval.'}
+            : 'Fill in the details below. Fields marked with an asterisk (*) are required.'}
         </CardDescription>
       </CardHeader>
+
       <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className="space-y-8 pt-6">
+        <CardContent className="space-y-10 pt-6">
           {submissionStatus?.type === 'error' && (
             <Alert variant="destructive" className="mb-6">
               <AlertTriangle className="h-4 w-4" />
@@ -164,10 +166,80 @@ export default function JobEditorForm({ mode, jobId, initialData }: JobEditorFor
           )}
 
           {/* Fieldset Sub-components */}
-          <JobPrimaryDetailsFields control={control} register={register} errors={errors} />
-          <JobDescriptionFields register={register} errors={errors} />
-          <JobSalaryFields control={control} register={register} errors={errors} />
-          <JobApplicationFields register={register} errors={errors} />
+          {/* Section 1: Primary Details */}
+          <div className="space-y-2">
+            <h3 className="text-xl font-semibold tracking-tight">Primary Details</h3>
+            <p className="text-muted-foreground text-sm">
+              Core information about the job role and your company.
+            </p>
+            <div className="pt-4">
+              <JobPrimaryDetailsFields control={control} register={register} errors={errors} />
+            </div>
+          </div>
+
+          {/* --- NEW SECTION: Skills --- */}
+          <div className="space-y-2">
+            <h3 className="text-xl font-semibold tracking-tight">Skills</h3>
+            <p className="text-muted-foreground text-sm">
+              Add up to 5 key skills or technologies. This helps candidates find your job.
+            </p>
+            <div className="pt-4">
+              <Controller
+                name="skills"
+                control={control}
+                render={({ field }) => (
+                  <SkillsInput
+                    {...field}
+                    placeholder="e.g., React, Node.js, TypeScript..."
+                  />
+                )}
+              />
+              {errors.skills && (
+                <p className="text-sm text-destructive mt-1">
+                  {/* This will show errors like "Max 5 skills" */}
+                  {errors.skills.message} 
+                  {/* This will show errors for individual items if any */}
+                  {Array.isArray(errors.skills) && errors.skills.map((err, i) => (
+                    <span key={i}>{err?.message}</span>
+                  ))}
+                </p>
+              )}
+            </div>
+          </div>
+          {/* --- END OF NEW SECTION --- */}
+
+          {/* Section 2: Description & Requirements */}
+          <div className="space-y-2">
+            <h3 className="text-xl font-semibold tracking-tight">Job Description</h3>
+            <p className="text-muted-foreground text-sm">
+              Provide a detailed description and key requirements for the role.
+            </p>
+            <div className="pt-4">
+              <JobDescriptionFields register={register} errors={errors} />
+            </div>
+          </div>
+          
+          {/* Section 3: Salary Information */}
+          <div className="space-y-2">
+            <h3 className="text-xl font-semibold tracking-tight">Salary (Optional)</h3>
+            <p className="text-muted-foreground text-sm">
+              Provide a salary range to attract more candidates.
+            </p>
+            <div className="pt-4">
+              <JobSalaryFields control={control} register={register} errors={errors} />
+            </div>
+          </div>
+
+          {/* Section 4: Application Method */}
+          <div className="space-y-2">
+            <h3 className="text-xl font-semibold tracking-tight">Application Method *</h3>
+            <p className="text-muted-foreground text-sm">
+              How should candidates apply? Provide an external URL or an email address.
+            </p>
+            <div className="pt-4">
+              <JobApplicationFields register={register} errors={errors} />
+            </div>
+          </div>
 
         </CardContent>
         <CardFooter className="flex justify-end pt-8">

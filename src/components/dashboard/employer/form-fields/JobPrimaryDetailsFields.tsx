@@ -18,11 +18,11 @@ interface JobPrimaryDetailsFieldsProps {
 
 export default function JobPrimaryDetailsFields({ control, register, errors }: JobPrimaryDetailsFieldsProps) {
   return (
-    <fieldset className="space-y-6 border p-4 rounded-md">
-      <legend className="text-lg font-semibold px-1">Primary Job Details</legend>
+    // Replaced <fieldset> with a <div> containing our responsive grid
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       
-      {/* Job Title */}
-      <div>
+      {/* Job Title (Spans 2 columns on medium screens and up) */}
+      <div className="md:col-span-2">
         <Label htmlFor="title">Job Title *</Label>
         <Input id="title" {...register("title")} placeholder="e.g., Senior Software Engineer" />
         {errors.title && <p className="text-sm text-destructive mt-1">{errors.title.message}</p>}
@@ -56,15 +56,14 @@ export default function JobPrimaryDetailsFields({ control, register, errors }: J
           name="job_type"
           control={control}
           render={({ field }) => (
-            <Select onValueChange={field.onChange} value={field.value || ''} >
+            <Select onValueChange={field.onChange} value={field.value || ''}>
               <SelectTrigger id="job_type">
                 <SelectValue placeholder="Select job type" />
               </SelectTrigger>
               <SelectContent>
                 {JOB_TYPE_OPTIONS.map(option => (
                   <SelectItem key={option.value} value={option.value}>
-                    {/* USE THE LABEL FOR DISPLAY */}
-                    {option.label} 
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -74,8 +73,8 @@ export default function JobPrimaryDetailsFields({ control, register, errors }: J
         {errors.job_type && <p className="text-sm text-destructive mt-1">{errors.job_type.message}</p>}
       </div>
 
-      {/* Is Remote */}
-      <div className="flex items-center space-x-2 pt-2">
+      {/* Is Remote (Aligned to the grid) */}
+      <div className="md:col-span-2 flex items-center space-x-2 pt-2">
         <Controller
             name="is_remote"
             control={control}
@@ -87,8 +86,10 @@ export default function JobPrimaryDetailsFields({ control, register, errors }: J
                 />
             )}
         />
-        <Label htmlFor="is_remote" className="cursor-pointer font-normal">This is a remote position</Label>
+        <Label htmlFor="is_remote" className="cursor-pointer font-normal text-sm">
+          This is a remote position
+        </Label>
       </div>
-    </fieldset>
+    </div>
   );
 }

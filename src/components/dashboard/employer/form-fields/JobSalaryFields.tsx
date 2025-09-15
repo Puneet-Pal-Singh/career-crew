@@ -17,10 +17,9 @@ interface JobSalaryFieldsProps {
 
 export default function JobSalaryFields({ control, register, errors }: JobSalaryFieldsProps) {
   return (
-    <fieldset className="space-y-1 border p-4 rounded-md">
-      <legend className="text-lg font-semibold px-1 mb-3">Salary Information (Optional)</legend>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-2 items-start"> {/* Adjusted gap-y */}
-        
+    <div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-6">
+        {/* Minimum Salary */}
         <div className="flex flex-col space-y-1">
           <Label htmlFor="salary_min">Minimum</Label>
           <Input 
@@ -78,6 +77,6 @@ export default function JobSalaryFields({ control, register, errors }: JobSalary
               <p className="text-xs text-destructive">{errors.salary_max.message}</p>
          </div>
       )}
-    </fieldset>
+    </div>
   );
 }

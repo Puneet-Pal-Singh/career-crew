@@ -16,6 +16,13 @@ export const JobPostSchema = z.object({
   company_logo_url: z.string().url("Please enter a valid URL for the company logo.").optional().or(z.literal('')),
   location: z.string().min(2, "Location is required.").max(100, "Location cannot exceed 100 characters."),
   job_type: z.enum(jobTypeValues, { required_error: "Job type is required." }),
+  // This will map to the `tags` column in your database.
+  skills: z.array(z.string()
+    .min(2, "Each skill must be at least 2 characters.")
+    .max(50, "Each skill cannot exceed 50 characters.")
+  )
+  .max(5, "You can add a maximum of 5 skills.")
+  .optional(),
   description: z.string().min(50, "Description must be at least 50 characters.").max(5000, "Description cannot exceed 5000 characters."),
   requirements: z.string().max(5000, "Requirements cannot exceed 5000 characters.").optional().or(z.literal('')),
   is_remote: z.boolean({ required_error: "Please specify if the job is remote." }),
