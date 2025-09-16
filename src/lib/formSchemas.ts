@@ -26,46 +26,17 @@ export const JobPostSchema = z.object({
   description: z.string().min(50, "Description must be at least 50 characters.").max(5000, "Description cannot exceed 5000 characters."),
   requirements: z.string().max(5000, "Requirements cannot exceed 5000 characters.").optional().or(z.literal('')),
   is_remote: z.boolean({ required_error: "Please specify if the job is remote." }),
-  // salary_min: z.number({ invalid_type_error: "Minimum salary must be a number." })
-  //   .int({ message: "Minimum salary must be a whole number." })
-  //   .positive({ message: "Minimum salary must be positive." })
-  //   .optional(),
-  // salary_max: z.number({ invalid_type_error: "Maximum salary must be a number." })
-  //   .int({ message: "Maximum salary must be a whole number." })
-  //   .positive({ message: "Maximum salary must be positive." })
-  //   .optional(),
-  salary_min: z.preprocess(
-    // Preprocessing step: if the value is an empty string, convert it to undefined.
-    // This allows the `.optional()` check to work correctly.
-    (val) => (val === "" ? undefined : val),
-    // The original validation chain, now applied after preprocessing.
-    z.coerce.number({ invalid_type_error: "Minimum salary must be a number." })
-      .int({ message: "Minimum salary must be a whole number." })
-      .positive({ message: "Minimum salary must be positive." })
-      .optional()
-  ),
-  salary_max: z.preprocess(
-    (val) => (val === "" ? undefined : val),
-    z.coerce.number({ invalid_type_error: "Maximum salary must be a number." })
-      .int({ message: "Maximum salary must be a whole number." })
-      .positive({ message: "Maximum salary must be positive." })
-      .optional()
-  ),
+  salary_min: z.number({ invalid_type_error: "Minimum salary must be a number." })
+    .int({ message: "Minimum salary must be a whole number." })
+    .positive({ message: "Minimum salary must be positive." })
+    .optional(),
+  salary_max: z.number({ invalid_type_error: "Maximum salary must be a number." })
+    .int({ message: "Maximum salary must be a whole number." })
+    .positive({ message: "Maximum salary must be positive." })
+    .optional(),
   salary_currency: z.enum(currencyValues, { required_error: "Currency is required." }),
   application_email: z.string().email("Please enter a valid email address.").optional().or(z.literal('')),
   application_url: z.string().url("Please enter a valid URL.").optional().or(z.literal('')),
-})// --- ADDED: Business logic for salary range ---
-.refine(data => {
-  // If both min and max salary are provided, max must be greater than min.
-  // If either is not provided, this check passes.
-  if (data.salary_min !== undefined && data.salary_max !== undefined) {
-    return data.salary_max > data.salary_min;
-  }
-  return true;
-}, {
-  // This error message will be attached to the `salary_max` field if the check fails.
-  message: "Maximum salary must be greater than minimum salary.",
-  path: ["salary_max"],
 });
 export type JobPostSchemaType = z.infer<typeof JobPostSchema>;
 
