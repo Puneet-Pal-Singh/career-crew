@@ -137,3 +137,21 @@
     /* animation: gradientShift 5s ease infinite; */
   }
 }
+
+/* Custom styles for SimpleMDE to match shadcn/ui theme */
+.markdown-editor-container .EasyMDEContainer .CodeMirror {
+  border-color: hsl(var(--input));
+  border-radius: var(--radius);
+  background-color: transparent;
+}
+.markdown-editor-container .editor-toolbar {
+  border-color: hsl(var(--input));
+  border-bottom: 1px solid hsl(var(--input));
+}
+.markdown-editor-container .editor-toolbar a.active, .editor-toolbar a:hover {
+  background: hsl(var(--accent));
+  border-color: hsl(var(--accent-foreground));
+}
+.markdown-editor-container .CodeMirror-cursor {
+  border-left-color: hsl(var(--foreground));
+}

@@ -231,7 +231,7 @@ export default function JobEditorForm({ mode, jobId, initialData }: JobEditorFor
               />
             </CardHeader>
             <CardContent>
-              <JobDescriptionFields register={register} errors={errors} />
+              <JobDescriptionFields control={control} errors={errors} />
             </CardContent>
           </Card>
           
