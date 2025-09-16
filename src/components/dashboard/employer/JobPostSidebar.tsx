@@ -1,3 +1,4 @@
+// src/components/dashboard/employer/JobPostSidebar.tsx
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Info } from "lucide-react";
 import StatsGrid from "@/components/shared/StatsGrid"; // Import the new component

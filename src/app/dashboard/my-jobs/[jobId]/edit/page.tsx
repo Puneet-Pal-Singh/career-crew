@@ -1,3 +1,4 @@
+// src/app/dashboard/my-jobs/[jobId]/edit/page.tsx
 import JobEditorForm from '@/components/dashboard/employer/JobEditorForm';
 import { getEmployerJobByIdForEdit } from '@/app/actions/employer/jobs/getEmployerJobByIdForEditAction';
 import type { Metadata } from 'next';
@@ -65,7 +66,7 @@ export default async function EditJobPage({ params: paramsPromise }: EditJobPage
         </Alert>
         
         {/* Page Title */}
-        <div className="mb-6">
+        <div className="mb-4">
           <h1 className="text-3xl font-bold tracking-tight flex items-center">
             <Edit3 className="mr-3 h-8 w-8 text-primary" />
             Edit Job Posting

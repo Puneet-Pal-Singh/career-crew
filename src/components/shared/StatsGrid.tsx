@@ -1,3 +1,4 @@
+// src/components/shared/StatsGrid.tsx
 import type { StatItem } from "@/lib/constants"; // Import the type
 
 interface StatsGridProps {

@@ -11,9 +11,9 @@ import { updateJobPost } from '@/app/actions/employer/jobs/updateJobPostAction';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter} from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader} from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Briefcase, CheckCircle, AlertTriangle, Edit3 } from 'lucide-react'; // Added Edit3
+import { Loader2, Briefcase, CheckCircle, AlertTriangle, Edit3, Sparkles, FileText, DollarSign, Send} from 'lucide-react'; // Added Edit3
 
 // Import fieldset sub-components
 import JobPrimaryDetailsFields from './form-fields/JobPrimaryDetailsFields';
@@ -21,6 +21,7 @@ import JobDescriptionFields from './form-fields/JobDescriptionFields';
 import JobSalaryFields from './form-fields/JobSalaryFields';
 import JobApplicationFields from './form-fields/JobApplicationFields';
 import SkillsInput from './form-fields/SkillsInput';
+import SectionHeader from './form-fields/SectionHeader';
 
 interface JobEditorFormProps {
   mode: 'create' | 'edit';
@@ -132,7 +133,8 @@ export default function JobEditorForm({ mode, jobId, initialData }: JobEditorFor
   const TitleIcon = mode === 'edit' ? Edit3 : Briefcase;
 
   return ( 
-    <Card className="w-full max-w-3xl mx-auto my-8 border-none shadow-none"> {/* Optional: remove border/shadow for an even cleaner integration into the dashboard */}
+    // <Card className="w-full max-w-3xl mx-auto my-8 border-none shadow-none"> {/* Optional: remove border/shadow for an even cleaner integration into the dashboard */}
+    <>
       {/* <CardHeader>
         <CardTitle className="flex items-center text-2xl font-bold">
           <Briefcase className="mr-3 h-7 w-7 text-primary" />
@@ -146,7 +148,8 @@ export default function JobEditorForm({ mode, jobId, initialData }: JobEditorFor
       </CardHeader> */}
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className="space-y-10 pt-6">
+        {/* <CardContent className="space-y-10 pt-6"> */}
+         <div className="space-y-6 pt-6">
 
            {/* DYNAMIC DESCRIPTION - Kept as requested */}
           <p className="text-muted-foreground text-sm mb-8">
@@ -173,32 +176,35 @@ export default function JobEditorForm({ mode, jobId, initialData }: JobEditorFor
           )}
 
           {/* Fieldset Sub-components */}
-          {/* Section 1: Primary Details */}
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold tracking-tight">Primary Details</h3>
-            <p className="text-muted-foreground text-sm">
-              Core information about the job role and your company.
-            </p>
-            <div className="pt-4">
+          {/* Section 1: Primary Details (Now in its own Card) */}
+          <Card>
+            <CardHeader>
+              <SectionHeader 
+                Icon={Briefcase}
+                title="Primary Details"
+                description="Core information about the job role and your company."
+              />
+            </CardHeader>
+            <CardContent>
               <JobPrimaryDetailsFields control={control} register={register} errors={errors} />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* --- NEW SECTION: Skills --- */}
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold tracking-tight">Skills</h3>
-            <p className="text-muted-foreground text-sm">
-              Add up to 5 key skills or technologies. This helps candidates find your job.
-            </p>
-            <div className="pt-4">
+          <Card>
+            <CardHeader>
+              <SectionHeader 
+                Icon={Sparkles}
+                title="Skills"
+                description="Add up to 5 key skills or technologies. This helps candidates find your job."
+              />
+            </CardHeader>
+            <CardContent>
               <Controller
                 name="skills"
                 control={control}
                 render={({ field }) => (
-                  <SkillsInput
-                    {...field}
-                    placeholder="e.g., React, Node.js, TypeScript..."
-                  />
+                  <SkillsInput {...field} placeholder="e.g., React, Node.js, TypeScript..." />
                 )}
               />
               {errors.skills && (
@@ -211,44 +217,54 @@ export default function JobEditorForm({ mode, jobId, initialData }: JobEditorFor
                   ))}
                 </p>
               )}
-            </div>
-          </div>
+              </CardContent>
+            </Card>
           {/* --- END OF NEW SECTION --- */}
 
           {/* Section 2: Description & Requirements */}
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold tracking-tight">Job Description</h3>
-            <p className="text-muted-foreground text-sm">
-              Provide a detailed description and key requirements for the role.
-            </p>
-            <div className="pt-4">
+         <Card>
+            <CardHeader>
+              <SectionHeader 
+                Icon={FileText}
+                title="Job Description"
+                description="Provide a detailed description and key requirements for the role."
+              />
+            </CardHeader>
+            <CardContent>
               <JobDescriptionFields register={register} errors={errors} />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
           
           {/* Section 3: Salary Information */}
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold tracking-tight">Salary (Optional)</h3>
-            <p className="text-muted-foreground text-sm">
-              Provide a salary range to attract more candidates.
-            </p>
-            <div className="pt-4">
+           <Card>
+            <CardHeader>
+              <SectionHeader 
+                Icon={DollarSign}
+                title="Salary (Optional)"
+                description="Provide a salary range to attract more candidates."
+              />
+            </CardHeader>
+            <CardContent>
               <JobSalaryFields control={control} register={register} errors={errors} />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* Section 4: Application Method */}
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold tracking-tight">Application Method *</h3>
-            <p className="text-muted-foreground text-sm">
-              How should candidates apply? Provide an external URL or an email address.
-            </p>
-            <div className="pt-4">
-              <JobApplicationFields register={register} errors={errors} />
-            </div>
-          </div>
+           <Card>
+              <CardHeader>
+                <SectionHeader 
+                  Icon={Send}
+                  title="Application Method *"
+                  description="How should candidates apply? Provide an external URL or an email address."
+                />
+              </CardHeader>
+              <CardContent>
+                <JobApplicationFields register={register} errors={errors} />
+              </CardContent>
+            </Card>
 
-        </CardContent>
+        {/* </CardContent> */}
+        </div>
         <CardFooter className="flex justify-end pt-8">
           <Button type="submit" disabled={isPending || isSubmitting} size="lg">
             {(isPending || isSubmitting) ? (
@@ -261,6 +277,7 @@ export default function JobEditorForm({ mode, jobId, initialData }: JobEditorFor
           </Button>
         </CardFooter>
       </form>
-    </Card>
+    {/* </Card> */}
+    </>
   );
 }

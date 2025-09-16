@@ -1,3 +1,4 @@
+// src/app/dashboard/post-job/page.tsx
 import JobEditorForm from '@/components/dashboard/employer/JobEditorForm';
 import JobPostSidebar from '@/components/dashboard/employer/JobPostSidebar'; // Import the new sidebar
 import type { Metadata } from 'next';
@@ -16,7 +17,7 @@ export default function CreateJobPage() {
       
       {/* Main Content Area (7/10 width on large screens) */}
       <div className="lg:col-span-7">
-        <div className="mb-6">
+        <div className="mb-4">
           <h1 className="text-3xl font-bold tracking-tight">Create New Job Posting</h1>
           <p className="text-muted-foreground mt-1">
             Attract top talent by posting your job on the job board.
