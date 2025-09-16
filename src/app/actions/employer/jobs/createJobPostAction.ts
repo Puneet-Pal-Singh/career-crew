@@ -58,6 +58,8 @@ export async function createJobPost(
       salary_currency: validatedData.salary_currency,
       application_email: validatedData.application_email || null,
       application_url: validatedData.application_url || null,
+      // Add the skills from the form to be saved in the 'tags' column.
+      tags: validatedData.skills || [], // Default to an empty array if undefined
       // 'status' will default to 'PENDING_APPROVAL' in the database schema.
       // 'created_at' and 'updated_at' will also use database defaults.
     };
