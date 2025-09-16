@@ -11,7 +11,7 @@ import { updateJobPost } from '@/app/actions/employer/jobs/updateJobPostAction';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter} from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, Briefcase, CheckCircle, AlertTriangle, Edit3 } from 'lucide-react'; // Added Edit3
 
@@ -127,15 +127,14 @@ export default function JobEditorForm({ mode, jobId, initialData }: JobEditorFor
     });
   };
   
-  const cardTitleText = mode === 'edit' ? "Edit Job Posting" : "Create New Job Posting";
+  // const cardTitleText = mode === 'edit' ? "Edit Job Posting" : "Create New Job Posting";
   const submitButtonText = mode === 'edit' ? "Save Changes" : "Post Job Listing";
   const TitleIcon = mode === 'edit' ? Edit3 : Briefcase;
 
   return ( 
     <Card className="w-full max-w-3xl mx-auto my-8 border-none shadow-none"> {/* Optional: remove border/shadow for an even cleaner integration into the dashboard */}
-      <CardHeader>
+      {/* <CardHeader>
         <CardTitle className="flex items-center text-2xl font-bold">
-          {/* Using a generic icon now, as the title is more direct */}
           <Briefcase className="mr-3 h-7 w-7 text-primary" />
           {cardTitleText}
         </CardTitle>
@@ -144,10 +143,18 @@ export default function JobEditorForm({ mode, jobId, initialData }: JobEditorFor
             ? 'Modify the details of your job opening below.' 
             : 'Fill in the details below. Fields marked with an asterisk (*) are required.'}
         </CardDescription>
-      </CardHeader>
+      </CardHeader> */}
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="space-y-10 pt-6">
+
+           {/* DYNAMIC DESCRIPTION - Kept as requested */}
+          <p className="text-muted-foreground text-sm mb-8">
+            {mode === 'edit' 
+              ? 'Modify the details of your job opening below.' 
+              : 'Fill in the details below. Fields marked with an asterisk (*) are required.'}
+          </p>
+
           {submissionStatus?.type === 'error' && (
             <Alert variant="destructive" className="mb-6">
               <AlertTriangle className="h-4 w-4" />
