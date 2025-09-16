@@ -27,7 +27,9 @@ export default function JobSalaryFields({ control, register, errors }: JobSalary
             type="number" 
             // valueAsNumber: true helps RHF provide a number or NaN
             // z.preprocess will further refine empty strings/null to undefined
-            {...register("salary_min", { valueAsNumber: true })} 
+            // {...register("salary_min", { valueAsNumber: true })} 
+            // Removed valueAsNumber here to allow empty input
+            {...register("salary_min")} 
             placeholder="e.g., 60000" 
             step="any" // Allows decimals if needed, though Zod .int() will enforce integer
           />
@@ -39,7 +41,8 @@ export default function JobSalaryFields({ control, register, errors }: JobSalary
           <Input 
             id="salary_max" 
             type="number" 
-            {...register("salary_max", { valueAsNumber: true })} 
+            // Removed valueAsNumber here to allow empty input
+            {...register("salary_max")} 
             placeholder="e.g., 80000" 
             step="any"
           />
