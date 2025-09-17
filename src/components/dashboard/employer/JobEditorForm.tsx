@@ -11,9 +11,9 @@ import { updateJobPost } from '@/app/actions/employer/jobs/updateJobPostAction';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader} from '@/components/ui/card';
+import { Card, CardContent, CardHeader} from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Briefcase, CheckCircle, AlertTriangle, Edit3, Sparkles, FileText, DollarSign, Send} from 'lucide-react'; // Added Edit3
+import { Loader2, Briefcase, Sparkles, FileText, DollarSign, Send, AlertTriangle} from 'lucide-react'; // Added Edit3
 
 // Import fieldset sub-components
 import JobPrimaryDetailsFields from './form-fields/JobPrimaryDetailsFields';
@@ -22,6 +22,9 @@ import JobSalaryFields from './form-fields/JobSalaryFields';
 import JobApplicationFields from './form-fields/JobApplicationFields';
 import SkillsInput from './form-fields/SkillsInput';
 import SectionHeader from './form-fields/SectionHeader';
+
+// Other components
+import JobPostSuccessDialog from './JobPostSuccessDialog';
 
 interface JobEditorFormProps {
   mode: 'create' | 'edit';
@@ -50,7 +53,15 @@ export default function JobEditorForm({ mode, jobId, initialData }: JobEditorFor
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   // Consolidated submission status
-  const [submissionStatus, setSubmissionStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  // const [submissionStatus, setSubmissionStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  // --- STATE MANAGEMENT REFACTOR ---
+  // 3. State for error alerts
+  const [errorStatus, setErrorStatus] = useState<string | null>(null);
+  
+  // 4. State for the success modal
+  const [isSuccessModalOpen, setSuccessModalOpen] = useState(false);
+  const [submittedJobTitle, setSubmittedJobTitle] = useState("");
 
   const form = useForm<JobPostSchemaType>({
     resolver: zodResolver(JobPostSchema),
@@ -80,40 +91,72 @@ export default function JobEditorForm({ mode, jobId, initialData }: JobEditorFor
   }, [mode, initialData, reset]);
 
 
+  // const onSubmit: SubmitHandler<JobPostSchemaType> = async (formData) => {
+  //   // setSubmissionStatus(null); // Clear previous status
+
+  //   startTransition(async () => {
+  //     let result;
+  //     if (mode === 'edit') {
+  //       if (!jobId) {
+  //         console.error("JobEditorForm (edit mode): Job ID is missing.");
+  //         // setSubmissionStatus({ type: 'error', message: 'Cannot update job: Job ID is missing.' });
+  //         return;
+  //       }
+  //       console.log("JobEditorForm: Submitting update for job ID:", jobId, "Data:", formData);
+  //       result = await updateJobPost(jobId, formData);
+  //     } else { // mode === 'create'
+  //       console.log("JobEditorForm: Submitting new job. Data:", formData);
+  //       result = await createJobPost(formData);
+  //     }
+      
+  //     if (result.success) {
+  //       // const successMessage = mode === 'edit' 
+  //       //   ? `Job "${formData.title}" has been updated successfully.`
+  //       //   : `Job "${formData.title}" has been posted successfully and is pending approval. (ID: ${result.jobId || 'N/A'})`;
+  //       // setSubmissionStatus({ type: 'success', message: successMessage });
+
+  //       setSubmittedJobTitle(formData.title); // Store the title for the modal
+  //       setSuccessModalOpen(true); 
+        
+  //       if (mode === 'create') {
+  //           reset(BLANK_FORM_VALUES); // Only fully reset for create mode
+  //       }
+  //       // For both create and edit, redirect to the job listings page
+  //       setTimeout(() => {
+  //           router.push('/dashboard/my-jobs'); // Or your chosen path for employer's job list
+  //           router.refresh(); // Trigger a server-side data re-fetch for the target page
+  //       }, 2000); // Delay to allow user to read success message
+  //     } else {
+  //       // setSubmissionStatus({ type: 'error', message: result.error || "An unknown error occurred." });
+  //       if (result.errorDetails) {
+  //         result.errorDetails.forEach(errDetail => {
+  //           if (errDetail.field) {
+  //             setFormError(errDetail.field as keyof JobPostSchemaType, { 
+  //               type: 'server', 
+  //               message: errDetail.message 
+  //             });
+  //           }
+  //         });
+  //       }
+  //     }
+  //   });
+  // };
+
   const onSubmit: SubmitHandler<JobPostSchemaType> = async (formData) => {
-    setSubmissionStatus(null); // Clear previous status
+    setErrorStatus(null); // Clear previous errors
 
     startTransition(async () => {
-      let result;
-      if (mode === 'edit') {
-        if (!jobId) {
-          console.error("JobEditorForm (edit mode): Job ID is missing.");
-          setSubmissionStatus({ type: 'error', message: 'Cannot update job: Job ID is missing.' });
-          return;
-        }
-        console.log("JobEditorForm: Submitting update for job ID:", jobId, "Data:", formData);
-        result = await updateJobPost(jobId, formData);
-      } else { // mode === 'create'
-        console.log("JobEditorForm: Submitting new job. Data:", formData);
-        result = await createJobPost(formData);
-      }
+      const result = mode === 'edit'
+        ? await updateJobPost(jobId!, formData)
+        : await createJobPost(formData);
       
       if (result.success) {
-        const successMessage = mode === 'edit' 
-          ? `Job "${formData.title}" has been updated successfully.`
-          : `Job "${formData.title}" has been posted successfully and is pending approval. (ID: ${result.jobId || 'N/A'})`;
-        setSubmissionStatus({ type: 'success', message: successMessage });
-        
-        if (mode === 'create') {
-            reset(BLANK_FORM_VALUES); // Only fully reset for create mode
-        }
-        // For both create and edit, redirect to the job listings page
-        setTimeout(() => {
-            router.push('/dashboard/my-jobs'); // Or your chosen path for employer's job list
-            router.refresh(); // Trigger a server-side data re-fetch for the target page
-        }, 2000); // Delay to allow user to read success message
+        // On success, store the job title and open the modal
+        setSubmittedJobTitle(formData.title);
+        setSuccessModalOpen(true);
       } else {
-        setSubmissionStatus({ type: 'error', message: result.error || "An unknown error occurred." });
+        // On failure, set the error message for the alert
+        setErrorStatus(result.error || "An unknown error occurred.");
         if (result.errorDetails) {
           result.errorDetails.forEach(errDetail => {
             if (errDetail.field) {
@@ -127,28 +170,33 @@ export default function JobEditorForm({ mode, jobId, initialData }: JobEditorFor
       }
     });
   };
+
+  // --- 6. HANDLER FUNCTIONS FOR MODAL BUTTONS ---
+  const handlePostAnother = () => {
+    setSuccessModalOpen(false);
+    // Use a short delay to allow the modal to close before resetting the form
+    setTimeout(() => {
+      reset(BLANK_FORM_VALUES);
+      // Optional: scroll to the top of the page
+      window.scrollTo(0, 0);
+    }, 150);
+  };
+
+   const handleViewJobs = () => {
+    setSuccessModalOpen(false);
+    // No delay needed here, just navigate away
+    router.push('/dashboard/my-jobs');
+    router.refresh(); // Ensure the job list is updated
+  };
+  
   
   // const cardTitleText = mode === 'edit' ? "Edit Job Posting" : "Create New Job Posting";
   const submitButtonText = mode === 'edit' ? "Save Changes" : "Post Job Listing";
-  const TitleIcon = mode === 'edit' ? Edit3 : Briefcase;
+  // const TitleIcon = mode === 'edit' ? Edit3 : Briefcase;
 
   return ( 
-    // <Card className="w-full max-w-3xl mx-auto my-8 border-none shadow-none"> {/* Optional: remove border/shadow for an even cleaner integration into the dashboard */}
     <>
-      {/* <CardHeader>
-        <CardTitle className="flex items-center text-2xl font-bold">
-          <Briefcase className="mr-3 h-7 w-7 text-primary" />
-          {cardTitleText}
-        </CardTitle>
-        <CardDescription>
-          {mode === 'edit' 
-            ? 'Modify the details of your job opening below.' 
-            : 'Fill in the details below. Fields marked with an asterisk (*) are required.'}
-        </CardDescription>
-      </CardHeader> */}
-
       <form onSubmit={handleSubmit(onSubmit)}>
-        {/* <CardContent className="space-y-10 pt-6"> */}
          <div className="space-y-6 pt-6">
 
            {/* DYNAMIC DESCRIPTION - Kept as requested */}
@@ -158,7 +206,7 @@ export default function JobEditorForm({ mode, jobId, initialData }: JobEditorFor
               : 'Fill in the details below. Fields marked with an asterisk (*) are required.'}
           </p>
 
-          {submissionStatus?.type === 'error' && (
+          {/* {submissionStatus?.type === 'error' && (
             <Alert variant="destructive" className="mb-6">
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Operation Failed</AlertTitle>
@@ -173,6 +221,15 @@ export default function JobEditorForm({ mode, jobId, initialData }: JobEditorFor
                 <p>{submissionStatus.message}</p>
               </div>
             </div>
+          )} */}
+
+          {/* Error Alert (no change in logic) */}
+          {errorStatus && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Operation Failed</AlertTitle>
+              <AlertDescription>{errorStatus}</AlertDescription>
+            </Alert>
           )}
 
           {/* Fieldset Sub-components */}
@@ -265,7 +322,7 @@ export default function JobEditorForm({ mode, jobId, initialData }: JobEditorFor
 
         {/* </CardContent> */}
         </div>
-        <CardFooter className="flex justify-end pt-8">
+        {/* <CardFooter className="flex justify-end pt-8">
           <Button type="submit" disabled={isPending || isSubmitting} size="lg">
             {(isPending || isSubmitting) ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -275,9 +332,25 @@ export default function JobEditorForm({ mode, jobId, initialData }: JobEditorFor
             )}
             {isPending || isSubmitting ? 'Submitting...' : submitButtonText}
           </Button>
-        </CardFooter>
+        </CardFooter> */}
+
+        {/* Submit Button */}
+          <div className="flex justify-end pt-4">
+            <Button type="submit" disabled={isPending || isSubmitting} size="lg">
+              {(isPending || isSubmitting) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isPending || isSubmitting ? 'Submitting...' : submitButtonText}
+            </Button>
+          </div>
       </form>
-    {/* </Card> */}
+    
+      {/* 6. RENDER THE DIALOG */}
+      <JobPostSuccessDialog
+        isOpen={isSuccessModalOpen}
+        onOpenChange={setSuccessModalOpen}
+        jobTitle={submittedJobTitle}
+        onPostAnother={handlePostAnother}
+        onViewJobs={handleViewJobs}
+      />
     </>
   );
 }
