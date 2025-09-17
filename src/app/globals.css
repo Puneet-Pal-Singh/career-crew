@@ -6,34 +6,34 @@
 @layer base {
   :root {
     color-scheme: light;
-    /* Light Mode Theme Variables */
-    --background: 210 17% 98%;   /* #F9FAFB - background-light */
-    --foreground: 217 44% 18%;   /* #1A2B42 - content-light */
+    /* Light Mode Theme Variables - RESTORED ORIGINAL */
+    --background: 210 17% 98%;       /* #F9FAFB - background-light */
+    --foreground: 217 44% 18%;       /* #1A2B42 - content-light */
     
-    --card: 0 0% 100%;            /* #FFFFFF - surface-light (used for cards) */
-    --card-foreground: 217 44% 18%; /* #1A2B42 - content-light */
+    --card: 0 0% 100%;               /* #FFFFFF - surface-light (used for cards) */
+    --card-foreground: 217 44% 18%;  /* #1A2B42 - content-light */
 
-    --popover: 0 0% 100%;         /* #FFFFFF - surface-light */
+    --popover: 0 0% 100%;            /* #FFFFFF - surface-light */
     --popover-foreground: 217 44% 18%; /* #1A2B42 - content-light */
 
-    --primary: 219 100% 58%;      /* #2A6FFF - primary */
+    --primary: 219 100% 58%;         /* #2A6FFF - primary */
     --primary-foreground: 0 0% 100%; /* White text for primary buttons */
 
-    --secondary: 27 100% 58%;     /* #FF8C2A - secondary */
+    --secondary: 27 100% 58%;        /* #FF8C2A - secondary */
     --secondary-foreground: 0 0% 100%; /* White text for secondary buttons */
     
-    --muted: 210 17% 95%;         /* A slightly darker shade of background or a light gray */
+    --muted: 210 17% 95%;            /* A slightly darker shade of background or a light gray */
     --muted-foreground: 217 30% 40%; /* Darker than subtle-light text */
 
-    --accent: 210 17% 95%;        /* Same as muted, or your accent1 (you can define --accent1 HSL separately if used) */
+    --accent: 210 17% 95%;           /* Same as muted, or your accent1 (you can define --accent1 HSL separately if used) */
     --accent-foreground: 217 44% 18%; /* content-light */
 
-    --destructive: 0 84% 60%;     /* A standard red for destructive actions */
+    --destructive: 0 84% 60%;        /* A standard red for destructive actions */
     --destructive-foreground: 0 0% 100%; /* White text */
 
-    --border: 220 14% 92%;        /* #E5E7EB - border-light */
-    --input: 220 14% 88%;         /* Slightly darker border for inputs */
-    --ring: 219 100% 58%;         /* #2A6FFF - primary (for focus rings) */
+    --border: 220 14% 92%;           /* #E5E7EB - border-light */
+    --input: 220 14% 88%;            /* Slightly darker border for inputs */
+    --ring: 219 100% 58%;            /* #2A6FFF - primary (for focus rings) */
 
     --radius: 0.5rem;
 
@@ -47,36 +47,36 @@
 
   .dark {
     color-scheme: dark;
-    /* Dark Mode Theme Variables */
-    --background: 222 29% 14%;   /* #1A202C - background-dark */
-    --foreground: 210 22% 92%;   /* #E2E8F0 - content-dark */
+    /* Dark Mode Theme Variables - Linear/Vercel Inspired */
+    --background: 240 10% 3.9%;         /* #0A0A0A - True black for sidebar */
+    --foreground: 0 0% 98%;              /* #FAFAFA - Pure white text */
 
-    --card: 222 23% 23%;          /* #2D3748 - surface-dark (used for cards) */
-    --card-foreground: 210 22% 92%; /* #E2E8F0 - content-dark */
+    --card: 240 3.7% 8.5%;               /* #151515 - Dark grey for main content area */
+    --card-foreground: 0 0% 98%;         /* #FAFAFA - White text on cards */
 
-    --popover: 222 23% 23%;       /* #2D3748 - surface-dark */
-    --popover-foreground: 210 22% 92%; /* #E2E8F0 - content-dark */
+    --popover: 240 3.7% 8.5%;            /* #151515 - Dark grey popover */
+    --popover-foreground: 0 0% 98%;      /* #FAFAFA - White text */
 
-    --primary: 219 100% 68%;      /* #5A9FFF - primary-dark */
-    --primary-foreground: 222 29% 10%; /* Dark text for primary-dark buttons (e.g. #141821) */
+    --primary: 219 100% 58%;             /* #2A6FFF - Keep original blue primary in dark mode too */
+    --primary-foreground: 0 0% 98%;      /* #FAFAFA - White text on primary */
 
-    --secondary: 27 100% 67%;     /* #FFA75A - secondary-dark */
-    --secondary-foreground: 222 29% 10%; /* Dark text for secondary-dark buttons */
+    --secondary: 27 100% 67%;            /* #FFA75A - Keep original orange secondary */
+    --secondary-foreground: 240 10% 3.9%; /* #0A0A0A - Dark text on secondary */
     
-    --muted: 222 26% 23%;         /* A slightly lighter shade of dark background */
-    --muted-foreground: 210 20% 60%; 
+    --muted: 240 3.7% 15.9%;             /* #262626 - Dark gray muted */
+    --muted-foreground: 240 5% 64.9%;    /* #A1A1AA - Medium gray text */
 
-    --accent: 222 26% 23%;
-    --accent-foreground: 210 22% 92%;
+    --accent: 240 3.7% 15.9%;            /* #262626 - Dark gray accent */
+    --accent-foreground: 0 0% 98%;       /* #FAFAFA - White text on accent */
 
-    --destructive: 0 72% 51%;     /* A standard red for dark mode */
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;        /* #991B1B - Darker red for dark mode */
+    --destructive-foreground: 0 0% 98%;  /* #FAFAFA - White text */
 
-    --border: 220 15% 35%;        /* #4A5568 - border-dark */
-    --input: 220 15% 30%;         /* Slightly darker input border for dark */
-    --ring: 219 100% 68%;         /* #5A9FFF - primary-dark (for focus rings) */
+    --border: 240 3.7% 15.9%;            /* #262626 - Dark border */
+    --input: 240 3.7% 15.9%;             /* #262626 - Dark input border */
+    --ring: 240 4.9% 83.9%;              /* #D4D4D8 - Light focus ring for dark mode */
     
-    /* Chart colors for dark mode - these are illustrative, adjust as needed */
+    /* Chart colors for dark mode */
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -121,37 +121,72 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-display text-foreground; 
   }
-} /* End of @layer base */
 
+  /* Additional Linear/Vercel-style utilities */
+  .bg-card-hover {
+    @apply hover:bg-accent transition-colors duration-200;
+  }
+
+  .border-subtle {
+    @apply border-border/50;
+  }
+
+  .text-subtle {
+    @apply text-muted-foreground;
+  }
+
+  .bg-surface-elevated {
+    @apply bg-card border border-border;
+  }
+} /* End of @layer base */
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
-  .bg-gradient-animated {
-    /* Ensure your theme colors for gradients are correctly referenced or defined */
-    /* Example: Using theme's primary, secondary. You might want your 'accent1' here too. */
-    @apply bg-gradient-to-r from-primary via-secondary to-[hsl(var(--accent))]; /* Using --accent as a placeholder for your accent1 */
-    /* For dark mode, Tailwind will automatically use the .dark variables if from/via/to use themeable colors like 'primary' */
-    background-size: 200% auto;
-    /* animation: gradientShift 5s ease infinite; */
+  
+  .bg-gradient-subtle {
+    @apply bg-gradient-to-b from-background to-muted/20;
+  }
+
+  .shadow-elegant {
+    box-shadow: 
+      0 1px 2px 0 rgb(0 0 0 / 0.05),
+      0 1px 3px 0 rgb(0 0 0 / 0.1);
+  }
+  
+  .dark .shadow-elegant {
+    box-shadow: 
+      0 1px 2px 0 rgb(255 255 255 / 0.05),
+      0 1px 3px 0 rgb(255 255 255 / 0.1);
   }
 }
 
-/* Custom styles for SimpleMDE to match shadcn/ui theme */
+/* Custom styles for SimpleMDE to match the new theme */
 .markdown-editor-container .EasyMDEContainer .CodeMirror {
-  border-color: hsl(var(--input));
+  border-color: hsl(var(--border));
   border-radius: var(--radius);
-  background-color: transparent;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
 }
+
 .markdown-editor-container .editor-toolbar {
-  border-color: hsl(var(--input));
-  border-bottom: 1px solid hsl(var(--input));
+  border-color: hsl(var(--border));
+  border-bottom: 1px solid hsl(var(--border));
+  background-color: hsl(var(--card));
 }
-.markdown-editor-container .editor-toolbar a.active, .editor-toolbar a:hover {
+
+.markdown-editor-container .editor-toolbar a.active, 
+.markdown-editor-container .editor-toolbar a:hover {
   background: hsl(var(--accent));
-  border-color: hsl(var(--accent-foreground));
+  border-color: hsl(var(--border));
+  color: hsl(var(--accent-foreground));
 }
+
 .markdown-editor-container .CodeMirror-cursor {
   border-left-color: hsl(var(--foreground));
+}
+
+.dark .markdown-editor-container .editor-toolbar {
+  background-color: hsl(var(--card));
 }
