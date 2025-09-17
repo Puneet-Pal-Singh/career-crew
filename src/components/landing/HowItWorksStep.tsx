@@ -1,7 +1,7 @@
 // src/components/landing/HowItWorksStep.tsx
 import React from 'react';
 import { LucideIcon } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 
 interface HowItWorksStepProps {
   icon: LucideIcon;
@@ -19,7 +19,7 @@ export default function HowItWorksStep({
   isLast = false 
 }: HowItWorksStepProps) {
   
-  const lineVariants = {
+  const lineVariants: Variants = {
     hidden: { height: 0, opacity: 0 },
     visible: { height: 'calc(100% - 3.5rem)', opacity: 1, transition: { duration: 0.5, ease: "circOut" } }, // 3.5rem is approx icon height
   };

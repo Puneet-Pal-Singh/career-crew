@@ -1,7 +1,7 @@
 // src/components/landing/AnimatedHowItWorksSection.tsx
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import { FileText, Search, UserCheck, LucideIcon, HelpCircle } from 'lucide-react'; 
 
 // Icon mapping for resolving icon names to components
@@ -31,7 +31,7 @@ function HowItWorksStepDisplay({
 }: HowItWorksStepProps) {
   
   // Variants for the connector line that draws downwards from the icon
-  const lineVariants = {
+  const lineVariants: Variants = {
     hidden: { height: 0, opacity: 0 },
     // Height animates to fill space below the icon within the step item's content area.
     // calc(100% - 3.5rem) roughly accounts for icon container height (h-14 = 3.5rem)
@@ -98,13 +98,13 @@ interface AnimatedHowItWorksSectionProps {
 
 export default function AnimatedHowItWorksSection({ steps }: AnimatedHowItWorksSectionProps) {
   // Variants for the section title and paragraph
-  const sectionHeaderVariants = {
+  const sectionHeaderVariants: Variants = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.7, delay: 0.1, ease: "easeOut" } }
   };
 
   // Variants for the grid container to stagger its children (the step items)
-  const gridContainerVariants = {
+  const gridContainerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -116,7 +116,7 @@ export default function AnimatedHowItWorksSection({ steps }: AnimatedHowItWorksS
   };
 
   // Variants for each individual step item
-  const stepItemVariants = {
+  const stepItemVariants: Variants = {
     hidden: { opacity: 0, y: 40, scale: 0.9 },
     visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: "easeOut" } },
   };
