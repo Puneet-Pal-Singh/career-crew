@@ -9,11 +9,11 @@ import { Button } from '@/components/ui/button';
 import JobPostSidebar from '@/components/dashboard/employer/JobPostSidebar'; // Import the sidebar
 
 interface EditJobPageProps {
-  params: Promise<{ jobId: string }>;
+  params: { jobId: string }; 
 }
 
-export async function generateMetadata({ params: paramsPromise }: EditJobPageProps): Promise<Metadata> {
-  const params = await paramsPromise;
+export async function generateMetadata({ params }: EditJobPageProps): Promise<Metadata> {
+  // const params = await paramsPromise;
   const result = await getEmployerJobByIdForEdit(params.jobId);
   if (result.success && result.job) {
     return {
@@ -25,8 +25,8 @@ export async function generateMetadata({ params: paramsPromise }: EditJobPagePro
   };
 }
 
-export default async function EditJobPage({ params: paramsPromise }: EditJobPageProps) {
-  const params = await paramsPromise;
+export default async function EditJobPage({ params }: EditJobPageProps) {
+  // const params = await paramsPromise;
   const { jobId } = params;
   
   const result = await getEmployerJobByIdForEdit(jobId);

@@ -36,6 +36,7 @@ export default function JobDescriptionFields({ control, errors }: JobDescription
           render={({ field }) => (
             <MarkdownEditor
               {...field}
+              id="description"
               placeholder="Provide a detailed description of the job role, responsibilities, and company culture..."
             />
           )}
@@ -52,6 +53,7 @@ export default function JobDescriptionFields({ control, errors }: JobDescription
           render={({ field }) => (
             <MarkdownEditor
               {...field}
+              id="requirements"
               placeholder="List key skills, experience, and qualifications required for this role..."
             />
           )}

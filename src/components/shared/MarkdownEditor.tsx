@@ -10,9 +10,10 @@ interface MarkdownEditorProps {
   value?: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  id?: string;
 }
 
-export default function MarkdownEditor({ value, onChange, placeholder }: MarkdownEditorProps) {
+export default function MarkdownEditor({ value, onChange, placeholder, id }: MarkdownEditorProps) {
   const options = useMemo(() => {
     return {
       autofocus: false,
@@ -33,7 +34,7 @@ export default function MarkdownEditor({ value, onChange, placeholder }: Markdow
   return (
     <div className="markdown-editor-container">
       {/* The component itself can handle a null or undefined value gracefully */}
-      <SimpleMdeReact options={options} value={value} onChange={onChange} />
+      <SimpleMdeReact options={options} value={value} onChange={onChange} id={id} />
     </div>
   );
 }

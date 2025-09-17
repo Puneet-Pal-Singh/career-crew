@@ -84,8 +84,10 @@ export async function updateJobPost(
       application_url: validatedData.application_url || null,
       updated_at: new Date().toISOString(), // Always update 'updated_at'
       ...(newStatus && { status: newStatus }), // Conditionally include status if it changed
-        // Add the skills from the form to be saved in the 'tags' column.
-      tags: validatedData.skills || [], // Default to an empty array if undefined
+      // Add the skills from the form to be saved in the 'tags' column.
+      // Only include the 'tags' property in the update object if `skills` is not undefined.
+      // This prevents accidentally wiping out existing tags with an empty array.
+      ...(validatedData.skills !== undefined && { tags: validatedData.skills }),
     };
     
     // 4. Update the job in Supabase
