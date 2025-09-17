@@ -22,3 +22,16 @@ export const CURRENCY_OPTIONS: readonly string[] = ["USD", "EUR", "GBP", "CAD", 
 
 // You can add other application-wide constants here in the future,
 // e.g., for experience levels, company sizes, etc.
+
+export type StatItem = {
+  value: string;
+  label: string;
+};
+
+// ... at the bottom of the file, add the new constant
+export const PLATFORM_STATS: StatItem[] = [
+  { value: '50+', label: 'Jobs Posted' },
+  { value: '30+', label: 'Companies Hiring' },
+  { value: '500+', label: 'Active Job Seekers' },
+  { value: '95%', label: 'Placement Success' },
+];

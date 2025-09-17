@@ -1,7 +1,7 @@
 // src/components/landing/AnimatedFeaturesSection.tsx
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 // Import the FeatureData type which now should have 'iconName: string'
 import type { FeatureData as FeatureDataTypeFromLib } from '@/lib/data/landingContent'; 
 
@@ -44,7 +44,7 @@ function AnimatedFeatureDetail({
   const textOrder = isVisualLeft ? 'md:order-2' : 'md:order-1';
   const visualOrder = isVisualLeft ? 'md:order-1' : 'md:order-2';
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, x: isVisualLeft ? -50 : 50 },
     visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: 'easeOut' } },
   };

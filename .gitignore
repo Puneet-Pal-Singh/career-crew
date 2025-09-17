@@ -50,3 +50,6 @@ next-env.d.ts
 
 # vscode
 .vscode/
+
+# Supabase auto-generated types (for local development, can be regenerated anytime)
+src/types/database.types.ts

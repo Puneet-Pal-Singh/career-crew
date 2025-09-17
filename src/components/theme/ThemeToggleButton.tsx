@@ -16,7 +16,7 @@ const spring = {
   type: "spring",
   stiffness: 700,
   damping: 35,
-};
+} as const;
 
 export default function ThemeToggleButton({
   className = "",
