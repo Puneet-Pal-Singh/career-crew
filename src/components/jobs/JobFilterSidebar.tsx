@@ -10,14 +10,14 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ChevronDown, SlidersHorizontal, Zap } from 'lucide-react';
 import { JOB_TYPE_OPTIONS } from '@/lib/constants'; // <-- Import the new constant
 
-const locationOptions = ["New York, NY", "San Francisco, CA", "London", "Berlin", "Delhi"]; // Static for MVP
-
 // 1. ADD `onClose` to the props interface
 interface JobFilterSidebarProps {
   onClose?: () => void;
+  // ACCEPT the dynamic locations prop
+  locations: string[];
 }
 
-export default function JobFilterSidebar({ onClose }: JobFilterSidebarProps) {
+export default function JobFilterSidebar({ onClose, locations }: JobFilterSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -107,24 +107,25 @@ export default function JobFilterSidebar({ onClose }: JobFilterSidebarProps) {
             </div>
 
             <Collapsible defaultOpen={true}>
-              <CollapsibleTrigger className="flex justify-between items-center w-full font-semibold text-md py-2 text-left">
-                LOCATION <ChevronDown className="h-4 w-4 transition-transform [&[data-state=open]]:rotate-180" />
-              </CollapsibleTrigger>
-              <CollapsibleContent className="space-y-3 pt-2">
-                {locationOptions.map(location => (
-                  <div key={location} className="flex items-center">
-                    <Checkbox 
-                      id={`loc-${location}`}
-                      checked={selectedLocations.includes(location)}
-                      onCheckedChange={(checked) => updateSearchParam('location', location, !!checked)}
-                    />
-                    <Label htmlFor={`loc-${location}`} className="ml-2 font-normal cursor-pointer text-sm">
-                      {location}
-                    </Label>
-                  </div>
-                ))}
-              </CollapsibleContent>
-            </Collapsible>
+            <CollapsibleTrigger className="flex justify-between items-center w-full font-semibold text-md py-2 text-left">
+              LOCATION <ChevronDown className="h-4 w-4 transition-transform [&[data-state=open]]:rotate-180" />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-3 pt-2">
+              {/* 3. MAP over the dynamic locations prop */}
+              {locations.map(location => (
+                <div key={location} className="flex items-center">
+                  <Checkbox 
+                    id={`loc-${location}`}
+                    checked={selectedLocations.includes(location)}
+                    onCheckedChange={(checked) => updateSearchParam('location', location, !!checked)}
+                  />
+                  <Label htmlFor={`loc-${location}`} className="ml-2 font-normal cursor-pointer text-sm">
+                    {location}
+                  </Label>
+                </div>
+              ))}
+            </CollapsibleContent>
+          </Collapsible>
 
             <Collapsible defaultOpen={true}>
               <CollapsibleTrigger className="flex justify-between items-center w-full font-semibold text-md py-2 text-left">

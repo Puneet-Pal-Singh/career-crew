@@ -1,5 +1,6 @@
 // src/app/jobs/page.tsx
 import { getPublishedJobs } from '@/app/actions/query/getPublishedJobsAction';
+import { getUniqueJobLocationsAction } from '@/app/actions/query/getUniqueJobLocationsAction';
 import type { FetchJobsParams, PaginatedJobsResult, JobTypeOption } from '@/types';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
@@ -20,16 +21,6 @@ export const metadata: Metadata = {
   description: 'Find your next career opportunity from thousands of job listings.',
 };
 
-// Define the expected RESOLVED searchParams object structure
-// interface ResolvedSearchParams {
-//   query?: string;
-//   location?: string | string[]; // Can be array
-//   jobType?: string | string[];  // Can be array 
-//   isRemote?: string;
-//   page?: string;
-//   [key: string]: string | string[] | undefined;
-// }
-
 //  standard way to type an object with arbitrary string keys in TypeScript.
 interface ResolvedSearchParams {
   [key: string]: string | string[] | undefined;
@@ -43,17 +34,9 @@ interface JobsPageProps {
 export default async function JobsPage({ searchParams: searchParamsPromise }: JobsPageProps) {
   const resolvedSearchParams = await searchParamsPromise || {};
 
-  // Parse and sanitize search parameters before passing to the server action
-  // const parsedPage = resolvedSearchParams.page ? parseInt(resolvedSearchParams.page, 10) : 1;
-  // const paramsForAction: FetchJobsParams = {
-  //   query: resolvedSearchParams.query,
-  //   location: resolvedSearchParams.location,
-  //   jobType: resolvedSearchParams.jobType as JobTypeOption | undefined, // Cast to our enum type
-  //   isRemote: resolvedSearchParams.isRemote,
-  //   page: isNaN(parsedPage) || parsedPage < 1 ? 1 : parsedPage,
-  //   limit: 10, // Define jobs per page
-  // };
-  // Parse searchParams, handling potential arrays from multi-select filters
+  // FETCH the unique locations on the server
+  const uniqueLocations = await getUniqueJobLocationsAction();
+
   // Parse searchParams, handling potential arrays from multi-select filters
   const paramsForAction: FetchJobsParams = {
     query: typeof resolvedSearchParams.query === 'string' ? resolvedSearchParams.query : undefined,
@@ -69,17 +52,15 @@ export default async function JobsPage({ searchParams: searchParamsPromise }: Jo
         {/* The new prominent search hero component */}
         <JobSearchHero /> 
         
-        <div className="mt-10 grid grid-cols-1 lg:grid-cols-4 gap-x-8 gap-y-10">
-          {/* Column 1: Filter Sidebar */}
-          {/* --- RESPONSIVE FILTER SECTION --- */}
+        <div className="mt-10 grid grid-cols-1 lg:grid-cols-4 gap-x-8 gap-y-6">
           <div className="lg:col-span-1">
-            {/* 2. HIDE the original sidebar on mobile */}
             <div className="hidden lg:block">
-              <JobFilterSidebar />
+              {/* 3. PASS the locations as a prop */}
+              <JobFilterSidebar locations={uniqueLocations} />
             </div>
-            {/* 3. SHOW the mobile sheet trigger on mobile */}
             <div className="block lg:hidden">
-              <MobileFilterSheet />
+              {/* 3. PASS the locations as a prop */}
+              <MobileFilterSheet locations={uniqueLocations} />
             </div>
           </div>
 

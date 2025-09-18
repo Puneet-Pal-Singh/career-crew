@@ -1,3 +1,4 @@
+// src/components/jobs/MobileFilterSheet.tsx
 "use client";
 
 import { useState } from 'react';
@@ -6,7 +7,12 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { SlidersHorizontal } from 'lucide-react';
 import JobFilterSidebar from './JobFilterSidebar';
 
-export default function MobileFilterSheet() {
+// 1. DEFINE props for this component
+interface MobileFilterSheetProps {
+  locations: string[];
+}
+
+export default function MobileFilterSheet({ locations }: MobileFilterSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -22,7 +28,7 @@ export default function MobileFilterSheet() {
           <SheetTitle>Filter Jobs</SheetTitle>
         </SheetHeader>
         {/* Pass a function to the onClose prop to close the sheet */}
-        <JobFilterSidebar onClose={() => setIsOpen(false)} />
+        <JobFilterSidebar onClose={() => setIsOpen(false)} locations={locations} />
       </SheetContent>
     </Sheet>
   );
