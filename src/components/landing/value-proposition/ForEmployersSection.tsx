@@ -41,25 +41,25 @@ export default function ForEmployersSection() {
   return (
     <section 
       id="for-employers" 
-      className="py-16 sm:py-20 md:py-28 lg:py-32 bg-gray-50 dark:bg-gray-900 relative overflow-hidden"
+      className="py-16 sm:py-20 md:py-28 lg:py-32 relative overflow-hidden"
     >
       {/* Enhanced gradient overlay with better visibility */}
-      <div 
+      {/* <div 
         aria-hidden="true"
         className="absolute inset-0 z-0
                    bg-gradient-to-br from-orange-100/20 via-orange-50/10 to-transparent 
                    dark:from-orange-900/10 dark:via-orange-800/5 dark:to-transparent 
                    pointer-events-none"
-      />
+      /> */}
       
       {/* Additional radial gradient for more visual impact */}
-      <div 
+      {/* <div 
         aria-hidden="true"
         className="absolute top-0 right-0 w-full h-full z-0
                    bg-gradient-to-l from-orange-200/10 via-orange-100/5 to-transparent 
                    dark:from-orange-800/10 dark:via-orange-900/5 dark:to-transparent 
                    pointer-events-none"
-      />
+      /> */}
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="flex flex-col lg:grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
@@ -88,19 +88,22 @@ export default function ForEmployersSection() {
             variants={sectionContentVariants}
           >
             <motion.p 
-              className="text-sm font-semibold uppercase tracking-wider text-secondary dark:text-secondary-dark mb-2"
+              // UPDATED: Use the theme-aware `text-secondary` color
+              className="text-sm font-semibold uppercase tracking-wider text-secondary mb-2"
               variants={itemVariants}
             >
               For Employers
             </motion.p>
             <motion.h2 
-              className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-content-light dark:text-content-dark mb-5 md:mb-6"
+              // UPDATED: Use the theme-aware `text-foreground` and `text-primary` colors
+              className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-5 md:mb-6"
               variants={itemVariants}
             >
               Build Your <span className="text-primary dark:text-primary-dark">Dream Team</span>, Faster.
             </motion.h2>
             <motion.p 
-              className="text-base sm:text-lg text-subtle-light dark:text-subtle-dark mb-6 md:mb-8 leading-relaxed"
+              // UPDATED: Use the theme-aware `text-muted-foreground` color
+              className="text-base sm:text-lg text-muted-foreground mb-6 md:mb-8 leading-relaxed"
               variants={itemVariants}
             >
               CareerCrew provides the tools and reach you need to attract, manage, and hire top-tier talent for your organization.
@@ -117,7 +120,8 @@ export default function ForEmployersSection() {
                     <benefit.icon size={22} strokeWidth={2} />
                   </div>
                   <div>
-                    <h4 className="text-md sm:text-lg font-semibold text-content-light dark:text-content-dark">{benefit.title}</h4>
+                    {/* UPDATED: Use theme-aware text colors */}
+                    <h4 className="text-md sm:text-lg font-semibold text-foreground">{benefit.title}</h4>
                     <p className="text-xs sm:text-sm text-subtle-light dark:text-subtle-dark">{benefit.description}</p>
                   </div>
                 </motion.div>
@@ -126,8 +130,9 @@ export default function ForEmployersSection() {
 
             <motion.div variants={itemVariants}>
               <Link
-                href="/dashboard/post-job" 
-                className="group rounded-lg bg-secondary dark:bg-secondary-dark px-7 py-3.5 sm:px-8 sm:py-4 text-sm sm:text-base md:text-lg font-semibold text-white dark:text-gray-900 shadow-lg hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary transition-all duration-150 transform hover:scale-105 inline-flex items-center gap-2"
+                href="/dashboard/post-job"
+                // UPDATED: Use theme-aware colors for the button
+                className="group rounded-lg bg-secondary px-7 py-3.5 sm:px-8 sm:py-4 text-sm sm:text-base md:text-lg font-semibold text-secondary-foreground shadow-lg hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary transition-all duration-150 transform hover:scale-105 inline-flex items-center gap-2"
               >
                 Post a Job Today 
                 <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
