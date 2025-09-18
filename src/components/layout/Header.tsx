@@ -68,11 +68,22 @@ export default function Header({ user }: HeaderProps) {
   );
 
   const logoClasses = cn(
-    "font-bold text-xl transition-all duration-300 text-slate-800 hover:text-slate-900"
+    // FROM: text-slate-800 hover:text-slate-900
+    // TO: Use the main foreground color for high contrast.
+    "font-bold text-xl transition-colors duration-300 text-foreground"
   );
 
-  const navLinkClasses = "relative text-sm font-medium transition-all duration-300 text-slate-700 hover:text-slate-900 group";
-  const navLinkUnderline = "absolute -bottom-1 left-0 w-0 h-0.5 bg-slate-800 transition-all duration-300 group-hover:w-full";
+  const navLinkClasses = cn(
+    // FROM: text-slate-700 hover:text-slate-900
+    // TO: Use the muted foreground for a softer look, brightening to the main foreground on hover.
+    "relative text-sm font-medium transition-colors duration-300 text-muted-foreground hover:text-foreground group"
+  );
+
+  const navLinkUnderline = cn(
+    // FROM: bg-slate-800
+    // TO: Use the main foreground color for the underline to match the hover state.
+    "absolute -bottom-1 left-0 w-0 h-0.5 bg-foreground transition-all duration-300 group-hover:w-full"
+  );
 
   return (
     <header className={headerClasses}>
