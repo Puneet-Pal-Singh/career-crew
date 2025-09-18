@@ -12,6 +12,8 @@ import JobsPagination from '@/components/jobs/JobsPagination';
 
 // UI and Icon Imports
 import { Loader2, SearchSlashIcon, Briefcase as BriefcaseIconLucide } from 'lucide-react';
+// 1. IMPORT the new mobile sheet component
+import MobileFilterSheet from '@/components/jobs/MobileFilterSheet';
 
 export const metadata: Metadata = {
   title: 'Browse Jobs - CareerCrew',
@@ -69,10 +71,16 @@ export default async function JobsPage({ searchParams: searchParamsPromise }: Jo
         
         <div className="mt-10 grid grid-cols-1 lg:grid-cols-4 gap-x-8 gap-y-10">
           {/* Column 1: Filter Sidebar */}
+          {/* --- RESPONSIVE FILTER SECTION --- */}
           <div className="lg:col-span-1">
-            {/* The sidebar is a client component that reads URL params itself,
-                so it doesn't need props passed from here. */}
-            <JobFilterSidebar />
+            {/* 2. HIDE the original sidebar on mobile */}
+            <div className="hidden lg:block">
+              <JobFilterSidebar />
+            </div>
+            {/* 3. SHOW the mobile sheet trigger on mobile */}
+            <div className="block lg:hidden">
+              <MobileFilterSheet />
+            </div>
           </div>
 
           {/* Column 2: Job Listings & Pagination */}

@@ -12,7 +12,12 @@ import { JOB_TYPE_OPTIONS } from '@/lib/constants'; // <-- Import the new consta
 
 const locationOptions = ["New York, NY", "San Francisco, CA", "London", "Berlin", "Delhi"]; // Static for MVP
 
-export default function JobFilterSidebar() {
+// 1. ADD `onClose` to the props interface
+interface JobFilterSidebarProps {
+  onClose?: () => void;
+}
+
+export default function JobFilterSidebar({ onClose }: JobFilterSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -63,11 +68,20 @@ export default function JobFilterSidebar() {
     current.delete('location');
     current.delete('isRemote');
     router.push(`${pathname}?${current.toString()}`, { scroll: false });
+
+    // 2. CLOSE THE SHEET (if in mobile view)
+    onClose?.(); 
+  };
+
+  // A new function to apply filters and close the sheet
+  const applyFiltersAndClose = () => {
+    // The filters are already applied on every change, so this button just closes the sheet.
+    onClose?.();
   };
 
   return (
-    <aside className="w-full lg:w-64 xl:w-72 flex-shrink-0">
-      <div className="sticky top-24 p-4 space-y-6">
+    // <aside className="w-full lg:w-64 xl:w-72 flex-shrink-0">
+      <div className="p-4 space-y-6 bg-background h-full flex flex-col">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold flex items-center">
             <SlidersHorizontal className="mr-2 h-5 w-5" />
@@ -78,57 +92,69 @@ export default function JobFilterSidebar() {
           )}
         </div>
         
-        <div className="flex items-center space-x-2 border-b pb-4">
-            <Checkbox
-              id="is-remote-filter"
-              checked={isRemoteSelected}
-              onCheckedChange={handleRemoteChange}
-            />
-            <Label htmlFor="is-remote-filter" className="font-semibold cursor-pointer flex items-center">
-                <Zap className="mr-2 h-4 w-4 text-primary" /> Remote Only
-            </Label>
+
+        <div className="flex-grow overflow-y-auto pr-2">
+          <div className="space-y-6">
+            <div className="flex items-center space-x-2 border-b pb-4">
+                <Checkbox
+                  id="is-remote-filter"
+                  checked={isRemoteSelected}
+                  onCheckedChange={handleRemoteChange}
+                />
+                <Label htmlFor="is-remote-filter" className="font-semibold cursor-pointer flex items-center">
+                    <Zap className="mr-2 h-4 w-4 text-primary" /> Remote Only
+                </Label>
+            </div>
+
+            <Collapsible defaultOpen={true}>
+              <CollapsibleTrigger className="flex justify-between items-center w-full font-semibold text-md py-2 text-left">
+                LOCATION <ChevronDown className="h-4 w-4 transition-transform [&[data-state=open]]:rotate-180" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-3 pt-2">
+                {locationOptions.map(location => (
+                  <div key={location} className="flex items-center">
+                    <Checkbox 
+                      id={`loc-${location}`}
+                      checked={selectedLocations.includes(location)}
+                      onCheckedChange={(checked) => updateSearchParam('location', location, !!checked)}
+                    />
+                    <Label htmlFor={`loc-${location}`} className="ml-2 font-normal cursor-pointer text-sm">
+                      {location}
+                    </Label>
+                  </div>
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+
+            <Collapsible defaultOpen={true}>
+              <CollapsibleTrigger className="flex justify-between items-center w-full font-semibold text-md py-2 text-left">
+                JOB TYPE <ChevronDown className="h-4 w-4 transition-transform [&[data-state=open]]:rotate-180" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-3 pt-2">
+                {JOB_TYPE_OPTIONS.map(option => (
+                  <div key={option.value} className="flex items-center">
+                    <Checkbox 
+                      id={`type-${option.value}`}
+                      checked={selectedJobTypes.includes(option.value)}
+                      onCheckedChange={(checked) => updateSearchParam('jobType', option.value, !!checked)}
+                    />
+                    <Label htmlFor={`type-${option.value}`} className="ml-2 font-normal cursor-pointer text-sm">
+                      {option.label}
+                    </Label>
+                  </div>
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+          </div>
         </div>
 
-        <Collapsible defaultOpen={true}>
-          <CollapsibleTrigger className="flex justify-between items-center w-full font-semibold text-md py-2 text-left">
-            LOCATION <ChevronDown className="h-4 w-4 transition-transform [&[data-state=open]]:rotate-180" />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="space-y-3 pt-2">
-            {locationOptions.map(location => (
-              <div key={location} className="flex items-center">
-                <Checkbox 
-                  id={`loc-${location}`}
-                  checked={selectedLocations.includes(location)}
-                  onCheckedChange={(checked) => updateSearchParam('location', location, !!checked)}
-                />
-                <Label htmlFor={`loc-${location}`} className="ml-2 font-normal cursor-pointer text-sm">
-                  {location}
-                </Label>
-              </div>
-            ))}
-          </CollapsibleContent>
-        </Collapsible>
-
-        <Collapsible defaultOpen={true}>
-          <CollapsibleTrigger className="flex justify-between items-center w-full font-semibold text-md py-2 text-left">
-            JOB TYPE <ChevronDown className="h-4 w-4 transition-transform [&[data-state=open]]:rotate-180" />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="space-y-3 pt-2">
-            {JOB_TYPE_OPTIONS.map(option => (
-              <div key={option.value} className="flex items-center">
-                <Checkbox 
-                  id={`type-${option.value}`}
-                  checked={selectedJobTypes.includes(option.value)}
-                  onCheckedChange={(checked) => updateSearchParam('jobType', option.value, !!checked)}
-                />
-                <Label htmlFor={`type-${option.value}`} className="ml-2 font-normal cursor-pointer text-sm">
-                  {option.label}
-                </Label>
-              </div>
-            ))}
-          </CollapsibleContent>
-        </Collapsible>
+        {/* 3. ADD A FOOTER with an Apply button for mobile view */}
+        <div className="pt-4 border-t lg:hidden">
+          <Button onClick={applyFiltersAndClose} className="w-full">
+            Apply Filters
+          </Button>
+        </div>
       </div>
-    </aside>
+    // </aside>
   );
 }
