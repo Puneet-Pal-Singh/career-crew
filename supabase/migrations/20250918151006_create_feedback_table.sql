@@ -10,7 +10,7 @@ CREATE TABLE public.feedback (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- Link to the user who submitted it
     feedback_type public.feedback_type NOT NULL,
-    content TEXT NOT NULL CHECK (char_length(content) > 10),
+    content TEXT NOT NULL CHECK (char_length(content) >= 10),
     is_resolved BOOLEAN NOT NULL DEFAULT FALSE
 );
 

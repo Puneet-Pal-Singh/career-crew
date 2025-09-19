@@ -112,19 +112,27 @@ export default function JobFilterSidebar({ onClose, locations }: JobFilterSideba
               <ChevronDown className="h-4 w-4 transition-transform duration-200" />
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-3 pt-2">
-              {/* 3. MAP over the dynamic locations prop */}
-              {locations.map(location => (
-                <div key={location} className="flex items-center">
-                  <Checkbox 
-                    id={`loc-${location}`}
-                    checked={selectedLocations.includes(location)}
-                    onCheckedChange={(checked) => updateSearchParam('location', location, !!checked)}
-                  />
-                  <Label htmlFor={`loc-${location}`} className="ml-2 font-normal cursor-pointer text-sm">
-                    {location}
-                  </Label>
-                </div>
-              ))}
+              {locations.map(location => {
+                // THE FIX: Create a sanitized ID from the location string
+                const sanitizedLocationId = encodeURIComponent(location);
+                return (
+                  <div key={location} className="flex items-center">
+                    <Checkbox 
+                      // Use the sanitized ID
+                      id={`loc-${sanitizedLocationId}`}
+                      checked={selectedLocations.includes(location)}
+                      onCheckedChange={(checked) => updateSearchParam('location', location, !!checked)}
+                    />
+                    <Label 
+                      // Use the sanitized ID here as well to connect the label correctly
+                      htmlFor={`loc-${sanitizedLocationId}`} 
+                      className="ml-2 font-normal cursor-pointer text-sm"
+                    >
+                      {location}
+                    </Label>
+                  </div>
+                );
+              })}
             </CollapsibleContent>
           </Collapsible>
 
