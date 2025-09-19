@@ -2,37 +2,39 @@
 "use server";
 
 import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
-import { cache } from 'react';
+// 1. IMPORT the correct cache function from Next.js
+import { unstable_cache as cache } from 'next/cache';
 
-/**
- * Fetches a unique, sorted list of all job locations for 'APPROVED' jobs.
- * This is cached to prevent redundant database calls.
- */
-export const getUniqueJobLocationsAction = cache(async (): Promise<string[]> => {
-  console.log("Fetching unique job locations from database...");
-  try {
-    const supabase = await getSupabaseServerClient();
-    
-    // Select only the 'location' column from approved jobs
-    const { data, error } = await supabase
-      .from('jobs')
-      .select('location')
-      .eq('status', 'APPROVED');
+export const getUniqueJobLocationsAction = cache(
+  async (): Promise<string[]> => {
+    console.log("Fetching unique job locations from database...");
+    try {
+      const supabase = await getSupabaseServerClient();
+      
+      const { data, error } = await supabase
+        .from('jobs')
+        .select('location')
+        .eq('status', 'APPROVED')
+        // 2. ADD sorting at the database level
+        .order('location', { ascending: true });
 
-    if (error) {
-      console.error("Error fetching job locations:", error);
+      if (error) {
+        console.error("Error fetching job locations:", error);
+        return [];
+      }
+      
+      // The data is now pre-sorted. We just need to make it unique.
+      const locations = data.map(item => item.location);
+      return [...new Set(locations)];
+
+    } catch (err) {
+      console.error("Unexpected error in getUniqueJobLocationsAction:", err);
       return [];
     }
-    
-    // The data is an array of objects: [{ location: 'New York' }, { location: 'London' }, ...]
-    // We need to transform it into a unique, sorted array of strings.
-    const locations = data.map(item => item.location);
-    const uniqueLocations = [...new Set(locations)];
-    
-    return uniqueLocations.sort();
-
-  } catch (err) {
-    console.error("Unexpected error in getUniqueJobLocationsAction:", err);
-    return [];
+  },
+  ['unique_job_locations'], // 3. ADD a cache key
+  {
+    revalidate: 3600, // Re-run this query at most once per hour
+    tags: ['jobs-locations'], // Add a tag for on-demand revalidation in the future
   }
-});
+);

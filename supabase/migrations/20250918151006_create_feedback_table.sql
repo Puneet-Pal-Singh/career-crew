@@ -30,7 +30,14 @@ WITH CHECK (auth.uid() = user_id);
 
 -- RLS Policy: Admins can see everything.
 -- (We will create a proper 'admin' role later. For now, this is a placeholder or can be adjusted)
+-- RLS Policy: Admins can view all feedback
 CREATE POLICY "Admins can view all feedback"
 ON public.feedback
 FOR SELECT
-USING (true); -- In a real app, you would check for an admin role: USING (get_my_claim('user_role') = 'ADMIN')
+USING (
+  EXISTS (
+    SELECT 1
+    FROM public.profiles
+    WHERE profiles.id = auth.uid() AND profiles.role = 'ADMIN'
+  )
+);

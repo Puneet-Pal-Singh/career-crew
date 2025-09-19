@@ -4,8 +4,10 @@
 import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
 import { z } from 'zod';
 
-type FieldErrors = {
-  [key: string]: string[] | undefined;
+// 1. DEFINE a more specific type for the Zod error details
+export type FormErrors = {
+  feedbackType?: string[];
+  content?: string[];
 };
 
 // Schema for validating feedback input
@@ -14,15 +16,13 @@ const feedbackSchema = z.object({
   content: z.string().min(10, "Feedback must be at least 10 characters.").max(5000),
 });
 
-// 1. DEFINE THE STATE TYPE for our action
-interface ActionState {
+// 2. DEFINE THE STATE TYPE for our action
+export interface ActionState {
   success: boolean;
   error?: string;
-  // Use our new, more specific type instead of 'any'
-  errorDetails?: {
-    fieldErrors?: FieldErrors;
-  };
+  errorDetails?: FormErrors;
 }
+
 
 export async function submitFeedbackAction(
   prevState: ActionState,
@@ -43,9 +43,8 @@ export async function submitFeedbackAction(
   if (!validatedFields.success) {
     return { 
       success: false, 
-      error: "Invalid data provided.",
-      // Pass the specific fieldErrors object
-      errorDetails: { fieldErrors: validatedFields.error.flatten().fieldErrors }
+      error: "Invalid data. Please check the fields.",
+      errorDetails: validatedFields.error.flatten().fieldErrors
     };
   }
   
