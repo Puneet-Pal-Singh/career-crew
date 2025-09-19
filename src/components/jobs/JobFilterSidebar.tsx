@@ -107,8 +107,9 @@ export default function JobFilterSidebar({ onClose, locations }: JobFilterSideba
             </div>
 
             <Collapsible defaultOpen={true}>
-            <CollapsibleTrigger className="flex justify-between items-center w-full font-semibold text-md py-2 text-left">
-              LOCATION <ChevronDown className="h-4 w-4 transition-transform [&[data-state=open]]:rotate-180" />
+            <CollapsibleTrigger className="flex justify-between items-center w-full font-semibold text-md py-2 text-left group [&[data-state=open]>svg]:rotate-180">
+              LOCATION 
+              <ChevronDown className="h-4 w-4 transition-transform duration-200" />
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-3 pt-2">
               {/* 3. MAP over the dynamic locations prop */}
@@ -128,8 +129,9 @@ export default function JobFilterSidebar({ onClose, locations }: JobFilterSideba
           </Collapsible>
 
             <Collapsible defaultOpen={true}>
-              <CollapsibleTrigger className="flex justify-between items-center w-full font-semibold text-md py-2 text-left">
-                JOB TYPE <ChevronDown className="h-4 w-4 transition-transform [&[data-state=open]]:rotate-180" />
+              <CollapsibleTrigger className="flex justify-between items-center w-full font-semibold text-md py-2 text-left group [&[data-state=open]>svg]:rotate-180">
+                JOB TYPE 
+                <ChevronDown className="h-4 w-4 transition-transform duration-200" />
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-3 pt-2">
                 {JOB_TYPE_OPTIONS.map(option => (

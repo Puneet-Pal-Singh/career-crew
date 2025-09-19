@@ -1,21 +1,21 @@
 // src/app/actions/query/getUniqueJobLocationsAction.ts
 "use server";
 
-import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
-// 1. IMPORT the correct cache function from Next.js
+// 1. IMPORT our new, cache-safe client
+import { getSupabaseServerClientCacheable } from '@/lib/supabase/serverClientCacheable'; 
 import { unstable_cache as cache } from 'next/cache';
 
 export const getUniqueJobLocationsAction = cache(
   async (): Promise<string[]> => {
-    console.log("Fetching unique job locations from database...");
+    console.log("Fetching unique job locations from database (cacheable)...");
     try {
-      const supabase = await getSupabaseServerClient();
+      // 2. USE the new client that does not depend on cookies
+      const supabase = getSupabaseServerClientCacheable();
       
       const { data, error } = await supabase
         .from('jobs')
         .select('location')
         .eq('status', 'APPROVED')
-        // 2. ADD sorting at the database level
         .order('location', { ascending: true });
 
       if (error) {
@@ -23,7 +23,6 @@ export const getUniqueJobLocationsAction = cache(
         return [];
       }
       
-      // The data is now pre-sorted. We just need to make it unique.
       const locations = data.map(item => item.location);
       return [...new Set(locations)];
 
@@ -32,9 +31,9 @@ export const getUniqueJobLocationsAction = cache(
       return [];
     }
   },
-  ['unique_job_locations'], // 3. ADD a cache key
+  ['unique_job_locations'],
   {
-    revalidate: 3600, // Re-run this query at most once per hour
-    tags: ['jobs-locations'], // Add a tag for on-demand revalidation in the future
+    revalidate: 3600,
+    tags: ['jobs-locations'],
   }
 );
