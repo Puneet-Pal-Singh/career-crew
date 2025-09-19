@@ -191,21 +191,21 @@ export default function Header({ user }: HeaderProps) {
               <div className="space-y-2">
                 <Link
                   href="/jobs"
-                  className="block px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                  className="block px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Jobs
                 </Link>
                 <Link
                   href="/#features-for-seekers"
-                  className="block px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                  className="block px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   For Job Seekers
                 </Link>
                 <Link
                   href="/#features-for-companies"
-                  className="block px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                  className="block px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   For Companies
@@ -218,7 +218,7 @@ export default function Header({ user }: HeaderProps) {
                   <Button 
                     variant="ghost" 
                     asChild 
-                    className="w-full justify-center text-slate-700 hover:text-slate-900 hover:bg-slate-100 h-11 text-base"
+                    className="w-full justify-center text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 h-11 text-base"
                   >
                     <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
                       Log In
