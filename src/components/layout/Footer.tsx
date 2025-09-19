@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Linkedin, Twitter, Mail, ArrowRight } from 'lucide-react';
 // import { Linkedin, Twitter, Mail, ArrowRight, MapPin, Phone } from 'lucide-react';
 import FeedbackModal from '@/components/shared/FeedbackModal';
+import ContactModal from '@/components/shared/ContactModal';
 
 const footerLinks = {
   jobSeekers: [
@@ -19,7 +20,7 @@ const footerLinks = {
     { name: 'Dashboard', href: '/dashboard' },
   ],
   company: [
-    { name: 'Contact Us', href: '/contact' },
+    // { name: 'Contact Us', href: '/contact' },
   ],
    legal: [
     { name: 'Privacy Policy', href: '/privacy-policy' },
@@ -44,6 +45,8 @@ export default function Footer() {
   const [submitted, setSubmitted] = useState(false);
 
   const [isFeedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  // ADD STATE to control the Contact Modal
+  const [isContactModalOpen, setContactModalOpen] = useState(false);
 
   const handleNewsletterSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -101,16 +104,18 @@ export default function Footer() {
             <div className="md:col-span-2 lg:col-span-2">
               <h4 className="font-semibold text-foreground mb-4 text-sm uppercase tracking-wider">Company</h4>
               <ul className="space-y-3">
-                {/* --- 2. MAP the regular links and add a special button for feedback --- */}
-                {footerLinks.company.map(link => (
-                  <li key={link.name}><Link href={link.href} className="text-muted-foreground hover:text-primary text-sm">{link.name}</Link></li>
-                ))}
                 <li>
                   <button 
                     onClick={() => setFeedbackModalOpen(true)} 
                     className="text-muted-foreground hover:text-primary text-sm text-left w-full"
                   >
                     Feature Requests
+                  </button>
+                </li>
+                {/* --- ADD THE NEW "Contact Us" BUTTON --- */}
+                <li>
+                  <button onClick={() => setContactModalOpen(true)} className="text-muted-foreground hover:text-primary text-sm text-left w-full">
+                    Contact Us
                   </button>
                 </li>
               </ul>
@@ -179,11 +184,14 @@ export default function Footer() {
         </div>
       </footer>
 
-    {/* --- 3. RENDER THE MODAL and pass state to it --- */}
+      {/* --- RENDER THE MODAL and pass state to it --- */}
       <FeedbackModal 
         isOpen={isFeedbackModalOpen} 
         onOpenChange={setFeedbackModalOpen} 
       />
+
+      {/* --- RENDER THE NEW CONTACT MODAL --- */}
+      <ContactModal isOpen={isContactModalOpen} onOpenChange={setContactModalOpen} />
     </>
   );
 }
