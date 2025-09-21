@@ -4,6 +4,7 @@ import JobDetailView from '@/components/jobs/JobDetailView';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
+import { createPageMetadata } from '@/lib/seo';
 
 // Updated interface for Next.js 15 - params is now a Promise
 interface JobDetailsPageProps {
@@ -23,16 +24,29 @@ export async function generateMetadata({ params }: JobDetailsPageProps): Promise
   // Await the params promise
   const { jobSlug } = await params;
   const jobId = parseJobIdFromSlug(jobSlug);
-  if (!jobId) return { title: 'Invalid Job - CareerCrew' };
+  if (!jobId) return createPageMetadata({ title: 'Invalid Job' });
 
   const result = await getJobDetailsByIdAction(jobId);
   if (!result.success || !result.job) {
-    return { title: 'Job Not Found - CareerCrew' };
+    return createPageMetadata({ title: 'Job Not Found' });
   }
-  return { 
-    title: `${result.job.title} at ${result.job.companyName} - CareerCrew`,
-    description: result.job.description.substring(0, 160),
-  };
+
+  const job = result.job;
+  const jobTitle = `${job.title} at ${job.companyName}`;
+  const jobDescription = job.description.length > 160
+    ? job.description.substring(0, 160) + '...'
+    : job.description;
+
+  return createPageMetadata({
+    title: jobTitle,
+    description: jobDescription,
+    keywords: `${job.title}, ${job.companyName}, ${job.location}, ${job.jobType}, career, job opportunity`,
+    openGraph: {
+      title: jobTitle,
+      description: jobDescription,
+      type: 'website',
+    },
+  });
 }
 
 export default async function JobDetailsPage({ params }: JobDetailsPageProps) {

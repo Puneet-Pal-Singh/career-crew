@@ -1,12 +1,16 @@
 // src/app/login/page.tsx
 import SignInForm from "@/components/auth/SignInForm";
 import AuthPageLayout from "@/components/auth/AuthPageLayout";
-import type { Metadata } from 'next';
+import { createPageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Login - CareerCrew',
-  description: 'Log in to your CareerCrew account.',
-};
+export const metadata = createPageMetadata({
+  title: 'Login',
+  description: 'Log in to your CareerCrew account to access your dashboard, applications, and job postings.',
+  robots: {
+    index: false, // Don't index login pages
+    follow: false,
+  },
+});
 
 export default function LoginPage() {
   return (
