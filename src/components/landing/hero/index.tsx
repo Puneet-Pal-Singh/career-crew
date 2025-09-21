@@ -168,7 +168,7 @@ export default function ModernHeroSection() {
             {/* Main Heading */}
             <motion.h1
               variants={itemVariants}
-              className="font-display text-3xl font-bold tracking-tight text-content-light dark:text-content-dark sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl leading-[1.1]"
+              className="font-display text-5xl font-bold tracking-tight text-content-light dark:text-content-dark sm:text-5xl md:text-6xl lg:text-7xl xl:text-7xl leading-[1.05]"
             >
               <span className="block">
                 Find Your{" "}
@@ -187,7 +187,7 @@ export default function ModernHeroSection() {
             {/* Subtitle */}
             <motion.p
               variants={itemVariants}
-              className="text-base md:text-lg lg:text-xl leading-relaxed text-subtle-light dark:text-subtle-dark max-w-4xl mx-auto font-light"
+              className="text-lg sm:text-base md:text-lg lg:text-xl leading-relaxed text-subtle-light dark:text-subtle-dark max-w-4xl mx-auto font-light"
             >
               CareerCrew connects <span className="font-semibold text-primary dark:text-primary-dark">top talent</span> with{" "}
               <span className="font-semibold text-secondary dark:text-secondary-dark">innovative companies</span>.
@@ -197,25 +197,25 @@ export default function ModernHeroSection() {
             {/* CTA Buttons */}
             <motion.div
               variants={itemVariants}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 pt-6 md:pt-8"
+              className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-6 pt-6 md:pt-8"
             >
               <Link
                 href="/jobs"
-                className="group relative w-full sm:w-auto overflow-hidden rounded-xl bg-gradient-to-r from-primary to-secondary dark:from-primary-dark dark:to-secondary-dark px-8 py-4 text-base md:text-lg font-semibold text-white shadow-2xl hover:shadow-primary/25 dark:hover:shadow-primary-dark/25 transition-all duration-300 transform hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="group relative w-full sm:w-auto overflow-hidden rounded-xl bg-gradient-to-r from-primary to-secondary dark:from-primary-dark dark:to-secondary-dark px-5 py-2.5 sm:px-8 sm:py-4 text-sm sm:text-base md:text-lg font-semibold text-white shadow-2xl hover:shadow-primary/25 dark:hover:shadow-primary-dark/25 transition-all duration-300 transform hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   Browse Jobs
-                  <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
+                  <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-secondary to-primary dark:from-secondary-dark dark:to-primary-dark opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </Link>
 
               <Link
                 href={user ? "/dashboard/post-job" : "/employer/signup"}
-                className="group w-full sm:w-auto text-base md:text-lg font-semibold leading-6 text-content-light dark:text-content-dark hover:text-primary dark:hover:text-primary-dark transition-all duration-300 flex items-center justify-center gap-2 px-8 py-4 rounded-xl border-2 border-border-light dark:border-border-dark hover:border-primary dark:hover:border-primary-dark bg-white/5 dark:bg-slate-800/5 backdrop-blur-md shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="group w-full sm:w-auto text-sm sm:text-base md:text-lg font-semibold leading-6 text-content-light dark:text-content-dark hover:text-primary dark:hover:text-primary-dark transition-all duration-300 flex items-center justify-center gap-2 px-5 py-2.5 sm:px-8 sm:py-4 rounded-xl border-2 border-border-light dark:border-border-dark hover:border-primary dark:hover:border-primary-dark bg-white/5 dark:bg-slate-800/5 backdrop-blur-md shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 Post a Job
-                <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
+                <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
               </Link>
             </motion.div>
 
