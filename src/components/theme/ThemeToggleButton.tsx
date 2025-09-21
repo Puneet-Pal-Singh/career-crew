@@ -3,9 +3,8 @@
 
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
-import { Sun, Moon } from "lucide-react";
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { Sun, Moon, Monitor } from "lucide-react";
+
 
 interface ThemeToggleButtonProps {
   className?: string;
@@ -16,7 +15,7 @@ export default function ThemeToggleButton({
   className = "",
 }: ThemeToggleButtonProps) {
   const [mounted, setMounted] = useState(false);
-  const { setTheme, resolvedTheme } = useTheme();
+  const { setTheme, theme, resolvedTheme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
@@ -24,68 +23,72 @@ export default function ThemeToggleButton({
 
   if (!mounted) {
     // Placeholder to maintain layout space and prevent layout shift
-    return <div className={`w-20 h-10 rounded-full ${className}`} />;
+    return <div className={`w-24 h-8 rounded-full ${className}`} />;
   }
 
-  const isCurrentlyDark = resolvedTheme === "dark";
+  const getActiveSection = () => {
+    if (theme === "system" || (theme !== "light" && theme !== "dark" && resolvedTheme === "dark")) {
+      return "system";
+    }
+    if (theme === "light" || resolvedTheme === "light") {
+      return "light";
+    }
+    return "dark";
+  };
 
-  const toggleTheme = () => {
-    setTheme(isCurrentlyDark ? "light" : "dark");
+  const activeSection = getActiveSection();
+
+  const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme);
   };
 
   return (
     <div className={`relative ${className}`}>
-      <Button
-        variant="outline"
-        onClick={toggleTheme}
-        aria-label={`Switch to ${isCurrentlyDark ? "light" : "dark"} mode`}
-        className="relative h-10 px-4 rounded-full border-2 border-border hover:border-primary/50 transition-all duration-300 bg-background/50 backdrop-blur-sm hover:bg-background/80 shadow-sm hover:shadow-md"
-      >
-        <div className="flex items-center justify-between w-full gap-2">
+      <div className="relative h-8 rounded-full border border-border/40 bg-background/30 backdrop-blur-sm">
+        <div className="flex items-center justify-between h-full px-1">
+          {/* System Theme Button */}
+          <button
+            type="button"
+            onClick={() => handleThemeChange("system")}
+            className={`flex items-center justify-center w-6 h-6 rounded-full transition-all duration-200 ${
+              activeSection === "system"
+                ? "text-foreground"
+                : "text-muted-foreground/60 hover:text-muted-foreground"
+            }`}
+            aria-label="Switch to system theme"
+          >
+            <Monitor size={14} />
+          </button>
+
           {/* Light Mode Button */}
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setTheme("light");
-            }}
-            className={`flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300 ${
-              !isCurrentlyDark
-                ? "bg-primary text-primary-foreground shadow-md scale-110"
-                : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
+            onClick={() => handleThemeChange("light")}
+            className={`flex items-center justify-center w-6 h-6 rounded-full transition-all duration-200 ${
+              activeSection === "light"
+                ? "text-foreground"
+                : "text-muted-foreground/60 hover:text-muted-foreground"
             }`}
             aria-label="Switch to light mode"
           >
-            <Sun size={16} />
+            <Sun size={14} />
           </button>
 
           {/* Dark Mode Button */}
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setTheme("dark");
-            }}
-            className={`flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300 ${
-              isCurrentlyDark
-                ? "bg-primary text-primary-foreground shadow-md scale-110"
-                : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
+            onClick={() => handleThemeChange("dark")}
+            className={`flex items-center justify-center w-6 h-6 rounded-full transition-all duration-200 ${
+              activeSection === "dark"
+                ? "text-foreground"
+                : "text-muted-foreground/60 hover:text-muted-foreground"
             }`}
             aria-label="Switch to dark mode"
           >
-            <Moon size={16} />
+            <Moon size={14} />
           </button>
         </div>
-      </Button>
-
-      {/* Active indicator dot */}
-      <motion.div
-        className="absolute top-1 w-2 h-2 bg-primary rounded-full"
-        animate={{
-          left: isCurrentlyDark ? "calc(100% - 10px)" : "2px",
-        }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      />
+      </div>
     </div>
   );
 }
