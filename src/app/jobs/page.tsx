@@ -3,7 +3,7 @@ import { getPublishedJobs } from '@/app/actions/query/getPublishedJobsAction';
 import { getUniqueJobLocationsAction } from '@/app/actions/query/getUniqueJobLocationsAction';
 import type { FetchJobsParams, PaginatedJobsResult, JobTypeOption } from '@/types';
 import { Suspense } from 'react';
-import { createPageMetadata, generateStructuredData } from '@/lib/seo';
+import { generateStructuredData } from '@/lib/seo';
 
 // New Component Imports for the refined UI
 import JobFilterSidebar from '@/components/jobs/JobFilterSidebar';
@@ -16,11 +16,7 @@ import { Loader2, SearchSlashIcon, Briefcase as BriefcaseIconLucide } from 'luci
 // 1. IMPORT the new mobile sheet component
 import MobileFilterSheet from '@/components/jobs/MobileFilterSheet';
 
-export const metadata = createPageMetadata({
-  title: 'Browse Jobs',
-  description: 'Find your next career opportunity from thousands of job listings. Search and filter jobs by location, type, and more.',
-  keywords: 'jobs, career opportunities, job search, employment, hiring, job listings, remote jobs, full-time jobs',
-});
+
 
 export default async function JobsPage({ searchParams: searchParamsPromise }: JobsPageProps) {
   const resolvedSearchParams = await searchParamsPromise || {};
