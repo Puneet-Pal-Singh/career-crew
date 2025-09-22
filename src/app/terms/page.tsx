@@ -1,8 +1,10 @@
-import type { Metadata } from 'next';
+import { createPageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Terms of Service - CareerCrew',
-};
+export const metadata = createPageMetadata({
+  title: 'Terms of Service',
+  description: 'Read the terms and conditions for using CareerCrew Consulting services. Understand your rights and responsibilities when using our platform.',
+  keywords: 'terms of service, terms and conditions, user agreement, legal terms, career services terms',
+});
 
 export default function TermsPage() {
   return (

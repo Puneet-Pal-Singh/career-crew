@@ -2,7 +2,7 @@
 import React from 'react';
 import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
 import { redirect } from 'next/navigation';
-import type { Metadata } from 'next';
+
 import JobSeekerDashboardView from '@/components/dashboard/views/JobSeekerDashboardView';
 import EmployerDashboardView from '@/components/dashboard/views/EmployerDashboardView';
 import AdminDashboardView from '@/components/dashboard/views/AdminDashboardView';
@@ -10,10 +10,7 @@ import { getEmployerDashboardStatsAction } from '@/app/actions/employer/stats/ge
 import { getJobPerformanceAction } from '@/app/actions/employer/stats/getJobPerformanceAction';
 import { getEmployerRecentApplicationsAction } from '@/app/actions/employer/applications/getEmployerRecentApplicationsAction';
 
-export const metadata: Metadata = {
-  title: 'Dashboard - CareerCrew',
-  description: 'Manage your profile, job postings, and applications.',
-};
+
 
 export default async function DashboardPage() {
   const supabase = await getSupabaseServerClient();

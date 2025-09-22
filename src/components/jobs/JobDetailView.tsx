@@ -35,12 +35,11 @@ export default function JobDetailView({ job, user }: JobDetailViewProps) {
 
   return (
     <>
-      <div className="bg-muted/40">
-        
+      <div className="bg-muted/30 min-h-screen">
         {/* --- NEW COMPONENT: PREVIEW BANNER --- */}
         {isPreview && (
-          <div className="bg-yellow-100 text-yellow-800 sticky top-0 z-10">
-            <div className="container mx-auto max-w-4xl px-4 py-3">
+          <div className="bg-yellow-100 text-yellow-800 sticky top-16 z-10 border-b">
+            <div className="container mx-auto max-w-5xl px-4 py-3">
               <Alert variant="default" className="border-yellow-300 bg-yellow-50">
                 <Eye className="h-4 w-4 !text-yellow-800" />
                 <AlertTitle className="font-semibold !text-yellow-900">Preview Mode</AlertTitle>
@@ -51,11 +50,11 @@ export default function JobDetailView({ job, user }: JobDetailViewProps) {
             </div>
           </div>
         )}
-        
-        <div className="container mx-auto max-w-4xl py-12 px-4">
+
+        <div className="container mx-auto max-w-5xl py-8 px-4">
           <JobDetailHeaderCard job={job} onApplyNow={handleApplyNow} />
-          <JobDetailAbout 
-            description={job.description} 
+          <JobDetailAbout
+            description={job.description}
             requirements={job.requirements}
             onApplyNow={handleApplyNow}
           />

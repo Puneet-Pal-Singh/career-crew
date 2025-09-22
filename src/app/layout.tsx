@@ -6,16 +6,14 @@ import { AppProviders } from '@/components/providers/AppProviders';
 import { Toaster } from "@/components/ui/toaster";
 import ClientLayout from '@/components/layout/ClientLayout';
 import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
+import { defaultMetadata } from '@/lib/seo';
 
 // --- FIX: Force dynamic rendering for the entire app ---
 // This tells Next.js not to attempt static generation, as this layout
 // depends on request-time cookies to fetch the user session.
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: 'CareerCrew Consulting - Find Your Next Opportunity',
-  description: "Connecting top talent with innovative companies. Whether you're hiring or looking for your next role, we're here to help you succeed.",
-};
+export const metadata: Metadata = defaultMetadata;
 
 const inter = Inter({
   subsets: ['latin'],

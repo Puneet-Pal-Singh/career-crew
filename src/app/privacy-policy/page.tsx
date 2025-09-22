@@ -1,8 +1,10 @@
-import type { Metadata } from 'next';
+import { createPageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Privacy Policy - CareerCrew',
-};
+export const metadata = createPageMetadata({
+  title: 'Privacy Policy',
+  description: 'Learn how CareerCrew Consulting protects your privacy and handles your personal information when using our career services platform.',
+  keywords: 'privacy policy, data protection, personal information, career services privacy',
+});
 
 export default function PrivacyPolicyPage() {
   return (

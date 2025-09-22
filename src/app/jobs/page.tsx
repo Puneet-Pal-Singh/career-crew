@@ -3,7 +3,7 @@ import { getPublishedJobs } from '@/app/actions/query/getPublishedJobsAction';
 import { getUniqueJobLocationsAction } from '@/app/actions/query/getUniqueJobLocationsAction';
 import type { FetchJobsParams, PaginatedJobsResult, JobTypeOption } from '@/types';
 import { Suspense } from 'react';
-import type { Metadata } from 'next';
+import { generateStructuredData } from '@/lib/seo';
 
 // New Component Imports for the refined UI
 import JobFilterSidebar from '@/components/jobs/JobFilterSidebar';
@@ -16,20 +16,7 @@ import { Loader2, SearchSlashIcon, Briefcase as BriefcaseIconLucide } from 'luci
 // 1. IMPORT the new mobile sheet component
 import MobileFilterSheet from '@/components/jobs/MobileFilterSheet';
 
-export const metadata: Metadata = {
-  title: 'Browse Jobs - CareerCrew',
-  description: 'Find your next career opportunity from thousands of job listings.',
-};
 
-//  standard way to type an object with arbitrary string keys in TypeScript.
-interface ResolvedSearchParams {
-  [key: string]: string | string[] | undefined;
-}
-
-// Define the props for this page, where searchParams is a Promise (Next.js 15)
-interface JobsPageProps {
-  searchParams: Promise<ResolvedSearchParams>;
-}
 
 export default async function JobsPage({ searchParams: searchParamsPromise }: JobsPageProps) {
   const resolvedSearchParams = await searchParamsPromise || {};
@@ -46,35 +33,67 @@ export default async function JobsPage({ searchParams: searchParamsPromise }: Jo
     page: resolvedSearchParams.page ? parseInt(String(resolvedSearchParams.page), 10) : 1,
     limit: 10,
   };
-  return (
-    <div className="bg-background-light dark:bg-background-dark min-h-screen">
-      <main className="container mx-auto py-8 px-4">
-        {/* The new prominent search hero component */}
-        <JobSearchHero /> 
-        
-        <div className="mt-10 grid grid-cols-1 lg:grid-cols-4 gap-x-8 gap-y-6">
-          <div className="lg:col-span-1">
-            <div className="hidden lg:block">
-              {/* 3. PASS the locations as a prop */}
-              <JobFilterSidebar locations={uniqueLocations} />
-            </div>
-            <div className="block lg:hidden">
-              {/* 3. PASS the locations as a prop */}
-              <MobileFilterSheet locations={uniqueLocations} />
-            </div>
-          </div>
 
-          {/* Column 2: Job Listings & Pagination */}
-          <div className="lg:col-span-3">
-            <Suspense key={JSON.stringify(paramsForAction)} fallback={<LoadingJobList />}>
-              <JobResultsFetcher params={paramsForAction} />
-            </Suspense>
+  // Structured data for job search page
+  const jobsPageStructuredData = generateStructuredData({
+    "@type": "WebSite",
+    "name": "CareerCrew Job Search",
+    "description": "Search and browse thousands of job opportunities from top companies",
+    "url": "https://careercrewconsulting.com/jobs",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://careercrewconsulting.com/jobs?query={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  });
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jobsPageStructuredData) }}
+      />
+      <div className="bg-background-light dark:bg-background-dark min-h-screen">
+        <main className="container mx-auto py-8 px-4">
+          {/* The new prominent search hero component */}
+          <JobSearchHero />
+
+          <div className="mt-10 grid grid-cols-1 lg:grid-cols-4 gap-x-8 gap-y-6">
+            <div className="lg:col-span-1">
+              <div className="hidden lg:block">
+                {/* 3. PASS the locations as a prop */}
+                <JobFilterSidebar locations={uniqueLocations} />
+              </div>
+              <div className="block lg:hidden">
+                {/* 3. PASS the locations as a prop */}
+                <MobileFilterSheet locations={uniqueLocations} />
+              </div>
+            </div>
+
+            {/* Column 2: Job Listings & Pagination */}
+            <div className="lg:col-span-3">
+              <Suspense key={JSON.stringify(paramsForAction)} fallback={<LoadingJobList />}>
+                <JobResultsFetcher params={paramsForAction} />
+              </Suspense>
+            </div>
           </div>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </>
   );
 }
+
+//  standard way to type an object with arbitrary string keys in TypeScript.
+interface ResolvedSearchParams {
+  [key: string]: string | string[] | undefined;
+}
+
+// Define the props for this page, where searchParams is a Promise (Next.js 15)
+interface JobsPageProps {
+  searchParams: Promise<ResolvedSearchParams>;
+}
+
+
 
 // --- Helper Components for Data Fetching & State Display ---
 
