@@ -1,6 +1,11 @@
 // src/lib/seo.ts
 import { Metadata } from 'next';
 
+type TitleObject = {
+  absolute?: string;
+  template?: string;
+};
+
 export const BASE_URL = 'https://careercrewconsulting.com';
 
 export const defaultMetadata: Metadata = {
@@ -51,6 +56,15 @@ export const defaultMetadata: Metadata = {
 };
 
 export function createPageMetadata(overrides: Partial<Metadata> = {}): Metadata {
+  // Handle title correctly for both string and object cases
+  const baseTitleStr = overrides.title && typeof overrides.title === 'string'
+    ? overrides.title
+    : (overrides.title && typeof overrides.title === 'object' && 'absolute' in overrides.title)
+      ? (overrides.title as TitleObject).absolute
+      : defaultMetadata.title?.toString() || 'CareerCrew Consulting';
+
+  const fallbackTitle = defaultMetadata.title?.toString() || 'CareerCrew Consulting';
+
   return {
     ...defaultMetadata,
     ...overrides,
@@ -58,12 +72,12 @@ export function createPageMetadata(overrides: Partial<Metadata> = {}): Metadata 
     openGraph: {
       ...defaultMetadata.openGraph,
       ...overrides.openGraph,
-      title: overrides.openGraph?.title || overrides.title?.toString() || 'CareerCrew Consulting',
+      title: overrides.openGraph?.title || baseTitleStr || fallbackTitle,
     },
     twitter: {
       ...defaultMetadata.twitter,
       ...overrides.twitter,
-      title: overrides.twitter?.title || overrides.title?.toString() || 'CareerCrew Consulting',
+      title: overrides.twitter?.title || baseTitleStr || fallbackTitle,
     },
   };
 }

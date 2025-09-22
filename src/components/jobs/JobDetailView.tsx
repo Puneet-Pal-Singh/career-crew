@@ -38,7 +38,7 @@ export default function JobDetailView({ job, user }: JobDetailViewProps) {
       <div className="bg-muted/30 min-h-screen">
         {/* --- NEW COMPONENT: PREVIEW BANNER --- */}
         {isPreview && (
-          <div className="bg-yellow-100 text-yellow-800 sticky top-0 z-10 border-b">
+          <div className="bg-yellow-100 text-yellow-800 sticky top-16 z-10 border-b">
             <div className="container mx-auto max-w-5xl px-4 py-3">
               <Alert variant="default" className="border-yellow-300 bg-yellow-50">
                 <Eye className="h-4 w-4 !text-yellow-800" />

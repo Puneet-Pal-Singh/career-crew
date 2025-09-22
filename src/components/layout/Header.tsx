@@ -241,30 +241,30 @@ export default function Header({ user }: HeaderProps) {
           >
             <div className="px-4 pt-4 pb-6 space-y-3">
               {/* Mobile Navigation Links */}
-              <div className="space-y-2" role="menu">
+              <div className="space-y-2">
                 <Link
                   href="/jobs"
                   className="block px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  role="menuitem"
+                  // role="menuitem"
                   aria-label="Browse available jobs"
                 >
                   Jobs
                 </Link>
                 <Link
-                  href="/#features-for-seekers"
+                  href="/#for-job-seekers"
                   className="block px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  role="menuitem"
+                  // role="menuitem"
                   aria-label="Resources for job seekers"
                 >
                   For Job Seekers
                 </Link>
                 <Link
-                  href="/#features-for-companies"
+                  href="/#for-employers"
                   className="block px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  role="menuitem"
+                  // role="menuitem"
                   aria-label="Resources for employers"
                 >
                   For Companies
