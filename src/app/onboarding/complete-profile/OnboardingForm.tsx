@@ -17,7 +17,7 @@ import { updateOnboardingAction } from './updateOnboardingAction';
 
 const formSchema = z.object({
   fullName: z.string().min(2, 'Please enter your full name.'),
-  phone: z.string().optional(),
+  phone: z.string().min(10, 'A valid 10-digit phone number is required.'), // Removed .optional()
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -79,8 +79,8 @@ export default function OnboardingForm({ fullName, role, afterSignIn }: Onboardi
             {form.formState.errors.fullName && <p className="text-sm text-destructive">{form.formState.errors.fullName.message}</p>}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number (Optional)</Label>
-            <Input id="phone" type="tel" placeholder="+1 (555) 123-4567" {...form.register('phone')} disabled={isLoading} />
+            <Label htmlFor="phone">Phone Number *</Label> {/* Added asterisk */}
+            <Input id="phone" type="tel" {...form.register('phone')} required /> {/* Added required */}
             {form.formState.errors.phone && <p className="text-sm text-destructive">{form.formState.errors.phone.message}</p>}
           </div>
         </CardContent>

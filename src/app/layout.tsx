@@ -8,6 +8,9 @@ import ClientLayout from '@/components/layout/ClientLayout';
 import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
 import { defaultMetadata } from '@/lib/seo';
 
+// 1. Import the SpeedInsights component
+import { SpeedInsights } from "@vercel/speed-insights/next";
+
 // --- FIX: Force dynamic rendering for the entire app ---
 // This tells Next.js not to attempt static generation, as this layout
 // depends on request-time cookies to fetch the user session.
@@ -47,6 +50,9 @@ export default async function RootLayout({
           </ClientLayout>
           <Toaster />
         </AppProviders>
+
+        {/* 2. Add the SpeedInsights component here */}
+        <SpeedInsights />
       </body>
     </html>
   );
