@@ -67,12 +67,14 @@ export async function middleware(request: NextRequest) {
     }
     // --- END OF NEW LOGIC ---
 
-  } else {
-    // If not logged in, protect all dashboard routes
-    if (pathname.startsWith('/dashboard')) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-  }
+   } else {
+     // If not logged in, protect all dashboard routes
+     if (pathname.startsWith('/dashboard')) {
+       const loginUrl = new URL('/login', request.url);
+       loginUrl.searchParams.set('redirectTo', pathname);
+       return NextResponse.redirect(loginUrl);
+     }
+   }
 
   return response;
 }
