@@ -1,3 +1,4 @@
+// src/app/layout.tsx
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { GeistSans } from 'geist/font/sans';
@@ -32,10 +33,15 @@ export default async function RootLayout({
 }>) {
 
   let user = null;
+  let userRole = null; // 1. Create a variable for the role
+
   try {
     const supabase = await getSupabaseServerClient();
     const { data: { user: fetchedUser } } = await supabase.auth.getUser();
     user = fetchedUser;
+    if (user) {
+      userRole = user.app_metadata?.role; // 2. Extract the role
+    }
   } catch (error) {
     console.error('Failed to fetch user in root layout:', error);
     // The app will continue with user = null, showing the public state.
@@ -45,7 +51,7 @@ export default async function RootLayout({
     <html lang="en" className={`${inter.variable} ${geistSansVariable}`.trim()} suppressHydrationWarning>
       <body className="font-sans min-h-screen flex flex-col antialiased">
          <AppProviders>
-          <ClientLayout user={user}>
+          <ClientLayout user={user} userRole={userRole}>
             {children}
           </ClientLayout>
           <Toaster />

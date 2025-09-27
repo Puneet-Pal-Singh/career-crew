@@ -7,7 +7,7 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = { title: 'Complete Your Profile - CareerCrew' };
 
 type CompleteProfilePageProps = {
-  searchParams: Promise<{ intended_role?: string; }>;
+  searchParams: Promise<{ intended_role?: string; redirectTo?: string; }>;
 };
 
 export default async function CompleteProfilePage({ searchParams }: CompleteProfilePageProps) {
@@ -55,10 +55,10 @@ export default async function CompleteProfilePage({ searchParams }: CompleteProf
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
       <div className="w-full max-w-lg">
-        <OnboardingForm 
-          fullName={profile?.full_name || user.email || ''} 
+        <OnboardingForm
+          fullName={profile?.full_name || user.email || ''}
           role={finalRole}
-          afterSignIn={null}
+          afterSignIn={resolvedSearchParams.redirectTo || null}
         />
       </div>
     </div>

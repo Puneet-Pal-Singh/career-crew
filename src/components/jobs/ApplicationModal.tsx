@@ -15,6 +15,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { submitApplicationAction } from '@/app/actions/seeker/applications/submitApplicationAction';
 import { toast } from 'sonner';
 import { Upload, FileText, Send, Loader2, CheckCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { generateJobSlug } from '@/lib/utils';
 
 interface ApplicationModalProps {
   isOpen: boolean;
@@ -41,6 +43,7 @@ export default function ApplicationModal({ isOpen, onOpenChange, jobId, jobTitle
   const [isPending, startTransition] = useTransition();
   const [isSuccess, setIsSuccess] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof applicationSchema>>({
     resolver: zodResolver(applicationSchema),
@@ -63,17 +66,25 @@ export default function ApplicationModal({ isOpen, onOpenChange, jobId, jobTitle
     if (values.resumeFile) formData.append('resumeFile', values.resumeFile);
     if (values.coverLetter) formData.append('coverLetter', values.coverLetter);
 
-    startTransition(() => {
-      toast.info("Submitting application...");
-      submitApplicationAction(formData).then(result => {
-        if (result.success) {
-          toast.success("Application submitted successfully!");
-          setIsSuccess(true);
-        } else {
-          toast.error(result.error);
-        }
+      startTransition(() => {
+        toast.info("Submitting application...");
+        submitApplicationAction(formData).then(result => {
+          if (result.success) {
+            toast.success("Application submitted successfully!");
+            setIsSuccess(true);
+          } else {
+            if (result.error === "Authentication required. Please log in to apply.") {
+              // Redirect to login with the current job URL using proper slug format
+              const jobSlug = generateJobSlug(jobId, jobTitle);
+              const loginUrl = `/login?redirectTo=/jobs/${jobSlug}`;
+              router.push(loginUrl);
+              onOpenChange(false);
+            } else {
+              toast.error(result.error);
+            }
+          }
+        });
       });
-    });
   };
 
   const ModalContent = () => (

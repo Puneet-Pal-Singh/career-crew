@@ -32,6 +32,15 @@ export async function submitApplicationAction(formData: FormData): Promise<Actio
     return { success: false, error: "Authentication required. Please log in to apply." };
   }
 
+  // --- THE CRITICAL FIX: ROLE CHECK ---
+  // Read the user's role from their JWT.
+  const userRole = user.app_metadata?.role;
+
+  // If the user is not a JOB_SEEKER, block them immediately.
+  if (userRole !== 'JOB_SEEKER') {
+    return { success: false, error: "Only users registered as job seekers can apply for jobs." };
+  }
+
   // 2. Extract and validate data from FormData
   const jobId = formData.get('jobId') as string;
   const coverLetter = formData.get('coverLetter') as string | null;

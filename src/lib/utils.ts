@@ -78,6 +78,18 @@ export function isValidInternalPath(path: string | null | undefined): path is st
 }
 
 /**
+ * Gets the post-authentication redirect URL with proper validation and fallbacks.
+ * @param intendedRedirect - The URL to redirect to after auth
+ * @returns The validated redirect URL or default dashboard
+ */
+export function getPostAuthRedirectUrl(intendedRedirect?: string | null): string {
+  if (isValidInternalPath(intendedRedirect)) {
+    return intendedRedirect;
+  }
+  return '/dashboard';
+}
+
+/**
  * Formats an ISO date string into a human-readable relative time format (e.g., "X days ago").
  * @param {string} dateStr - The ISO date string to format.
  * @returns {string} The formatted, human-readable date string.

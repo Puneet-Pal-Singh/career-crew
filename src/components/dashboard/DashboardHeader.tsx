@@ -25,7 +25,8 @@ function MobileSidebarNav({ role, onLinkClick }: MobileSidebarNavProps){
 
   return (
     <nav className="grid gap-2 text-lg font-medium">
-      <Link href="/" className="flex items-center gap-2 text-lg font-semibold mb-4 border-b pb-4">
+      {/* This link now correctly points to /dashboard, the user's home base. */}
+      <Link href="/dashboard" className="flex items-center gap-2 text-lg font-semibold mb-4 border-b pb-4">
         CareerCrew
       </Link>
       {availableLinks.map((link) => {
