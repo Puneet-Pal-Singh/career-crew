@@ -1,5 +1,5 @@
 // src/lib/dashboardNavLinks.ts
-import { LayoutDashboard, ListChecks, PlusCircle, FileText, ShieldCheck, Users } from 'lucide-react';
+import { LayoutDashboard, ListChecks, PlusCircle, FileText, ShieldCheck, Users, Search } from 'lucide-react';
 import type { UserRole } from '@/types';
 
 // Define the structure for a dashboard navigation link
@@ -15,6 +15,7 @@ export const getNavLinksForRole = (role?: UserRole): DashboardNavLink[] => {
     case 'JOB_SEEKER':
       return [
         { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+        { href: "/jobs", label: "Browse Jobs", icon: Search },
         { href: "/dashboard/seeker/applications", label: "My Applications", icon: FileText },
       ];
     case 'EMPLOYER':

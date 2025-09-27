@@ -13,11 +13,14 @@ import ThemeToggleButton from '@/components/theme/ThemeToggleButton';
 import { useUserProfile } from '@/contexts/UserProfileContext';
 import { Menu, X, ChevronDown } from 'lucide-react';
 
+import type { UserRole } from '@/types';
+
 interface HeaderProps {
   user: User | null;
+  userRole: UserRole | null; // Add this line
 }
 
-export default function Header({ user }: HeaderProps) {
+export default function Header({ user, userRole }: HeaderProps) {
   const pathname = usePathname();
   const { userProfile } = useUserProfile();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -95,16 +98,16 @@ export default function Header({ user }: HeaderProps) {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
 
-          {/* Left Section: Logo with enhanced styling */}
-          <div className="flex-shrink-0">
-            <Link
-              href="/"
-              className={logoClasses}
-              aria-label="CareerCrew - Home"
-            >
-              CareerCrew
-            </Link>
-          </div>
+           {/* Left Section: Logo with enhanced styling */}
+           <div className="flex-shrink-0">
+             <Link
+               href={user ? "/dashboard" : "/"}
+               className={logoClasses}
+               aria-label={user ? "CareerCrew - Dashboard" : "CareerCrew - Home"}
+             >
+               CareerCrew
+             </Link>
+           </div>
 
           {/* Center Section: Navigation - NOW PROPERLY CENTERED */}
           <nav
@@ -129,16 +132,28 @@ export default function Header({ user }: HeaderProps) {
                 For Job Seekers
                 <span className={navLinkUnderline} aria-hidden="true"></span>
               </Link>
-              <Link
-                href="/#for-employers"
-                className={navLinkClasses}
-                aria-label="Resources for employers"
-              >
-                For Companies
-                <span className={navLinkUnderline} aria-hidden="true"></span>
-              </Link>
+              {/* // Only show this link if the user is not an employer */}
+              {userRole !== 'EMPLOYER' && (
+                <Link
+                  href="/#for-employers"
+                  className={navLinkClasses}
+                  aria-label="Resources for employers"
+                >
+                  For Companies
+                  <span className={navLinkUnderline} aria-hidden="true"></span>
+                </Link>
+              )}
             </div>
           </nav>
+
+          {/* NEW: Add a dedicated button for employers */}
+          {userRole === 'EMPLOYER' && (
+            <div className="hidden lg:block ml-4">
+              <Button asChild>
+                <Link href="/dashboard/post-job">Post a Job</Link>
+              </Button>
+            </div>
+          )}
 
           {/* Right Section: Auth controls with enhanced styling */}
           <div className="flex items-center space-x-2 sm:space-x-3">
@@ -260,16 +275,30 @@ export default function Header({ user }: HeaderProps) {
                 >
                   For Job Seekers
                 </Link>
-                <Link
-                  href="/#for-employers"
-                  className="block px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  // role="menuitem"
-                  aria-label="Resources for employers"
-                >
-                  For Companies
-                </Link>
+                {/* Conditionally render the "For Companies" link */}
+                {userRole !== 'EMPLOYER' && (
+                  <Link
+                    href="/#for-employers"
+                    className="block px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    // role="menuitem"
+                    aria-label="Resources for employers"
+                  >
+                    For Companies
+                  </Link>
+                )}
               </div>
+
+              {/* Add a "Post a Job" button for employers in the mobile menu */}
+              {userRole === 'EMPLOYER' && (
+                <div className="pt-4 border-t border-slate-200">
+                  <Button asChild className="w-full justify-center">
+                    <Link href="/dashboard/post-job" onClick={() => setIsMobileMenuOpen(false)}>
+                      Post a Job
+                    </Link>
+                  </Button>
+                </div>
+              )}
 
               {/* Mobile Auth Section */}
               {!user && (

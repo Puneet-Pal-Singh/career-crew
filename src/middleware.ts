@@ -2,6 +2,9 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+// 1. IMPORT the UserRole type from your central types file.
+import type { UserRole } from '@/types';
+
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next({
     request: { headers: request.headers },
@@ -24,15 +27,17 @@ export async function middleware(request: NextRequest) {
 
   const authRoutes = ['/login', '/signup/job-seeker', '/signup/employer'];
   const onboardingRoute = '/onboarding/complete-profile';
-  const isDashboardRoute = pathname.startsWith('/dashboard');
+  
+  // --- DEFINE Role-Specific Routes ---
+  const employerRoutes = ['/dashboard/post-job', '/dashboard/my-jobs'];
+  const seekerRoutes = ['/dashboard/seeker/applications']; // Add more seeker-only routes here in the future
+  const adminRoutes = ['/dashboard/admin'];
 
-  if (user) {
-    if (authRoutes.includes(pathname)) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
+   if (user) {
+     if (authRoutes.includes(pathname) || pathname === '/') {
+       return NextResponse.redirect(new URL('/dashboard', request.url));
+     }
     
-    // --- PERFORMANCE FIX: No database query! Read directly from JWT metadata. ---
-    // The optional chaining `?.` is important for backward compatibility with old users.
     const needsOnboarding = user.app_metadata?.onboarding_complete === false;
     
     if (needsOnboarding && pathname !== onboardingRoute) {
@@ -42,8 +47,29 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
+    // --- NEW: ROLE-BASED ACCESS CONTROL ---
+    const userRole = user.app_metadata?.role as UserRole;
+
+    // If a job seeker tries to access an employer route
+    if (userRole === 'JOB_SEEKER' && employerRoutes.some(route => pathname.startsWith(route))) {
+      // Redirect them to their main dashboard page
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+
+    // If an employer tries to access a seeker route
+    if (userRole === 'EMPLOYER' && seekerRoutes.some(route => pathname.startsWith(route))) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+    
+    // If a non-admin tries to access an admin route
+    if (userRole !== 'ADMIN' && adminRoutes.some(route => pathname.startsWith(route))) {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+    // --- END OF NEW LOGIC ---
+
   } else {
-    if (isDashboardRoute) {
+    // If not logged in, protect all dashboard routes
+    if (pathname.startsWith('/dashboard')) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }

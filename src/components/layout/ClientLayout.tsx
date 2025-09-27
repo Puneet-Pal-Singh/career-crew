@@ -6,12 +6,16 @@ import Header from './Header';
 import Footer from './Footer';
 import type { User } from '@supabase/supabase-js';
 
+// 1. IMPORT the UserRole type from your central types file.
+import type { UserRole } from '@/types';
+
 interface ClientLayoutProps {
   children: React.ReactNode;
   user: User | null;
+  userRole: UserRole | null;
 }
 
-export default function ClientLayout({ children, user }: ClientLayoutProps) {
+export default function ClientLayout({ children, user, userRole }: ClientLayoutProps) {
   const pathname = usePathname();
 
   // Define routes that should NOT have the public header/footer ---
@@ -39,7 +43,7 @@ export default function ClientLayout({ children, user }: ClientLayoutProps) {
   // For all other pages (e.g., '/', '/jobs'), render with the full public layout.
   return (
     <>
-      <Header user={user} />
+      <Header user={user} userRole={userRole}/>
       <main className="flex-grow">
         {children}
       </main>
