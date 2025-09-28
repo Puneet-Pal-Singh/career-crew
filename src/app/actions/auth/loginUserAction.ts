@@ -4,7 +4,7 @@
 import { z } from "zod";
 import { getSupabaseServerClient } from "@/lib/supabase/serverClient";
 // Import the security utility
-import { isValidInternalPath } from "@/lib/utils";
+import { getPostAuthRedirectUrl } from "@/lib/utils";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -27,8 +27,8 @@ export async function loginUserAction(input: z.infer<typeof loginSchema>) {
     return { success: false, error: { message: "Invalid email or password." } };
   }
 
-  // --- FIX: Use the new robust validation function ---
-  const finalRedirectTo = isValidInternalPath(redirectTo) ? redirectTo : '/dashboard';
+   // Use the centralized redirect URL function
+   const finalRedirectTo = getPostAuthRedirectUrl(redirectTo);
 
-  return { success: true, redirectTo: finalRedirectTo };
+   return { success: true, redirectTo: finalRedirectTo };
 }
