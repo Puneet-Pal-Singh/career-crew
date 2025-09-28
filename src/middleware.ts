@@ -76,14 +76,13 @@ export async function middleware(request: NextRequest) {
     }
     // --- END OF NEW LOGIC ---
 
-   } else {
-     // If not logged in, protect all dashboard routes
-     if (pathname.startsWith('/dashboard')) {
-       const loginUrl = new URL('/login', request.url);
-       loginUrl.searchParams.set('redirectTo', pathname);
-       return NextResponse.redirect(loginUrl);
-     }
-   }
+    } else {
+      // If not logged in, protect all dashboard routes
+      if (pathname.startsWith('/dashboard')) {
+        // Redirect to homepage instead of login with redirectTo to avoid issues after logout
+        return NextResponse.redirect(new URL('/', request.url));
+      }
+    }
 
   return response;
 }

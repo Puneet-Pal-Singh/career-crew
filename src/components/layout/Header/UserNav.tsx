@@ -33,9 +33,15 @@ export default function UserNav({ user, profile }: UserNavProps) {
   const handleSignOut = async () => {
     // Use the imported supabase client for the sign-out operation
     await supabase.auth.signOut();
-    router.push('/'); // Redirect to homepage after sign out
-    // Removed router.refresh() as it can cause issues with middleware redirects in production
-    // The AuthContext's onAuthStateChange will handle UI updates automatically
+    // Manually clear Supabase session from localStorage to ensure it's cleared
+    if (typeof window !== 'undefined') {
+      const keys = Object.keys(localStorage).filter(key => key.startsWith('supabase.auth'));
+      keys.forEach(key => localStorage.removeItem(key));
+    }
+    // Add a small delay to ensure session is cleared before navigation
+    await new Promise(resolve => setTimeout(resolve, 100));
+    // Use window.location.replace to navigate to the homepage without adding to history
+    window.location.replace('/');
   };
 
   // The logic is now much simpler. If this component renders, we know the user exists.
