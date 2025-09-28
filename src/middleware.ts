@@ -25,7 +25,7 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const { pathname } = request.nextUrl;
 
-  const authRoutes = ['/login', '/signup/job-seeker', '/signup/employer'];
+  const authRoutes = ['/login', '/jobs/signup', '/employer/signup'];
   const onboardingRoute = '/onboarding/complete-profile';
   
   // --- DEFINE Role-Specific Routes ---
@@ -48,22 +48,31 @@ export async function middleware(request: NextRequest) {
     }
 
     // --- NEW: ROLE-BASED ACCESS CONTROL ---
+    // --- THE FIX: Block access if the role is missing/unknown ---
     const userRole = user.app_metadata?.role as UserRole;
 
-    // If a job seeker tries to access an employer route
-    if (userRole === 'JOB_SEEKER' && employerRoutes.some(route => pathname.startsWith(route))) {
-      // Redirect them to their main dashboard page
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-
-    // If an employer tries to access a seeker route
-    if (userRole === 'EMPLOYER' && seekerRoutes.some(route => pathname.startsWith(route))) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-    
-    // If a non-admin tries to access an admin route
-    if (userRole !== 'ADMIN' && adminRoutes.some(route => pathname.startsWith(route))) {
+    if (!userRole) {
+      // If the user has no role, they should be sent back to the dashboard
+      // and not be allowed into any role-specific areas.
+      if (employerRoutes.some(route => pathname.startsWith(route)) || seekerRoutes.some(route => pathname.startsWith(route)) || adminRoutes.some(route => pathname.startsWith(route))) {
         return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+    } else {
+      // If a job seeker tries to access an employer route
+      if (userRole === 'JOB_SEEKER' && employerRoutes.some(route => pathname.startsWith(route))) {
+        // Redirect them to their main dashboard page
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+
+      // If an employer tries to access a seeker route
+      if (userRole === 'EMPLOYER' && seekerRoutes.some(route => pathname.startsWith(route))) {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+      
+      // If a non-admin tries to access an admin route
+      if (userRole !== 'ADMIN' && adminRoutes.some(route => pathname.startsWith(route))) {
+          return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
     }
     // --- END OF NEW LOGIC ---
 

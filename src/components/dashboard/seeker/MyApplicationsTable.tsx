@@ -95,6 +95,7 @@
 
 "use client";
 
+import React, { useMemo } from 'react';
 import type { ApplicationViewData, ApplicationStatusOption } from '@/types';
 import {
   Table,
@@ -108,6 +109,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent} from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { 
   Eye, 
   Calendar, 
@@ -157,13 +159,13 @@ const getStatusIcon = (status: ApplicationStatusOption) => {
 
 const getStatusColor = (status: ApplicationStatusOption): string => {
   switch (status) {
-    case 'SUBMITTED': return 'text-blue-600 dark:text-black';
-    case 'VIEWED': return 'text-purple-600 dark:text-black';
-    case 'INTERVIEWING': return 'text-orange-900 dark:text-black';
-    case 'OFFERED': return 'text-green-600 dark:text-black';
-    case 'HIRED': return 'text-emerald-600 dark:text-black';
-    case 'REJECTED': return 'text-red-600 dark:text-black';
-    default: return 'text-gray-600 dark:text-black';
+    case "SUBMITTED": return "text-blue-600 dark:text-blue-300";
+    case "VIEWED": return "text-purple-600 dark:text-purple-300";
+    case "INTERVIEWING": return "text-orange-600 dark:text-orange-300";
+    case "OFFERED": return "text-green-600 dark:text-green-300";
+    case "HIRED": return "text-emerald-600 dark:text-emerald-300";
+    case "REJECTED": return "text-red-600 dark:text-red-400";
+    default: return "text-gray-600 dark:text-gray-300";
   }
 };
 
@@ -188,6 +190,18 @@ export default function MyApplicationsTable({ applications }: MyApplicationsTabl
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<ApplicationStatusOption | 'ALL'>('ALL');
 
+  const stats = useMemo(() => {
+    const total = applications.length;
+    const pending = applications.filter(app => ['SUBMITTED', 'VIEWED'].includes(app.applicationStatus)).length;
+    const interviewing = applications.filter(app => app.applicationStatus === 'INTERVIEWING').length;
+    const success = applications.filter(app => ['OFFERED', 'HIRED'].includes(app.applicationStatus)).length;
+
+    // Calculate the success rate, handling the case where total is 0 to avoid NaN
+    const successRate = total > 0 ? Math.round((success / total) * 100) : 0;
+
+    return { total, pending, interviewing, success, successRate };
+  }, [applications]); // The dependency array: this calculation only re-runs if `applications` changes
+  
   if (!applications || applications.length === 0) {
     return (
       <div className="min-h-screen p-6 lg:p-8">
@@ -239,12 +253,12 @@ export default function MyApplicationsTable({ applications }: MyApplicationsTabl
     'ALL', 'SUBMITTED', 'VIEWED', 'INTERVIEWING', 'OFFERED', 'HIRED', 'REJECTED'
   ];
 
-  const stats = {
-    total: applications.length,
-    pending: applications.filter(app => ['SUBMITTED', 'VIEWED'].includes(app.applicationStatus)).length,
-    interviewing: applications.filter(app => app.applicationStatus === 'INTERVIEWING').length,
-    success: applications.filter(app => ['OFFERED', 'HIRED'].includes(app.applicationStatus)).length
-  };
+  // const stats = {
+  //   total: applications.length,
+  //   pending: applications.filter(app => ['SUBMITTED', 'VIEWED'].includes(app.applicationStatus)).length,
+  //   interviewing: applications.filter(app => app.applicationStatus === 'INTERVIEWING').length,
+  //   success: applications.filter(app => ['OFFERED', 'HIRED'].includes(app.applicationStatus)).length
+  // };
 
   return (
     <div className="min-h-screen p-6 lg:p-8">
@@ -266,6 +280,9 @@ export default function MyApplicationsTable({ applications }: MyApplicationsTabl
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <div className="flex-1 max-w-md w-full">
             <div className="relative">
+              <Label htmlFor="applications-search" className="sr-only">
+                Search applications
+              </Label>
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
                 type="text"
@@ -278,14 +295,19 @@ export default function MyApplicationsTable({ applications }: MyApplicationsTabl
           </div>
           
           <div className="w-full sm:w-auto">
+            <Label htmlFor="status-filter" className="sr-only">
+              Filter by status
+            </Label>
             <select
+              id="status-filter"
+              aria-label="Filter applications by status"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as ApplicationStatusOption | 'ALL')}
               className="w-full sm:w-auto min-w-[140px] px-4 py-3 bg-background border border-border/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 text-sm transition-colors dark:bg-background/80"
             >
               {statusOptions.map(status => (
                 <option key={status} value={status}>
-                  {status === 'ALL' ? 'All Status' : formatApplicationStatusText(status)}
+                  {status === 'ALL' ? 'All Statuses' : formatApplicationStatusText(status)}
                 </option>
               ))}
             </select>
@@ -356,8 +378,13 @@ export default function MyApplicationsTable({ applications }: MyApplicationsTabl
                     Success Rate
                 </p>
                 <p className="text-2xl font-bold text-green-900 dark:text-green-100">
-                    {stats.success}
+                    {/* {stats.success} */}
+                    {stats.successRate}%
                 </p>
+                {/* (Optional but recommended) Add the raw numbers as helper text */}
+                {/* <p className="text-xs text-muted-foreground">
+                  {stats.success} of {stats.total} successful
+                </p> */}
                 </div>
                 <div className="w-10 h-10 lg:w-12 lg:h-12 bg-green-100 dark:bg-green-900/50 rounded-lg flex items-center justify-center">
                 <CheckCircle className="w-5 h-5 lg:w-6 lg:h-6 text-green-600 dark:text-green-400" />
