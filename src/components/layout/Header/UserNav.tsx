@@ -3,7 +3,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+
 import type { User } from '@supabase/supabase-js';
 import type { UserProfile } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -28,8 +28,6 @@ interface UserNavProps {
 
 // FIX: The component now receives props and has NO internal data fetching hooks.
 export default function UserNav({ user, profile }: UserNavProps) {
-  const router = useRouter();
-
   const handleSignOut = async () => {
     // Use the imported supabase client for the sign-out operation
     await supabase.auth.signOut();
