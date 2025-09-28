@@ -34,7 +34,8 @@ export default function UserNav({ user, profile }: UserNavProps) {
     // Use the imported supabase client for the sign-out operation
     await supabase.auth.signOut();
     router.push('/'); // Redirect to homepage after sign out
-    router.refresh(); // Crucial for re-validating server components
+    // Removed router.refresh() as it can cause issues with middleware redirects in production
+    // The AuthContext's onAuthStateChange will handle UI updates automatically
   };
 
   // The logic is now much simpler. If this component renders, we know the user exists.
