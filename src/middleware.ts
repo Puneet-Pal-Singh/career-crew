@@ -29,7 +29,7 @@ export async function middleware(request: NextRequest) {
   const onboardingRoute = '/onboarding/complete-profile';
   
   // --- DEFINE Role-Specific Routes ---
-  const employerRoutes = ['/dashboard/post-job', '/dashboard/my-jobs'];
+  const employerRoutes = ['/dashboard/post-job', '/dashboard/my-jobs', '/dashboard/applications'];
   const seekerRoutes = ['/dashboard/seeker/applications']; // Add more seeker-only routes here in the future
   const adminRoutes = ['/dashboard/admin'];
 

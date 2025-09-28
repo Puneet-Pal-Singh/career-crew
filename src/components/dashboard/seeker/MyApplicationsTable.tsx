@@ -201,7 +201,7 @@ export default function MyApplicationsTable({ applications }: MyApplicationsTabl
 
     return { total, pending, interviewing, success, successRate };
   }, [applications]); // The dependency array: this calculation only re-runs if `applications` changes
-  
+
   if (!applications || applications.length === 0) {
     return (
       <div className="min-h-screen p-6 lg:p-8">
@@ -285,6 +285,7 @@ export default function MyApplicationsTable({ applications }: MyApplicationsTabl
               </Label>
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
+                id="applications-search"
                 type="text"
                 placeholder="Search by job title or company..."
                 className="pl-10 bg-background/50 dark:bg-background/80 border-border/50 focus:border-primary/50 focus:bg-background transition-colors h-11"
@@ -414,7 +415,12 @@ export default function MyApplicationsTable({ applications }: MyApplicationsTabl
                       </div>
                     </div>
                     <Button variant="ghost" size="sm" asChild className="opacity-0 group-hover:opacity-100 transition-opacity p-2">
-                      <Link href={`/jobs/${generateJobSlug(app.jobId, app.jobTitle)}`} target="_blank" rel="noopener noreferrer">
+                      <Link
+                       href={`/jobs/${generateJobSlug(app.jobId, app.jobTitle)}`}
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       aria-label={`Open "${app.jobTitle}" job in a new tab`}
+                      >
                         <ExternalLink className="w-4 h-4" />
                       </Link>
                     </Button>
