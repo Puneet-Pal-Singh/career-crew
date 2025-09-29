@@ -51,12 +51,18 @@ export default function UserNav({ user, profile }: UserNavProps) {
         .forEach(key => localStorage.removeItem(key));
     }
 
-    // Add a small delay to ensure session is cleared before navigation
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // // Add a small delay to ensure session is cleared before navigation
+    // await new Promise(resolve => setTimeout(resolve, 100));
     
-    // ✅ UX IMPROVEMENT: Use router.replace for a smoother, client-side navigation
-    // that also prevents the user from clicking "back" to a protected page.
-    router.replace('/');
+    // // ✅ UX IMPROVEMENT: Use router.replace for a smoother, client-side navigation
+    // // that also prevents the user from clicking "back" to a protected page.
+    // router.replace('/');
+
+    // ✅ THE DEFINITIVE FIX:
+    // Instead of a soft client-side navigation, we trigger a server data refresh.
+    // This forces the root layout to re-run its `getUser()` check, which will
+    // now correctly find no session, and the UI will update to the logged-out state.
+    router.refresh();
   };
 
   // The logic is now much simpler. If this component renders, we know the user exists.
