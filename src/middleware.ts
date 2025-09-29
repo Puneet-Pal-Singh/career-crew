@@ -31,8 +31,8 @@ export async function middleware(request: NextRequest) {
   // --- DEFINE Role-Specific Routes ---
   const employerRoutes = ['/dashboard/post-job', '/dashboard/my-jobs', '/dashboard/applications'];
   const seekerRoutes = ['/dashboard/seeker/applications']; // Add more seeker-only routes here in the future
-  // ✅ THE FIX: Add a trailing slash to make the path matching more specific and robust.
-  const adminRoutes = ['/dashboard/admin/'];
+  
+  const adminRoutes = ['/dashboard/admin'];
 
   if (user) {
     if (authRoutes.includes(pathname) || pathname === '/') {
