@@ -31,12 +31,13 @@ export async function middleware(request: NextRequest) {
   // --- DEFINE Role-Specific Routes ---
   const employerRoutes = ['/dashboard/post-job', '/dashboard/my-jobs', '/dashboard/applications'];
   const seekerRoutes = ['/dashboard/seeker/applications']; // Add more seeker-only routes here in the future
+  
   const adminRoutes = ['/dashboard/admin'];
 
-   if (user) {
-     if (authRoutes.includes(pathname) || pathname === '/') {
-       return NextResponse.redirect(new URL('/dashboard', request.url));
-     }
+  if (user) {
+    if (authRoutes.includes(pathname) || pathname === '/') {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
     
     const needsOnboarding = user.app_metadata?.onboarding_complete === false;
     
@@ -76,14 +77,13 @@ export async function middleware(request: NextRequest) {
     }
     // --- END OF NEW LOGIC ---
 
-   } else {
-     // If not logged in, protect all dashboard routes
-     if (pathname.startsWith('/dashboard')) {
-       const loginUrl = new URL('/login', request.url);
-       loginUrl.searchParams.set('redirectTo', pathname);
-       return NextResponse.redirect(loginUrl);
-     }
-   }
+    } else {
+      // If not logged in, protect all dashboard routes
+      if (pathname.startsWith('/dashboard')) {
+        // Redirect to homepage instead of login with redirectTo to avoid issues after logout
+        return NextResponse.redirect(new URL('/', request.url));
+      }
+    }
 
   return response;
 }

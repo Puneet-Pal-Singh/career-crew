@@ -1,3 +1,4 @@
+// src/app/auth/callback/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
 import { getPostAuthRedirectUrl } from '@/lib/utils';
