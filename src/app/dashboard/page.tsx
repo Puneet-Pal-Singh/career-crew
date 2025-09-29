@@ -10,8 +10,6 @@ import { getEmployerDashboardStatsAction } from '@/app/actions/employer/stats/ge
 import { getJobPerformanceAction } from '@/app/actions/employer/stats/getJobPerformanceAction';
 import { getEmployerRecentApplicationsAction } from '@/app/actions/employer/applications/getEmployerRecentApplicationsAction';
 
-
-
 export default async function DashboardPage() {
   const supabase = await getSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();

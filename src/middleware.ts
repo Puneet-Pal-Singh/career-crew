@@ -31,12 +31,13 @@ export async function middleware(request: NextRequest) {
   // --- DEFINE Role-Specific Routes ---
   const employerRoutes = ['/dashboard/post-job', '/dashboard/my-jobs', '/dashboard/applications'];
   const seekerRoutes = ['/dashboard/seeker/applications']; // Add more seeker-only routes here in the future
-  const adminRoutes = ['/dashboard/admin'];
+  // ✅ THE FIX: Add a trailing slash to make the path matching more specific and robust.
+  const adminRoutes = ['/dashboard/admin/'];
 
-   if (user) {
-     if (authRoutes.includes(pathname) || pathname === '/') {
-       return NextResponse.redirect(new URL('/dashboard', request.url));
-     }
+  if (user) {
+    if (authRoutes.includes(pathname) || pathname === '/') {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
     
     const needsOnboarding = user.app_metadata?.onboarding_complete === false;
     
