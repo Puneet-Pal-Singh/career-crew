@@ -3,6 +3,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation'; 
 
 import type { User } from '@supabase/supabase-js';
 import type { UserProfile } from '@/types';
@@ -28,18 +29,34 @@ interface UserNavProps {
 
 // FIX: The component now receives props and has NO internal data fetching hooks.
 export default function UserNav({ user, profile }: UserNavProps) {
+  const router = useRouter(); // Initialize the router
+
   const handleSignOut = async () => {
+
     // Use the imported supabase client for the sign-out operation
     await supabase.auth.signOut();
+
     // Manually clear Supabase session from localStorage to ensure it's cleared
+    // This logic correctly finds and removes the new Supabase v2 session keys.
     if (typeof window !== 'undefined') {
-      const keys = Object.keys(localStorage).filter(key => key.startsWith('supabase.auth'));
-      keys.forEach(key => localStorage.removeItem(key));
+      // 1. Parse the project reference from the Supabase URL
+      const projectRef = process.env.NEXT_PUBLIC_SUPABASE_URL?.match(/^https:\/\/([a-z0-9]+)\.supabase\./)?.[1];
+      
+      // 2. Construct the storage key prefix (e.g., "sb-...")
+      const storagePrefix = projectRef ? `sb-${projectRef}-` : 'sb-';
+
+      // 3. Filter localStorage for keys with this prefix and remove them
+      Object.keys(localStorage)
+        .filter(key => key.startsWith(storagePrefix))
+        .forEach(key => localStorage.removeItem(key));
     }
+
     // Add a small delay to ensure session is cleared before navigation
     await new Promise(resolve => setTimeout(resolve, 100));
-    // Use window.location.replace to navigate to the homepage without adding to history
-    window.location.replace('/');
+    
+    // ✅ UX IMPROVEMENT: Use router.replace for a smoother, client-side navigation
+    // that also prevents the user from clicking "back" to a protected page.
+    router.replace('/');
   };
 
   // The logic is now much simpler. If this component renders, we know the user exists.
