@@ -11,6 +11,8 @@ import FinalCTASection from '@/components/landing/final-cta';
 import { getTestimonialsData } from '@/lib/data/landingContent';
 import { createPageMetadata } from '@/lib/seo';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = createPageMetadata({
   title: 'Home',
   description: "CareerCrew Consulting connects top talent with innovative companies. Whether you're hiring or looking for your next role, we're here to help you succeed. 500+ companies trust us with 10,000+ successful placements.",

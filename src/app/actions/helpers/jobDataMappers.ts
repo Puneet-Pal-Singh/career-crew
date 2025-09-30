@@ -56,6 +56,7 @@ export const mapRawJobToJobCardData = (rawJob: RawJobDataForCard): JobCardData =
     // salary: salaryDisplay,
     salaryMin: rawJob.salary_min,
     salaryMax: rawJob.salary_max,
+    salaryCurrency: rawJob.salary_currency,
     // type: rawJob.job_type || undefined, 
     jobType: jobTypeLabelMap.get(rawJob.job_type as JobTypeOption) || rawJob.job_type,
     postedDate: rawJob.created_at,

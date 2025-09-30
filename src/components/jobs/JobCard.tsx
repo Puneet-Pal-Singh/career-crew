@@ -5,15 +5,31 @@ import type { JobCardData } from '@/types';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { MapPin, DollarSign, Clock, Star } from 'lucide-react';
+import { MapPin, Clock, Star } from 'lucide-react'; 
 import { generateJobSlug, formatDatePosted } from '@/lib/utils';
 
-// Helper to format salary into the "$120k - $160k" format
-const formatSalary = (min?: number | null, max?: number | null): string | null => {
+// ✅ NEW: Import our new dynamic currency icon component
+import CurrencyIcon from '@/components/shared/CurrencyIcon';
+
+// Helper to get currency symbol (No changes needed here)
+const getCurrencySymbol = (currencyCode?: string | null): string => {
+  switch (currencyCode?.toUpperCase()) {
+    case 'USD': return '$';
+    case 'INR': return '₹';
+    case 'EUR': return '€';
+    case 'GBP': return '£';
+    case 'JPY': return '¥';
+    default: return '$';
+  }
+};
+
+// Helper to format salary (No changes needed here)
+const formatSalary = (min?: number | null, max?: number | null, currency?: string | null): string | null => {
   if (!min || !max) return null;
-  const minK = Math.round(min / 1000);
-  const maxK = Math.round(max / 1000);
-  return `$${minK}k - $${maxK}k`;
+  const symbol = getCurrencySymbol(currency);
+  const minFormatted = Math.round(min / 1000);
+  const maxFormatted = Math.round(max / 1000);
+  return `${symbol}${minFormatted}k - ${symbol}${maxFormatted}k`;
 };
 
 interface JobCardProps {
@@ -23,7 +39,9 @@ interface JobCardProps {
 
 export default function JobCard({ job, featured = false }: JobCardProps) {
   const slug = generateJobSlug(job.id, job.title);
-  const salaryDisplay = formatSalary(job.salaryMin, job.salaryMax);
+
+  // Pass the job's currency to the formatting function.
+  const salaryDisplay = formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency);
 
   return (
     <motion.div
@@ -41,7 +59,6 @@ export default function JobCard({ job, featured = false }: JobCardProps) {
           ${featured ? 'ring-2 ring-primary/20 dark:ring-primary-dark/20' : ''}
           backdrop-blur-sm h-full flex flex-col
         `}>
-          {/* Featured Badge */}
           {featured && (
             <div className="absolute top-3 right-3 z-10">
               <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-primary to-secondary dark:from-primary-dark dark:to-secondary-dark text-white text-xs font-medium">
@@ -51,11 +68,9 @@ export default function JobCard({ job, featured = false }: JobCardProps) {
             </div>
           )}
 
-          {/* Background Gradient on Hover */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 dark:from-primary-dark/5 dark:to-secondary-dark/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
           <div className="relative p-4 flex flex-col h-full">
-            {/* Header Section */}
             <div className="flex items-start gap-3 mb-3">
               <div className="relative flex-shrink-0">
                 <div className="w-10 h-10 rounded-lg border-2 border-border-light dark:border-border-dark bg-white dark:bg-slate-800 flex items-center justify-center overflow-hidden group-hover:border-primary/30 dark:group-hover:border-primary-dark/30 transition-colors duration-300">
@@ -67,7 +82,6 @@ export default function JobCard({ job, featured = false }: JobCardProps) {
                     className="rounded object-contain"
                   />
                 </div>
-                {/* Company logo glow effect on hover */}
                 <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20 dark:from-primary-dark/20 dark:to-secondary-dark/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 blur-sm" />
               </div>
 
@@ -83,7 +97,6 @@ export default function JobCard({ job, featured = false }: JobCardProps) {
               </div>
             </div>
 
-            {/* Job Details */}
             <div className="space-y-2 mb-3 flex-1">
               <div className="flex items-center gap-2 text-sm">
                 <div className="flex items-center gap-1 text-muted-foreground">
@@ -97,15 +110,19 @@ export default function JobCard({ job, featured = false }: JobCardProps) {
                 )}
               </div>
 
+              {/* ✅ FINAL FIX: Use the new dynamic CurrencyIcon component */}
               {salaryDisplay && (
                 <div className="flex items-center gap-1 text-sm">
-                  <DollarSign size={14} className="text-green-600 dark:text-green-400 flex-shrink-0" />
-                  <span className="font-semibold text-green-600 dark:text-green-400">{salaryDisplay}</span>
+                  {/* The new component dynamically renders the correct icon */}
+                  <CurrencyIcon currencyCode={job.salaryCurrency} />
+                  <span className="font-semibold text-green-600 dark:text-green-400">
+                    {/* The text now only needs to show the numbers, as the icon handles the symbol */}
+                    {`${Math.round((job.salaryMin || 0) / 1000)}k - ${Math.round((job.salaryMax || 0) / 1000)}k`}
+                  </span>
                 </div>
               )}
             </div>
 
-            {/* Skills Tags */}
             {job.tags && job.tags.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-auto">
                 {job.tags.slice(0, 3).map((tag, idx) => (
@@ -124,7 +141,6 @@ export default function JobCard({ job, featured = false }: JobCardProps) {
               </div>
             )}
 
-            {/* Hover Action Indicator */}
             <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <div className="w-6 h-6 rounded-full bg-primary dark:bg-primary-dark flex items-center justify-center text-white shadow-lg">
                 <motion.div
