@@ -45,9 +45,9 @@ export async function getRecentJobs(): Promise<JobCardData[]> {
       return [];
     }
     
-    // const typedRawJobs = rawJobsData as RawJobDataForCard[]; // Assume structure matches
-    const typedRawJobs = rawJobsData as unknown as RawJobDataForCard[]; // Cast safely
-    const formattedJobs = typedRawJobs.map(mapRawJobToJobCardData);
+    // `rawJobsData` is now guaranteed to be `RawJobDataForCard[]`, so no unsafe casting is needed.
+    const formattedJobs = rawJobsData.map(mapRawJobToJobCardData);
+    return formattedJobs;
 
     // console.log(`Server Action (${actionName}): Fetched ${formattedJobs.length} job(s).`);
     return formattedJobs;
