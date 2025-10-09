@@ -1,3 +1,4 @@
+// src/components/auth/UpdatePasswordForm.tsx
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -33,15 +34,27 @@ export default function UpdatePasswordForm() {
   const [success, setSuccess] = useState<boolean>(false);
   const router = useRouter();
 
+  // ✅ THE DEFINITIVE FIX: Rewritten useEffect logic
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY') {
-        setSessionStatus(session ? 'AUTHENTICATED' : 'UNAUTHENTICATED');
-        if (!session) {
-          router.replace('/login?error=invalid_token');
-        }
+      // This event fires specifically when a password recovery token is detected in the URL.
+      // This is our positive confirmation that the user is allowed to be here.
+      if (event === 'PASSWORD_RECOVERY') {
+        setSessionStatus('AUTHENTICATED');
+      } 
+      // This event fires when the initial check is complete. If there's no session at this point,
+      // it means no valid token was found in the URL. NOW it is safe to redirect.
+      else if (event === 'INITIAL_SESSION' && !session) {
+        setSessionStatus('UNAUTHENTICATED');
+        router.replace('/login?error=invalid_token');
+      }
+      // Edge case: A fully signed-in user somehow lands on this page.
+      // We should send them to their dashboard instead of letting them reset their password.
+      else if (event === 'SIGNED_IN') {
+        router.replace('/dashboard');
       }
     });
+
     return () => subscription.unsubscribe();
   }, [router]);
 
@@ -72,9 +85,7 @@ export default function UpdatePasswordForm() {
 
   if (success) {
     const handleContinueToLogin = async () => {
-      // 1. Sign the user out, destroying their temporary session.
       await supabase.auth.signOut();
-      // 2. Now that the user is logged out, push to the login page.
       router.push('/login');
     };
 
@@ -98,7 +109,8 @@ export default function UpdatePasswordForm() {
     );
   }
 
-  return (
+  // Only render the form if the session status is 'AUTHENTICATED'
+  return sessionStatus === 'AUTHENTICATED' ? (
     <Card>
       <CardHeader className="text-center">
         <CardTitle className="text-2xl">Set new password</CardTitle>
@@ -143,5 +155,5 @@ export default function UpdatePasswordForm() {
         </Form>
       </CardContent>
     </Card>
-  );
+  ) : null; // Render nothing if unauthenticated, as the redirect is handled in useEffect
 }
