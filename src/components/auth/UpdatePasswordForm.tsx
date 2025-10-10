@@ -1,7 +1,6 @@
-// src/components/auth/UpdatePasswordForm.tsx
 "use client";
 
-import { useState, useEffect, useRef } from 'react'; // Import useRef
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -34,56 +33,68 @@ export default function UpdatePasswordForm() {
   const [success, setSuccess] = useState<boolean>(false);
   const router = useRouter();
   
-  // Use a ref to hold the timeout ID so we can clear it.
   const timeoutId = useRef<NodeJS.Timeout | null>(null);
+  const hasProcessedHash = useRef(false); // Track if we've processed the hash
 
   useEffect(() => {
-    // ✅ THE DEFINITIVE FIX: Guard against premature redirects.
-    // 1. First, check if the URL hash looks like a recovery link.
-    const hasRecoveryHash = typeof window !== 'undefined' && (
-      window.location.hash.includes('type=recovery') || 
-      window.location.hash.includes('access_token')
-    );
+    let isRecoveryFlow = false;
+    
+    // Check if this looks like a recovery link
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash;
+      isRecoveryFlow = hash.includes('type=recovery') || hash.includes('access_token');
+    }
 
-    // 2. Set up the auth state listener.
+    // Set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      // If the PASSWORD_RECOVERY event arrives, the token is valid.
+      console.log('Auth event:', event, 'Has session:', !!session); // Debug log
+
       if (event === 'PASSWORD_RECOVERY') {
-        if (timeoutId.current) clearTimeout(timeoutId.current); // Clear the fallback timeout
+        if (timeoutId.current) clearTimeout(timeoutId.current);
+        hasProcessedHash.current = true;
         setSessionStatus('AUTHENTICATED');
       } 
-      // If a user is already fully signed in, redirect them away.
-      else if (event === 'SIGNED_IN') {
+      // This handles a fully signed-in user who might navigate here.
+      // NOTE: This event might not always fire on page load, making the INITIAL_SESSION check critical.
+      else if (event === 'SIGNED_IN' && !hasProcessedHash.current) {
         if (timeoutId.current) clearTimeout(timeoutId.current);
         router.replace('/dashboard');
       }
-      // This event fires when the initial check is done.
-      else if (event === 'INITIAL_SESSION' && !session) {
-        // We ONLY redirect if the URL *never* had a recovery hash to begin with.
-        if (!hasRecoveryHash) {
+      else if (event === 'INITIAL_SESSION') {
+        // ✅ THE DEFINITIVE FIX (from Coderabbit):
+        // First, handle the case where a user is already logged in.
+        if (!isRecoveryFlow && session) {
+          if (timeoutId.current) clearTimeout(timeoutId.current);
+          router.replace('/dashboard');
+          return; // Exit the handler early
+        }
+        
+        // Second, handle the case where there's no session and it's NOT a recovery attempt.
+        if (!isRecoveryFlow && !session) {
           setSessionStatus('UNAUTHENTICATED');
           router.replace('/login?error=invalid_token');
         }
-        // If it DID have a hash, we do nothing and let the timeout handle the invalid/expired case.
+        // If it IS a recovery flow, we do nothing and wait for the PASSWORD_RECOVERY event or the timeout.
       }
     });
 
-    // 3. If it looks like a recovery link, start a fallback timer.
-    // If PASSWORD_RECOVERY doesn't fire within ~3 seconds, the token is likely invalid or expired.
-    if (hasRecoveryHash) {
+    // Set fallback timeout only for recovery flows
+    if (isRecoveryFlow) {
       timeoutId.current = setTimeout(() => {
-        setSessionStatus('UNAUTHENTICATED');
-        router.replace('/login?error=expired_token');
-      }, 3000); // 3-second fallback
+        if (!hasProcessedHash.current) {
+          console.log('Timeout: No PASSWORD_RECOVERY event received'); // Debug log
+          setSessionStatus('UNAUTHENTICATED');
+          router.replace('/login?error=expired_token');
+        }
+      }, 5000); // Increased to 5 seconds
     }
 
-    // 4. Cleanup on unmount.
+    // Cleanup
     return () => {
       subscription.unsubscribe();
       if (timeoutId.current) clearTimeout(timeoutId.current);
     };
   }, [router]);
-
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -101,8 +112,6 @@ export default function UpdatePasswordForm() {
       setIsLoading(false);
     }
   };
-
-  // ... (rest of the component's JSX remains the same) ...
 
   if (sessionStatus === 'LOADING') {
     return (
