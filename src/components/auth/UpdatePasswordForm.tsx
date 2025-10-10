@@ -50,23 +50,31 @@ export default function UpdatePasswordForm() {
       console.log('Auth event:', event, 'Has session:', !!session); // Debug log
 
       if (event === 'PASSWORD_RECOVERY') {
-        // Valid recovery token detected
         if (timeoutId.current) clearTimeout(timeoutId.current);
         hasProcessedHash.current = true;
         setSessionStatus('AUTHENTICATED');
       } 
+      // This handles a fully signed-in user who might navigate here.
+      // NOTE: This event might not always fire on page load, making the INITIAL_SESSION check critical.
       else if (event === 'SIGNED_IN' && !hasProcessedHash.current) {
-        // User is already logged in (not from password recovery)
         if (timeoutId.current) clearTimeout(timeoutId.current);
         router.replace('/dashboard');
       }
       else if (event === 'INITIAL_SESSION') {
-        // Only handle INITIAL_SESSION if it's NOT a recovery flow
+        // ✅ THE DEFINITIVE FIX (from Coderabbit):
+        // First, handle the case where a user is already logged in.
+        if (!isRecoveryFlow && session) {
+          if (timeoutId.current) clearTimeout(timeoutId.current);
+          router.replace('/dashboard');
+          return; // Exit the handler early
+        }
+        
+        // Second, handle the case where there's no session and it's NOT a recovery attempt.
         if (!isRecoveryFlow && !session) {
           setSessionStatus('UNAUTHENTICATED');
           router.replace('/login?error=invalid_token');
         }
-        // If it IS a recovery flow, we wait for PASSWORD_RECOVERY event
+        // If it IS a recovery flow, we do nothing and wait for the PASSWORD_RECOVERY event or the timeout.
       }
     });
 
