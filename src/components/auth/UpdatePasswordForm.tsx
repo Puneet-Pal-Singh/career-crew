@@ -1,6 +1,7 @@
+// src/components/auth/UpdatePasswordForm.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react'; // Import useRef
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,18 +33,57 @@ export default function UpdatePasswordForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
   const router = useRouter();
+  
+  // Use a ref to hold the timeout ID so we can clear it.
+  const timeoutId = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    // ✅ THE DEFINITIVE FIX: Guard against premature redirects.
+    // 1. First, check if the URL hash looks like a recovery link.
+    const hasRecoveryHash = typeof window !== 'undefined' && (
+      window.location.hash.includes('type=recovery') || 
+      window.location.hash.includes('access_token')
+    );
+
+    // 2. Set up the auth state listener.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY') {
-        setSessionStatus(session ? 'AUTHENTICATED' : 'UNAUTHENTICATED');
-        if (!session) {
+      // If the PASSWORD_RECOVERY event arrives, the token is valid.
+      if (event === 'PASSWORD_RECOVERY') {
+        if (timeoutId.current) clearTimeout(timeoutId.current); // Clear the fallback timeout
+        setSessionStatus('AUTHENTICATED');
+      } 
+      // If a user is already fully signed in, redirect them away.
+      else if (event === 'SIGNED_IN') {
+        if (timeoutId.current) clearTimeout(timeoutId.current);
+        router.replace('/dashboard');
+      }
+      // This event fires when the initial check is done.
+      else if (event === 'INITIAL_SESSION' && !session) {
+        // We ONLY redirect if the URL *never* had a recovery hash to begin with.
+        if (!hasRecoveryHash) {
+          setSessionStatus('UNAUTHENTICATED');
           router.replace('/login?error=invalid_token');
         }
+        // If it DID have a hash, we do nothing and let the timeout handle the invalid/expired case.
       }
     });
-    return () => subscription.unsubscribe();
+
+    // 3. If it looks like a recovery link, start a fallback timer.
+    // If PASSWORD_RECOVERY doesn't fire within ~3 seconds, the token is likely invalid or expired.
+    if (hasRecoveryHash) {
+      timeoutId.current = setTimeout(() => {
+        setSessionStatus('UNAUTHENTICATED');
+        router.replace('/login?error=expired_token');
+      }, 3000); // 3-second fallback
+    }
+
+    // 4. Cleanup on unmount.
+    return () => {
+      subscription.unsubscribe();
+      if (timeoutId.current) clearTimeout(timeoutId.current);
+    };
   }, [router]);
+
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -62,6 +102,8 @@ export default function UpdatePasswordForm() {
     }
   };
 
+  // ... (rest of the component's JSX remains the same) ...
+
   if (sessionStatus === 'LOADING') {
     return (
       <div className="flex justify-center items-center py-8">
@@ -72,9 +114,7 @@ export default function UpdatePasswordForm() {
 
   if (success) {
     const handleContinueToLogin = async () => {
-      // 1. Sign the user out, destroying their temporary session.
       await supabase.auth.signOut();
-      // 2. Now that the user is logged out, push to the login page.
       router.push('/login');
     };
 
@@ -98,9 +138,9 @@ export default function UpdatePasswordForm() {
     );
   }
 
-  return (
+  return sessionStatus === 'AUTHENTICATED' ? (
     <Card>
-      <CardHeader className="text-center">
+       <CardHeader className="text-center">
         <CardTitle className="text-2xl">Set new password</CardTitle>
         <CardDescription>Your new password must be different to previously used passwords.</CardDescription>
       </CardHeader>
@@ -143,5 +183,5 @@ export default function UpdatePasswordForm() {
         </Form>
       </CardContent>
     </Card>
-  );
+  ) : null;
 }
