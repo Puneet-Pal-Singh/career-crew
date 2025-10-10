@@ -31,41 +31,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname();
 
   useEffect(() => {
+    // ✅ ADDING DETAILED LOGS
+    console.log(`[AuthContext] 🚀 useEffect triggered. Current pathname: "${pathname}"`);
 
-    // ✅ STEP 3: The Definitive Fix.
-    // If we are on the special 'update-password' page, do NOT run this global
-    // auth logic. Let the page's own component handle everything.
     if (pathname === '/update-password') {
-      setIsInitialized(true); // Mark as initialized to prevent layout shifts
+      console.log("[AuthContext] 🛑 Path is /update-password. STANDING DOWN. AuthContext will not run.");
+      setIsInitialized(true);
       return; // Exit early and do nothing.
     }
-    console.log("AuthContext: Setting up Supabase auth listener.");
+
+    console.log("[AuthContext] ▶️ Path is NOT /update-password. Proceeding with auth setup.");
     
-    // Set initial state from getSession (synchronous if tokens are in localStorage)
-    // This helps set isInitialized quickly.
-    // Note: getSession() might not give the absolute latest state if tokens just changed,
-    // onAuthStateChange is the source of truth for updates.
+    // This console log will now only appear on pages where the context is active
+    console.log("[AuthContext] Setting up Supabase auth listener.");
+    
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
-        console.log("AuthContext: Initial getSession() completed. Session exists:", !!initialSession);
-        if (!isInitialized) { // Only set initial state if not already done by onAuthStateChange
+        console.log("[AuthContext] Initial getSession() completed. Session exists:", !!initialSession);
+        if (!isInitialized) {
             setSession(initialSession);
             setUser(initialSession?.user ?? null);
-            setIsInitialized(true); // Mark as initialized
+            setIsInitialized(true);
         }
     });
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event: AuthChangeEvent, currentSession: Session | null) => {
-        console.log("AuthContext: onAuthStateChange event:", _event, "Session ID:", currentSession?.access_token.slice(-6), "User ID:", currentSession?.user?.id);
+        console.log("[AuthContext] onAuthStateChange event:", _event);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
-        setAuthError(null); // Clear previous auth errors
-        setIsInitialized(true); // Ensure initialized is true after first event
+        setAuthError(null);
+        setIsInitialized(true);
       }
     );
 
     return () => {
-      console.log("AuthContext: Unsubscribing Supabase auth listener.");
+      console.log("[AuthContext] Unsubscribing Supabase auth listener.");
       subscription?.unsubscribe();
     };
   }, [isInitialized, pathname]); 
