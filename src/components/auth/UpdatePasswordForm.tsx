@@ -42,39 +42,46 @@ export default function UpdatePasswordForm() {
     // Check if this looks like a recovery link
     if (typeof window !== 'undefined') {
       const hash = window.location.hash;
+      const fullUrl = window.location.href;
       isRecoveryFlow = hash.includes('type=recovery') || hash.includes('access_token');
+      console.log('🔍 Full URL:', fullUrl);
+      console.log('🔍 Hash:', hash);
+      console.log('🔍 Is Recovery Flow:', isRecoveryFlow);
     }
 
     // Set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth event:', event, 'Has session:', !!session); // Debug log
+      console.log('🔔 Auth event:', event, 'Has session:', !!session, 'Is Recovery Flow:', isRecoveryFlow);
 
       if (event === 'PASSWORD_RECOVERY') {
+        // Valid recovery token detected
+        console.log('✅ PASSWORD_RECOVERY event received');
         if (timeoutId.current) clearTimeout(timeoutId.current);
         hasProcessedHash.current = true;
         setSessionStatus('AUTHENTICATED');
       } 
-      // This handles a fully signed-in user who might navigate here.
-      // NOTE: This event might not always fire on page load, making the INITIAL_SESSION check critical.
       else if (event === 'SIGNED_IN' && !hasProcessedHash.current) {
+        // User is already logged in (not from password recovery)
         if (timeoutId.current) clearTimeout(timeoutId.current);
         router.replace('/dashboard');
       }
       else if (event === 'INITIAL_SESSION') {
-        // ✅ THE DEFINITIVE FIX (from Coderabbit):
-        // First, handle the case where a user is already logged in.
-        if (!isRecoveryFlow && session) {
-          if (timeoutId.current) clearTimeout(timeoutId.current);
-          router.replace('/dashboard');
-          return; // Exit the handler early
+        console.log('🔄 INITIAL_SESSION - Recovery flow:', isRecoveryFlow, 'Has session:', !!session);
+        
+        // CRITICAL: Do NOT redirect immediately if it's a recovery flow
+        // We need to wait for PASSWORD_RECOVERY event
+        if (isRecoveryFlow) {
+          console.log('⏳ Recovery flow detected - waiting for PASSWORD_RECOVERY event');
+          // Do nothing - let the timeout handle invalid tokens
+          return;
         }
         
-        // Second, handle the case where there's no session and it's NOT a recovery attempt.
-        if (!isRecoveryFlow && !session) {
+        // Only redirect if it's NOT a recovery flow and there's no session
+        if (!session) {
+          console.log('❌ No recovery flow and no session - redirecting to login');
           setSessionStatus('UNAUTHENTICATED');
           router.replace('/login?error=invalid_token');
         }
-        // If it IS a recovery flow, we do nothing and wait for the PASSWORD_RECOVERY event or the timeout.
       }
     });
 
@@ -82,11 +89,19 @@ export default function UpdatePasswordForm() {
     if (isRecoveryFlow) {
       timeoutId.current = setTimeout(() => {
         if (!hasProcessedHash.current) {
-          console.log('Timeout: No PASSWORD_RECOVERY event received'); // Debug log
+          console.log('⏰ Timeout: No PASSWORD_RECOVERY event received - token likely expired');
           setSessionStatus('UNAUTHENTICATED');
           router.replace('/login?error=expired_token');
         }
-      }, 5000); // Increased to 5 seconds
+      }, 5000); // 5 seconds to wait for PASSWORD_RECOVERY
+    } else {
+      // If not a recovery flow and we reach here, check session immediately
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session) {
+          setSessionStatus('UNAUTHENTICATED');
+          router.replace('/login?error=invalid_token');
+        }
+      });
     }
 
     // Cleanup
