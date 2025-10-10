@@ -37,74 +37,57 @@ export default function UpdatePasswordForm() {
   const hasProcessedHash = useRef(false); // Track if we've processed the hash
 
   useEffect(() => {
+    // ✅ This is the final, corrected version of the useEffect hook.
     let isRecoveryFlow = false;
-    
-    // Check if this looks like a recovery link
     if (typeof window !== 'undefined') {
       const hash = window.location.hash;
-      const fullUrl = window.location.href;
       isRecoveryFlow = hash.includes('type=recovery') || hash.includes('access_token');
-      console.log('🔍 Full URL:', fullUrl);
-      console.log('🔍 Hash:', hash);
-      console.log('🔍 Is Recovery Flow:', isRecoveryFlow);
     }
 
-    // Set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('🔔 Auth event:', event, 'Has session:', !!session, 'Is Recovery Flow:', isRecoveryFlow);
-
+      // Handles the successful validation of a password recovery token.
       if (event === 'PASSWORD_RECOVERY') {
-        // Valid recovery token detected
-        console.log('✅ PASSWORD_RECOVERY event received');
         if (timeoutId.current) clearTimeout(timeoutId.current);
         hasProcessedHash.current = true;
         setSessionStatus('AUTHENTICATED');
       } 
+      // Handles a fully signed-in user who might navigate here.
+      // This is a secondary check, as the INITIAL_SESSION block is more reliable.
       else if (event === 'SIGNED_IN' && !hasProcessedHash.current) {
-        // User is already logged in (not from password recovery)
         if (timeoutId.current) clearTimeout(timeoutId.current);
         router.replace('/dashboard');
       }
+      // This is the most critical event on page load.
       else if (event === 'INITIAL_SESSION') {
-        console.log('🔄 INITIAL_SESSION - Recovery flow:', isRecoveryFlow, 'Has session:', !!session);
-        
-        // CRITICAL: Do NOT redirect immediately if it's a recovery flow
-        // We need to wait for PASSWORD_RECOVERY event
+        // If it's a recovery flow, we do nothing and wait for the PASSWORD_RECOVERY event.
         if (isRecoveryFlow) {
-          console.log('⏳ Recovery flow detected - waiting for PASSWORD_RECOVERY event');
-          // Do nothing - let the timeout handle invalid tokens
           return;
         }
         
-        // Only redirect if it's NOT a recovery flow and there's no session
-        if (!session) {
-          console.log('❌ No recovery flow and no session - redirecting to login');
+        // It's NOT a recovery flow. Check for an existing session.
+        if (session) {
+          // A logged-in user landed here. Redirect them to their dashboard.
+          router.replace('/dashboard');
+        } else {
+          // A logged-out user landed here with no token. Redirect them to login.
           setSessionStatus('UNAUTHENTICATED');
           router.replace('/login?error=invalid_token');
         }
       }
     });
 
-    // Set fallback timeout only for recovery flows
+    // If it's a recovery flow, set a timeout. If PASSWORD_RECOVERY doesn't fire,
+    // it means the token was invalid or expired.
     if (isRecoveryFlow) {
       timeoutId.current = setTimeout(() => {
         if (!hasProcessedHash.current) {
-          console.log('⏰ Timeout: No PASSWORD_RECOVERY event received - token likely expired');
           setSessionStatus('UNAUTHENTICATED');
           router.replace('/login?error=expired_token');
         }
-      }, 5000); // 5 seconds to wait for PASSWORD_RECOVERY
-    } else {
-      // If not a recovery flow and we reach here, check session immediately
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (!session) {
-          setSessionStatus('UNAUTHENTICATED');
-          router.replace('/login?error=invalid_token');
-        }
-      });
+      }, 5000);
     }
 
-    // Cleanup
+    // Cleanup function to prevent memory leaks.
     return () => {
       subscription.unsubscribe();
       if (timeoutId.current) clearTimeout(timeoutId.current);
