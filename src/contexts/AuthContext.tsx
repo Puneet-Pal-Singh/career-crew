@@ -2,6 +2,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+// ✅ STEP 1: Import usePathname to know which page we're on.
+import { usePathname } from "next/navigation"; 
 import { AuthChangeEvent, AuthError, AuthResponse, AuthTokenResponsePassword, Session, User, SignInWithPasswordCredentials, SignUpWithPasswordCredentials } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -25,7 +27,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [authError, setAuthError] = useState<AuthError | null>(null);
   const [isInitialized, setIsInitialized] = useState<boolean>(false); // Tracks if onAuthStateChange has fired at least once
 
+  // ✅ STEP 2: Get the current URL path.
+  const pathname = usePathname();
+
   useEffect(() => {
+
+    // ✅ STEP 3: The Definitive Fix.
+    // If we are on the special 'update-password' page, do NOT run this global
+    // auth logic. Let the page's own component handle everything.
+    if (pathname === '/update-password') {
+      setIsInitialized(true); // Mark as initialized to prevent layout shifts
+      return; // Exit early and do nothing.
+    }
     console.log("AuthContext: Setting up Supabase auth listener.");
     
     // Set initial state from getSession (synchronous if tokens are in localStorage)
@@ -55,7 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("AuthContext: Unsubscribing Supabase auth listener.");
       subscription?.unsubscribe();
     };
-  }, [isInitialized]); // Re-run if isInitialized changes (though it should only change once to true)
+  }, [isInitialized, pathname]); 
 
   const signIn = async (credentials: SignInWithPasswordCredentials): Promise<AuthTokenResponsePassword> => {
     setIsLoadingAction(true);
