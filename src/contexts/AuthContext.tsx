@@ -2,6 +2,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+// ✅ STEP 1: Import usePathname to know which page we're on.
+import { usePathname } from "next/navigation"; 
 import { AuthChangeEvent, AuthError, AuthResponse, AuthTokenResponsePassword, Session, User, SignInWithPasswordCredentials, SignUpWithPasswordCredentials } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -25,37 +27,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [authError, setAuthError] = useState<AuthError | null>(null);
   const [isInitialized, setIsInitialized] = useState<boolean>(false); // Tracks if onAuthStateChange has fired at least once
 
+  // ✅ STEP 2: Get the current URL path.
+  const pathname = usePathname();
+
   useEffect(() => {
-    console.log("AuthContext: Setting up Supabase auth listener.");
+    // ✅ ADDING DETAILED LOGS
+    console.log(`[AuthContext] 🚀 useEffect triggered. Current pathname: "${pathname}"`);
+
+    if (pathname === '/update-password') {
+      console.log("[AuthContext] 🛑 Path is /update-password. STANDING DOWN. AuthContext will not run.");
+      setIsInitialized(true);
+      return; // Exit early and do nothing.
+    }
+
+    console.log("[AuthContext] ▶️ Path is NOT /update-password. Proceeding with auth setup.");
     
-    // Set initial state from getSession (synchronous if tokens are in localStorage)
-    // This helps set isInitialized quickly.
-    // Note: getSession() might not give the absolute latest state if tokens just changed,
-    // onAuthStateChange is the source of truth for updates.
+    // This console log will now only appear on pages where the context is active
+    console.log("[AuthContext] Setting up Supabase auth listener.");
+    
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
-        console.log("AuthContext: Initial getSession() completed. Session exists:", !!initialSession);
-        if (!isInitialized) { // Only set initial state if not already done by onAuthStateChange
+        console.log("[AuthContext] Initial getSession() completed. Session exists:", !!initialSession);
+        if (!isInitialized) {
             setSession(initialSession);
             setUser(initialSession?.user ?? null);
-            setIsInitialized(true); // Mark as initialized
+            setIsInitialized(true);
         }
     });
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event: AuthChangeEvent, currentSession: Session | null) => {
-        console.log("AuthContext: onAuthStateChange event:", _event, "Session ID:", currentSession?.access_token.slice(-6), "User ID:", currentSession?.user?.id);
+        console.log("[AuthContext] onAuthStateChange event:", _event);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
-        setAuthError(null); // Clear previous auth errors
-        setIsInitialized(true); // Ensure initialized is true after first event
+        setAuthError(null);
+        setIsInitialized(true);
       }
     );
 
     return () => {
-      console.log("AuthContext: Unsubscribing Supabase auth listener.");
+      console.log("[AuthContext] Unsubscribing Supabase auth listener.");
       subscription?.unsubscribe();
     };
-  }, [isInitialized]); // Re-run if isInitialized changes (though it should only change once to true)
+  }, [isInitialized, pathname]); 
 
   const signIn = async (credentials: SignInWithPasswordCredentials): Promise<AuthTokenResponsePassword> => {
     setIsLoadingAction(true);

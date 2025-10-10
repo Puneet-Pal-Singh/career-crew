@@ -3,20 +3,12 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { GeistSans } from 'geist/font/sans';
 import './globals.css';
-import { AppProviders } from '@/components/providers/AppProviders';
-import { Toaster } from "@/components/ui/toaster";
-import ClientLayout from '@/components/layout/ClientLayout';
 import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
 import { defaultMetadata } from '@/lib/seo';
-
-// 1. Import the SpeedInsights component
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import MainLayout from '@/components/layout/MainLayout'; // ✅ Import our new component
 
-// --- FIX: Force dynamic rendering for the entire app ---
-// This tells Next.js not to attempt static generation, as this layout
-// depends on request-time cookies to fetch the user session.
 export const dynamic = 'force-dynamic';
-
 export const metadata: Metadata = defaultMetadata;
 
 const inter = Inter({
@@ -32,32 +24,34 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
 
+  // Server-side data fetching remains here.
   let user = null;
-  let userRole = null; // 1. Create a variable for the role
+  let userRole = null;
 
   try {
     const supabase = await getSupabaseServerClient();
     const { data: { user: fetchedUser } } = await supabase.auth.getUser();
     user = fetchedUser;
     if (user) {
-      userRole = user.app_metadata?.role; // 2. Extract the role
+      userRole = user.app_metadata?.role;
     }
   } catch (error) {
     console.error('Failed to fetch user in root layout:', error);
-    // The app will continue with user = null, showing the public state.
   }
 
   return (
     <html lang="en" className={`${inter.variable} ${geistSansVariable}`.trim()} suppressHydrationWarning>
       <body className="font-sans min-h-screen flex flex-col antialiased">
-         <AppProviders>
-          <ClientLayout user={user} userRole={userRole}>
-            {children}
-          </ClientLayout>
-          <Toaster />
-        </AppProviders>
+        
+        {/* ✅ THE DEFINITIVE FIX:
+            We now render the MainLayout client component and pass the
+            server-fetched data and children down to it. This correctly
+            separates the server and client concerns.
+        */}
+        <MainLayout user={user} userRole={userRole}>
+          {children}
+        </MainLayout>
 
-        {/* 2. Add the SpeedInsights component here */}
         <SpeedInsights />
       </body>
     </html>
