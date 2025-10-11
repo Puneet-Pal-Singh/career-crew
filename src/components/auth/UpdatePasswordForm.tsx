@@ -37,79 +37,61 @@ export default function UpdatePasswordForm() {
   const hasProcessedHash = useRef(false); // Track if we've processed the hash
 
   useEffect(() => {
-    // Simple recovery flow detection - check for access_token in URL hash
     let isRecoveryFlow = false;
+
+    // Check for recovery flow indicators
     if (typeof window !== 'undefined') {
-      const fullUrl = window.location.href;
       const hash = window.location.hash;
       const search = window.location.search;
+      const fullUrl = window.location.href;
 
       isRecoveryFlow = hash.includes('access_token') ||
                       hash.includes('token_type=recovery') ||
-                      search.includes('access_token');
+                      search.includes('access_token') ||
+                      fullUrl.includes('access_token');
 
       console.log('[UpdatePasswordForm] Full URL:', fullUrl);
       console.log('[UpdatePasswordForm] Hash:', hash);
-      console.log('[UpdatePasswordForm] Search:', search);
-      console.log('[UpdatePasswordForm] Hash includes access_token:', hash.includes('access_token'));
-      console.log('[UpdatePasswordForm] Hash includes token_type=recovery:', hash.includes('token_type=recovery'));
-      console.log('[UpdatePasswordForm] Search includes access_token:', search.includes('access_token'));
       console.log('[UpdatePasswordForm] Is recovery flow:', isRecoveryFlow);
     }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('[UpdatePasswordForm] Auth event:', event, 'Session exists:', !!session, 'Recovery flow:', isRecoveryFlow);
+    // Get current session and handle logic
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('[UpdatePasswordForm] Current session exists:', !!session);
 
-      // Handles the successful validation of a password recovery token.
-      if (event === 'PASSWORD_RECOVERY') {
-        if (timeoutId.current) clearTimeout(timeoutId.current);
-        hasProcessedHash.current = true;
+      if (isRecoveryFlow) {
+        console.log('[UpdatePasswordForm] Recovery flow detected - allowing password reset');
         setSessionStatus('AUTHENTICATED');
-        console.log('[UpdatePasswordForm] Password recovery successful');
-      }
-      // Handles a fully signed-in user who might navigate here.
-      else if (event === 'SIGNED_IN' && !hasProcessedHash.current) {
-        if (timeoutId.current) clearTimeout(timeoutId.current);
-        // Only redirect to dashboard if this is NOT a recovery flow
-        if (!isRecoveryFlow) {
-          console.log('[UpdatePasswordForm] Signed in event - redirecting to dashboard');
-          router.replace('/dashboard');
-        } else {
-          console.log('[UpdatePasswordForm] Signed in during recovery flow - staying on update password');
-        }
-      }
-      // This is the most critical event on page load.
-      else if (event === 'INITIAL_SESSION') {
-        // If it's a recovery flow, we do nothing and wait for the PASSWORD_RECOVERY event.
-        if (isRecoveryFlow) {
-          console.log('[UpdatePasswordForm] Recovery flow detected - waiting for PASSWORD_RECOVERY event');
-          return;
-        }
 
-        // If not a recovery flow, this page should not be accessed
+        // Set up auth state listener for recovery events
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
+          console.log('[UpdatePasswordForm] Auth event:', event, 'Session exists:', !!currentSession);
+
+          if (event === 'PASSWORD_RECOVERY') {
+            console.log('[UpdatePasswordForm] Password recovery successful');
+          }
+        });
+
+        // Set timeout for recovery flow
+        timeoutId.current = setTimeout(() => {
+          console.log('[UpdatePasswordForm] Recovery timeout - token may be expired');
+          setError('Password reset link may have expired. Please request a new one.');
+        }, 10000);
+
+        return () => {
+          subscription.unsubscribe();
+          if (timeoutId.current) clearTimeout(timeoutId.current);
+        };
+      } else {
+        // No recovery flow - invalid access
         console.log('[UpdatePasswordForm] No recovery flow detected - invalid access');
         setSessionStatus('UNAUTHENTICATED');
         setError('Invalid access. Please use the password reset link from your email.');
-        // Don't redirect - let the user see the error and use the back button or link
       }
     });
 
-    // If it's a recovery flow, set a timeout. If PASSWORD_RECOVERY doesn't fire,
-    // it means the token was invalid or expired.
-    if (isRecoveryFlow) {
-      console.log('[UpdatePasswordForm] Setting recovery timeout');
-      timeoutId.current = setTimeout(() => {
-        if (!hasProcessedHash.current) {
-          console.log('[UpdatePasswordForm] Recovery timeout - token expired');
-          setSessionStatus('UNAUTHENTICATED');
-          router.replace('/login?error=expired_token');
-        }
-      }, 5000);
-    }
-
-    // Cleanup function to prevent memory leaks.
+    // Cleanup
     return () => {
-      subscription.unsubscribe();
       if (timeoutId.current) clearTimeout(timeoutId.current);
     };
   }, [router]);
