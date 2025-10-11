@@ -37,57 +37,56 @@ export default function UpdatePasswordForm() {
   const hasProcessedHash = useRef(false); // Track if we've processed the hash
 
   useEffect(() => {
-    // ✅ This is the final, corrected version of the useEffect hook.
-    let isRecoveryFlow = false;
-    if (typeof window !== 'undefined') {
-      const hash = window.location.hash;
-      isRecoveryFlow = hash.includes('type=recovery') || hash.includes('access_token');
-    }
+    // This is the final, corrected version of the useEffect hook,
+    // incorporating all suggestions and fixing the previous logic flaw.
+    
+    // 1. Check if the URL looks like a password recovery attempt.
+    const hasRecoveryHash = typeof window !== 'undefined' && 
+      (window.location.hash.includes('type=recovery') || window.location.hash.includes('access_token'));
 
+    // 2. Set up the Supabase authentication state listener.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      // Handles the successful validation of a password recovery token.
+
+      // The ONLY event that allows the user to see the form.
       if (event === 'PASSWORD_RECOVERY') {
         if (timeoutId.current) clearTimeout(timeoutId.current);
         hasProcessedHash.current = true;
         setSessionStatus('AUTHENTICATED');
-      } 
-      // Handles a fully signed-in user who might navigate here.
-      // This is a secondary check, as the INITIAL_SESSION block is more reliable.
-      else if (event === 'SIGNED_IN' && !hasProcessedHash.current) {
-        if (timeoutId.current) clearTimeout(timeoutId.current);
-        router.replace('/dashboard');
+        return; // Stop processing other events
       }
-      // This is the most critical event on page load.
-      else if (event === 'INITIAL_SESSION') {
-        // If it's a recovery flow, we do nothing and wait for the PASSWORD_RECOVERY event.
-        if (isRecoveryFlow) {
+
+      // This event fires on every page load. It's our main gatekeeper.
+      if (event === 'INITIAL_SESSION') {
+        // If the URL has a recovery hash, we do nothing. We MUST wait for the
+        // PASSWORD_RECOVERY event or for our timeout to fire.
+        if (hasRecoveryHash) {
           return;
         }
-        
-        // It's NOT a recovery flow. Check for an existing session.
+
+        // If we are here, it means the URL does NOT have a recovery hash.
+        // This user should not be on this page.
         if (session) {
-          // A logged-in user landed here. Redirect them to their dashboard.
+          // A normally logged-in user somehow got here. Send them to safety.
           router.replace('/dashboard');
         } else {
-          // A logged-out user landed here with no token. Redirect them to login.
-          setSessionStatus('UNAUTHENTICATED');
+          // A logged-out user with no token got here. Send them to login.
           router.replace('/login?error=invalid_token');
         }
       }
     });
 
-    // If it's a recovery flow, set a timeout. If PASSWORD_RECOVERY doesn't fire,
-    // it means the token was invalid or expired.
-    if (isRecoveryFlow) {
+    // 3. Set a fallback timeout ONLY if it looks like a recovery attempt.
+    if (hasRecoveryHash) {
       timeoutId.current = setTimeout(() => {
+        // If this timeout fires, it means the PASSWORD_RECOVERY event never came.
+        // This implies the token in the URL was invalid, expired, or already used.
         if (!hasProcessedHash.current) {
-          setSessionStatus('UNAUTHENTICATED');
           router.replace('/login?error=expired_token');
         }
-      }, 5000);
+      }, 3000); // 3 seconds is a reasonable wait time.
     }
 
-    // Cleanup function to prevent memory leaks.
+    // 4. Cleanup function to prevent memory leaks on component unmount.
     return () => {
       subscription.unsubscribe();
       if (timeoutId.current) clearTimeout(timeoutId.current);
