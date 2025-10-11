@@ -37,18 +37,29 @@ export default function UpdatePasswordForm() {
   const hasProcessedHash = useRef(false); // Track if we've processed the hash
 
   useEffect(() => {
-    // Improved recovery flow detection - check for various Supabase reset URL patterns
+    // Enhanced recovery flow detection - check for Supabase reset URL patterns
     let isRecoveryFlow = false;
     if (typeof window !== 'undefined') {
+      const fullUrl = window.location.href;
       const hash = window.location.hash;
-      const searchParams = new URLSearchParams(window.location.search);
+      const search = window.location.search;
 
       // Check for various recovery flow indicators
       isRecoveryFlow = hash.includes('access_token') ||
                       hash.includes('type=recovery') ||
                       hash.includes('token_type=recovery') ||
-                      searchParams.has('access_token') ||
-                      searchParams.has('token_type');
+                      search.includes('access_token') ||
+                      search.includes('token_type') ||
+                      search.includes('token') ||
+                      hash.includes('recovery') ||
+                      fullUrl.includes('access_token') ||
+                      fullUrl.includes('token_type=recovery');
+
+      console.log('[UpdatePasswordForm] Full URL:', fullUrl);
+      console.log('[UpdatePasswordForm] Hash:', hash);
+      console.log('[UpdatePasswordForm] Search:', search);
+      console.log('[UpdatePasswordForm] Hash includes access_token:', hash.includes('access_token'));
+      console.log('[UpdatePasswordForm] Hash includes type=recovery:', hash.includes('type=recovery'));
     }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -82,8 +93,8 @@ export default function UpdatePasswordForm() {
 
         // It's NOT a recovery flow. Check for an existing session.
         if (session) {
-          // A logged-in user landed here. Redirect them to their dashboard.
-          console.log('[UpdatePasswordForm] Logged in user on update password page - redirecting to dashboard');
+          // A logged-in user landed here without a recovery token. Redirect them to their dashboard.
+          console.log('[UpdatePasswordForm] Logged in user on update password page without recovery token - redirecting to dashboard');
           router.replace('/dashboard');
         } else {
           // A logged-out user landed here with no token. Redirect them to login.
