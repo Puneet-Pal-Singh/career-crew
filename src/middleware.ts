@@ -49,7 +49,7 @@ export async function middleware(request: NextRequest) {
   ];
 
   // Special routes that need authentication but are part of the auth flow
-  const authFlowRoutes = ['/update-password'];
+  // const authFlowRoutes = ['/update-password'];
   
   const onboardingRoute = '/onboarding/complete-profile';
   
@@ -135,10 +135,13 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/', request.url));
     }
     
-    // Protect auth flow routes (like /update-password) - these require a session
-    if (authFlowRoutes.includes(pathname)) {
-      return NextResponse.redirect(new URL('/login?error=invalid_token', request.url));
-    }
+    // ✅ THE DEFINITIVE FIX (from Coderabbit):
+    // An unauthenticated user MUST be allowed to reach the /update-password page.
+    // The client-side component on that page is responsible for validating the token
+    // from the URL hash. Blocking them here breaks the entire flow.
+    // if (authFlowRoutes.includes(pathname)) {
+    //   return response; // Allow them to pass.
+    // }
   }
 
   return response;
