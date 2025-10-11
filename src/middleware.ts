@@ -48,11 +48,13 @@ export async function middleware(request: NextRequest) {
        return NextResponse.redirect(new URL('/dashboard', request.url));
      }
 
-     // --- NEW: ROLE-BASED ACCESS CONTROL ---
-     // --- THE FIX: Block access if the role is missing/unknown ---
-     const userRole = user.app_metadata?.role as UserRole;
+      // --- NEW: ROLE-BASED ACCESS CONTROL ---
+      // --- THE FIX: Block access if the role is missing/unknown ---
+      const userRole = user.app_metadata?.role;
+      const validRoles: UserRole[] = ['JOB_SEEKER', 'EMPLOYER', 'ADMIN'];
+      const isValidRole = validRoles.includes(userRole as UserRole);
 
-     if (!userRole) {
+      if (!isValidRole || !userRole) {
        // If the user has no role, they should be sent back to the dashboard
        // and not be allowed into any role-specific areas.
        if (employerRoutes.some(route => pathname.startsWith(route)) || seekerRoutes.some(route => pathname.startsWith(route)) || adminRoutes.some(route => pathname.startsWith(route))) {
