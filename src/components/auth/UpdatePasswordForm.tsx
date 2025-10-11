@@ -40,9 +40,20 @@ export default function UpdatePasswordForm() {
     // Simple recovery flow detection - check for access_token in URL hash
     let isRecoveryFlow = false;
     if (typeof window !== 'undefined') {
+      const fullUrl = window.location.href;
       const hash = window.location.hash;
-      isRecoveryFlow = hash.includes('access_token');
+      const search = window.location.search;
+
+      isRecoveryFlow = hash.includes('access_token') ||
+                      hash.includes('token_type=recovery') ||
+                      search.includes('access_token');
+
+      console.log('[UpdatePasswordForm] Full URL:', fullUrl);
       console.log('[UpdatePasswordForm] Hash:', hash);
+      console.log('[UpdatePasswordForm] Search:', search);
+      console.log('[UpdatePasswordForm] Hash includes access_token:', hash.includes('access_token'));
+      console.log('[UpdatePasswordForm] Hash includes token_type=recovery:', hash.includes('token_type=recovery'));
+      console.log('[UpdatePasswordForm] Search includes access_token:', search.includes('access_token'));
       console.log('[UpdatePasswordForm] Is recovery flow:', isRecoveryFlow);
     }
 
@@ -75,17 +86,11 @@ export default function UpdatePasswordForm() {
           return;
         }
 
-        // If not a recovery flow and no session, redirect to login
-        if (!session) {
-          console.log('[UpdatePasswordForm] No session and no recovery flow - redirecting to login');
-          setSessionStatus('UNAUTHENTICATED');
-          router.replace('/login?error=invalid_token');
-        } else {
-          // If there's a session but no recovery flow, this is an invalid state
-          console.log('[UpdatePasswordForm] Session exists but no recovery flow - invalid access');
-          setSessionStatus('UNAUTHENTICATED');
-          setError('Invalid access. Please use the password reset link from your email.');
-        }
+        // If not a recovery flow, this page should not be accessed
+        console.log('[UpdatePasswordForm] No recovery flow detected - invalid access');
+        setSessionStatus('UNAUTHENTICATED');
+        setError('Invalid access. Please use the password reset link from your email.');
+        // Don't redirect - let the user see the error and use the back button or link
       }
     });
 
@@ -219,8 +224,8 @@ export default function UpdatePasswordForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-            <Button asChild className="w-full">
-              <Link href="/login">Go to Login</Link>
+            <Button variant="link" asChild className="text-muted-foreground">
+              <Link href="/login">← Back to Login</Link>
             </Button>
         </CardContent>
       </Card>
