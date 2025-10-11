@@ -39,7 +39,13 @@ export async function middleware(request: NextRequest) {
        return NextResponse.redirect(new URL('/dashboard', request.url));
      }
 
-      const needsOnboarding = user.app_metadata?.onboarding_complete !== true;
+     // Allow access to /update-password - the component will handle validation
+     if (pathname === '/update-password') {
+       console.log('[Middleware] Allowing access to update-password page');
+       return response;
+     }
+
+     const needsOnboarding = user.app_metadata?.onboarding_complete !== true;
 
      if (needsOnboarding && pathname !== onboardingRoute) {
        return NextResponse.redirect(new URL(onboardingRoute, request.url));

@@ -37,18 +37,13 @@ export default function UpdatePasswordForm() {
   const hasProcessedHash = useRef(false); // Track if we've processed the hash
 
   useEffect(() => {
-    // Improved recovery flow detection - check for various Supabase reset URL patterns
+    // Simple recovery flow detection - check for access_token in URL hash
     let isRecoveryFlow = false;
     if (typeof window !== 'undefined') {
       const hash = window.location.hash;
-      const searchParams = new URLSearchParams(window.location.search);
-
-      // Check for various recovery flow indicators
-      isRecoveryFlow = hash.includes('access_token') ||
-                      hash.includes('type=recovery') ||
-                      hash.includes('token_type=recovery') ||
-                      searchParams.has('access_token') ||
-                      searchParams.has('token_type');
+      isRecoveryFlow = hash.includes('access_token');
+      console.log('[UpdatePasswordForm] Hash:', hash);
+      console.log('[UpdatePasswordForm] Is recovery flow:', isRecoveryFlow);
     }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -80,16 +75,16 @@ export default function UpdatePasswordForm() {
           return;
         }
 
-        // It's NOT a recovery flow. Check for an existing session.
-        if (session) {
-          // A logged-in user landed here. Redirect them to their dashboard.
-          console.log('[UpdatePasswordForm] Logged in user on update password page - redirecting to dashboard');
-          router.replace('/dashboard');
-        } else {
-          // A logged-out user landed here with no token. Redirect them to login.
+        // If not a recovery flow and no session, redirect to login
+        if (!session) {
           console.log('[UpdatePasswordForm] No session and no recovery flow - redirecting to login');
           setSessionStatus('UNAUTHENTICATED');
           router.replace('/login?error=invalid_token');
+        } else {
+          // If there's a session but no recovery flow, this is an invalid state
+          console.log('[UpdatePasswordForm] Session exists but no recovery flow - invalid access');
+          setSessionStatus('UNAUTHENTICATED');
+          setError('Invalid access. Please use the password reset link from your email.');
         }
       }
     });
@@ -165,50 +160,72 @@ export default function UpdatePasswordForm() {
     );
   }
 
-  return sessionStatus === 'AUTHENTICATED' ? (
-    <Card>
-       <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Set new password</CardTitle>
-        <CardDescription>Your new password must be different to previously used passwords.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <Label htmlFor="password">Password</Label>
-                  <FormControl><Input id="password" type="password" {...field} disabled={isLoading} /></FormControl>
-                  <p className="text-xs text-muted-foreground">Must be at least 8 characters.</p>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <Label htmlFor="confirmPassword">Confirm password</Label>
-                  <FormControl><Input id="confirmPassword" type="password" {...field} disabled={isLoading} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {error && <p className="text-sm font-medium text-destructive">{error}</p>}
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Saving...' : 'Reset password'}
+  if (sessionStatus === 'AUTHENTICATED') {
+    return (
+      <Card>
+         <CardHeader className="text-center">
+           <CardTitle className="text-2xl">Set new password</CardTitle>
+           <CardDescription>Your new password must be different to previously used passwords.</CardDescription>
+         </CardHeader>
+         <CardContent>
+           <Form {...form}>
+             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+               <FormField
+                 control={form.control}
+                 name="password"
+                 render={({ field }) => (
+                   <FormItem>
+                     <Label htmlFor="password">Password</Label>
+                     <FormControl><Input id="password" type="password" {...field} disabled={isLoading} /></FormControl>
+                     <p className="text-xs text-muted-foreground">Must be at least 8 characters.</p>
+                     <FormMessage />
+                   </FormItem>
+                 )}
+               />
+               <FormField
+                 control={form.control}
+                 name="confirmPassword"
+                 render={({ field }) => (
+                   <FormItem>
+                     <Label htmlFor="confirmPassword">Confirm password</Label>
+                     <FormControl><Input id="confirmPassword" type="password" {...field} disabled={isLoading} /></FormControl>
+                     <FormMessage />
+                   </FormItem>
+                 )}
+               />
+               {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+               <Button type="submit" className="w-full" disabled={isLoading}>
+                 {isLoading ? 'Saving...' : 'Reset password'}
+               </Button>
+               <div className="text-center">
+                   <Button variant="link" asChild className="text-muted-foreground">
+                       <Link href="/login"><ArrowLeft className="mr-2 h-4 w-4" />Back to log in</Link>
+                   </Button>
+               </div>
+             </form>
+           </Form>
+         </CardContent>
+       </Card>
+    );
+  }
+
+  if (sessionStatus === 'UNAUTHENTICATED') {
+    return (
+      <Card className="text-center">
+        <CardHeader>
+          <CardTitle className="text-2xl text-destructive">Access Denied</CardTitle>
+          <CardDescription>
+            {error || 'You do not have permission to access this page.'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/login">Go to Login</Link>
             </Button>
-            <div className="text-center">
-                <Button variant="link" asChild className="text-muted-foreground">
-                    <Link href="/login"><ArrowLeft className="mr-2 h-4 w-4" />Back to log in</Link>
-                </Button>
-            </div>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
-  ) : null;
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return null;
 }
