@@ -25,7 +25,17 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const { pathname } = request.nextUrl;
 
-  const authRoutes = ['/login', '/jobs/signup', '/employer/signup'];
+  // ✅ THE DEFINITIVE FIX:
+  // Add the password reset flow pages to the list of public auth routes.
+  // This tells the middleware that a logged-in user (even one with a temporary
+  // recovery session) is ALLOWED to be on these pages.
+  const authRoutes = [
+    '/login', 
+    '/jobs/signup', 
+    '/employer/signup',
+    '/forgot-password',
+    '/update-password'
+  ];
   const onboardingRoute = '/onboarding/complete-profile';
   
   // --- DEFINE Role-Specific Routes ---
@@ -35,8 +45,15 @@ export async function middleware(request: NextRequest) {
   const adminRoutes = ['/dashboard/admin'];
 
   if (user) {
+    // This is the block that was causing the redirect.
+    // By adding '/update-password' to authRoutes, this condition will now
+    // correctly be FALSE for a user on the update password page, preventing the redirect.
     if (authRoutes.includes(pathname) || pathname === '/') {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+       // A user with a temporary session on '/update-password' will no longer enter this block.
+       // A normal logged-in user on '/login' WILL still be correctly redirected.
+       if (pathname !== '/update-password') {
+         return NextResponse.redirect(new URL('/dashboard', request.url));
+       }
     }
     
     const needsOnboarding = user.app_metadata?.onboarding_complete === false;
