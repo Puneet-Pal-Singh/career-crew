@@ -78,8 +78,17 @@ export async function middleware(request: NextRequest) {
     }
 
     // Regular authenticated users should not access /update-password without recovery token
-    if (pathname === '/update-password' && !isPasswordRecovery) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+    // if (pathname === '/update-password' && !isPasswordRecovery) {
+    //   return NextResponse.redirect(new URL('/dashboard', request.url));
+    // }
+
+    // ✅ THE FINAL FIX:
+    // Do NOT block a normal user from reaching /update-password.
+    // Our robust client-side component (`UpdatePasswordForm`) is the specialist
+    // and will correctly redirect them to the dashboard if they don't belong.
+    // The middleware should not interfere with this client-side logic.
+    if (pathname === '/update-password') {
+      return response; // Let the page handle its own logic.
     }
 
     // Regular authenticated users should not access public auth routes
