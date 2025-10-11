@@ -34,7 +34,6 @@ export default function UpdatePasswordForm() {
   const router = useRouter();
   
   const timeoutId = useRef<NodeJS.Timeout | null>(null);
-  const hasProcessedHash = useRef(false); // Track if we've processed the hash
 
   useEffect(() => {
     let isRecoveryFlow = false;
