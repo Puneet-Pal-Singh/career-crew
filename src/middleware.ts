@@ -1,9 +1,18 @@
 // src/middleware.ts
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import type { UserRole } from '@/types'; // UserRole is a general type
+import type { User } from '@/lib/middleware/middleware.types'; // Our extended User type for middleware
 
-// 1. IMPORT the UserRole type from your central types file.
-import type { UserRole } from '@/types';
+// Import our centralized route configurations
+import {
+  publicOnlyRoutes,
+  onboardingRoute,
+  protectedRoutePrefixes,
+  employerRoutePrefixes,
+  seekerRoutePrefixes,
+  adminRoutePrefixes
+} from '@/lib/middleware/routeMatchers';
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next({
@@ -22,76 +31,62 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  // ✅ THE FIX for "Expected 0 type arguments, but got 1":
+  // We fetch the user with the default types and then cast the result to our extended User type.
+  const { data: { user: rawUser } } = await supabase.auth.getUser();
+  const user = rawUser as User | null;
+  
   const { pathname } = request.nextUrl;
 
-  const authRoutes = ['/login', '/jobs/signup', '/employer/signup'];
-  const onboardingRoute = '/onboarding/complete-profile';
-  
-  // --- DEFINE Role-Specific Routes ---
-  const employerRoutes = ['/dashboard/post-job', '/dashboard/my-jobs', '/dashboard/applications'];
-  const seekerRoutes = ['/dashboard/seeker/applications']; // Add more seeker-only routes here in the future
-  
-  const adminRoutes = ['/dashboard/admin'];
-
-   if (user) {
-     if (authRoutes.includes(pathname) || pathname === '/') {
-       return NextResponse.redirect(new URL('/dashboard', request.url));
-     }
-
-     // Allow access to /update-password - the component will handle validation
-     if (pathname === '/update-password') {
-       console.log('[Middleware] Allowing access to update-password page');
-       return response;
-     }
-
-     const needsOnboarding = user.app_metadata?.onboarding_complete !== true;
-
-     if (needsOnboarding && pathname !== onboardingRoute) {
-       return NextResponse.redirect(new URL(onboardingRoute, request.url));
-     }
-     if (!needsOnboarding && pathname === onboardingRoute) {
-       return NextResponse.redirect(new URL('/dashboard', request.url));
-     }
-
-      // --- NEW: ROLE-BASED ACCESS CONTROL ---
-      // --- THE FIX: Block access if the role is missing/unknown ---
-      const userRole = user.app_metadata?.role;
-      const validRoles: UserRole[] = ['JOB_SEEKER', 'EMPLOYER', 'ADMIN'];
-      const isValidRole = validRoles.includes(userRole as UserRole);
-
-      if (!isValidRole || !userRole) {
-       // If the user has no role, they should be sent back to the dashboard
-       // and not be allowed into any role-specific areas.
-       if (employerRoutes.some(route => pathname.startsWith(route)) || seekerRoutes.some(route => pathname.startsWith(route)) || adminRoutes.some(route => pathname.startsWith(route))) {
-         return NextResponse.redirect(new URL('/dashboard', request.url));
-       }
-     } else {
-       // If a job seeker tries to access an employer route
-       if (userRole === 'JOB_SEEKER' && employerRoutes.some(route => pathname.startsWith(route))) {
-         // Redirect them to their main dashboard page
-         return NextResponse.redirect(new URL('/dashboard', request.url));
-       }
-
-       // If an employer tries to access a seeker route
-       if (userRole === 'EMPLOYER' && seekerRoutes.some(route => pathname.startsWith(route))) {
-         return NextResponse.redirect(new URL('/dashboard', request.url));
-       }
-
-       // If a non-admin tries to access an admin route
-       if (userRole !== 'ADMIN' && adminRoutes.some(route => pathname.startsWith(route))) {
-         return NextResponse.redirect(new URL('/dashboard', request.url));
-       }
-     }
-     // --- END OF NEW LOGIC ---
-
-   } else {
-      // If not logged in, protect all dashboard routes
-      if (pathname.startsWith('/dashboard')) {
-        // Redirect to homepage instead of login with redirectTo to avoid issues after logout
-        return NextResponse.redirect(new URL('/', request.url));
-      }
+  // --- Rule 1: Handle Authenticated Users ---
+  if (user) {
+    // RULE 1A: Always allow an authenticated user to reach the /update-password page.
+    // Our robust client-side `usePasswordRecovery` hook is the specialist responsible
+    // for handling all logic on this page (redirecting normal users, handling recovery, etc.).
+    // The middleware's job is to not interfere.
+    if (pathname === '/update-password') {
+      return response;
     }
+
+    // RULE 1B: Redirect normal logged-in users away from public-only pages.
+    if (publicOnlyRoutes.includes(pathname) || pathname === '/') {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+    
+    // RULE 1C: Handle mandatory onboarding.
+    const needsOnboarding = user.app_metadata?.onboarding_complete === false;
+    if (needsOnboarding && pathname !== onboardingRoute) {
+      return NextResponse.redirect(new URL(onboardingRoute, request.url));
+    }
+    if (!needsOnboarding && pathname === onboardingRoute) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+    
+    // RULE 1D: Handle Role-Based Access Control (RBAC).
+    const userRole = user.app_metadata?.role as UserRole;
+    if (userRole === 'JOB_SEEKER' && employerRoutePrefixes.some(r => pathname.startsWith(r))) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+    if (userRole === 'EMPLOYER' && seekerRoutePrefixes.some(r => pathname.startsWith(r))) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+    if (userRole !== 'ADMIN' && adminRoutePrefixes.some(r => pathname.startsWith(r))) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+
+  } 
+  // --- Rule 2: Handle Unauthenticated Users ---
+  else {
+    // Protect all dashboard routes.
+    if (protectedRoutePrefixes.some(r => pathname.startsWith(r))) {
+      const redirectUrl = new URL('/login', request.url);
+      redirectUrl.searchParams.set('redirectTo', pathname);
+      return NextResponse.redirect(redirectUrl);
+    }
+    
+    // An unauthenticated user MUST be allowed to reach `/update-password`.
+    // By having no rule here, we implicitly allow them to pass.
+  }
 
   return response;
 }
