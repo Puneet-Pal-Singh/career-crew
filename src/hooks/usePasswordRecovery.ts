@@ -16,7 +16,7 @@ export function usePasswordRecovery(): RecoveryStatus {
   const [status, setStatus] = useState<RecoveryStatus>('LOADING');
   const router = useRouter();
   const searchParams = useSearchParams();
-  const timeoutId = useRef<NodeJS.Timeout | null>(null);
+  const timeoutId = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     // 1. Determine if this is a password recovery attempt by checking the URL.

@@ -9,6 +9,7 @@ import {
   publicOnlyRoutes,
   onboardingRoute,
   protectedRoutePrefixes,
+  specialHandlingRoutes, 
   employerRoutePrefixes,
   seekerRoutePrefixes,
   adminRoutePrefixes
@@ -44,7 +45,7 @@ export async function middleware(request: NextRequest) {
     // Our robust client-side `usePasswordRecovery` hook is the specialist responsible
     // for handling all logic on this page (redirecting normal users, handling recovery, etc.).
     // The middleware's job is to not interfere.
-    if (pathname === '/update-password') {
+    if (specialHandlingRoutes.includes(pathname)) {
       return response;
     }
 
@@ -64,16 +65,28 @@ export async function middleware(request: NextRequest) {
     
     // RULE 1D: Handle Role-Based Access Control (RBAC).
     const userRole = user.app_metadata?.role as UserRole;
-    if (userRole === 'JOB_SEEKER' && employerRoutePrefixes.some(r => pathname.startsWith(r))) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-    if (userRole === 'EMPLOYER' && seekerRoutePrefixes.some(r => pathname.startsWith(r))) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-    if (userRole !== 'ADMIN' && adminRoutePrefixes.some(r => pathname.startsWith(r))) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
 
+    // If no role is defined, redirect from any role-specific page to the dashboard.
+    if (!userRole) {
+      const isRoleSpecificRoute = 
+        employerRoutePrefixes.some(r => pathname.startsWith(r)) ||
+        seekerRoutePrefixes.some(r => pathname.startsWith(r)) ||
+        adminRoutePrefixes.some(r => pathname.startsWith(r));
+        
+      if (isRoleSpecificRoute) {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+    } else {
+      if (userRole === 'JOB_SEEKER' && employerRoutePrefixes.some(r => pathname.startsWith(r))) {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+      if (userRole === 'EMPLOYER' && seekerRoutePrefixes.some(r => pathname.startsWith(r))) {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+      if (userRole !== 'ADMIN' && adminRoutePrefixes.some(r => pathname.startsWith(r))) {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+    }
   } 
   // --- Rule 2: Handle Unauthenticated Users ---
   else {
