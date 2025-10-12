@@ -30,6 +30,12 @@ export function usePasswordRecovery(): RecoveryStatus {
       // The ONLY event that confirms a valid recovery token and allows form rendering.
       if (event === 'PASSWORD_RECOVERY') {
         if (timeoutId.current) clearTimeout(timeoutId.current);
+        
+        // Immediately scrub the token from the URL after it has been validated.
+        if (typeof window !== 'undefined') {
+          const cleanUrl = `${window.location.pathname}${window.location.search}`;
+          window.history.replaceState({}, document.title, cleanUrl);
+        }
         setStatus('AUTHENTICATED');
         return;
       }
