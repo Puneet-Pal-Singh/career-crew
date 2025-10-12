@@ -29,9 +29,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // ✅ STEP 2: Get the current URL path.
   const pathname = usePathname();
-
+  
   useEffect(() => {
     // ✅ ADDING DETAILED LOGS
+    console.log("--- AuthContext Build Version: 1.0.3 ---"); 
     console.log(`[AuthContext] 🚀 useEffect triggered. Current pathname: "${pathname}"`);
 
     if (pathname === '/update-password') {
