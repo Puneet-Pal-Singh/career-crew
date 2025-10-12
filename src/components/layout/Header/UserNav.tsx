@@ -54,13 +54,11 @@ export default function UserNav({ user, profile }: UserNavProps) {
     // // Add a small delay to ensure session is cleared before navigation
     // await new Promise(resolve => setTimeout(resolve, 100));
     
-    // // ✅ UX IMPROVEMENT: Use router.replace for a smoother, client-side navigation
-    // // that also prevents the user from clicking "back" to a protected page.
-    // router.replace('/');
+    // ✅ UX IMPROVEMENT: Use router.replace for a smoother, client-side navigation
+    // that also prevents the user from clicking "back" to a protected page.
+    router.replace('/');
 
-     // ✅ THE DEFINITIVE FIX:
-    // 3. Immediately navigate the user to the public homepage.
-    router.push('/');
+    
     // ✅ THE DEFINITIVE FIX:
     // Instead of a soft client-side navigation, we trigger a server data refresh.
     // This forces the root layout to re-run its `getUser()` check, which will
