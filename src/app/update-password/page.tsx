@@ -1,18 +1,19 @@
-// src/app/update-password/page.tsx
+// /app/update-password/page.tsx
+import AuthPageLayout from '@/components/auth/AuthPageLayout';
+import UpdatePasswordPageClient from './UpdatePasswordPageClient'; // Import our new client component
 import type { Metadata } from 'next';
-import UpdatePasswordForm from '@/components/auth/UpdatePasswordForm';
 
 export const metadata: Metadata = {
-  title: 'Update Your Password - CareerCrew',
+  title: 'Update Your Password',
+  description: 'Set a new password for your CareerCrew account.',
 };
 
+// This page remains a Server Component, as is best practice.
+// Its only job is to render the layout and the client-side orchestrator.
 export default function UpdatePasswordPage() {
   return (
-    // This layout centers the form on the page, matching the inspiration.
-    <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
-      <div className="w-full max-w-md">
-        <UpdatePasswordForm />
-      </div>
-    </div>
+    <AuthPageLayout>
+      <UpdatePasswordPageClient />
+    </AuthPageLayout>
   );
 }
