@@ -45,9 +45,10 @@ export function usePasswordRecovery(): RecoveryStatus {
     // If it's not a recovery flow, do nothing. This hook is only for the update-password page.
     // Let the middleware and other components handle redirects.
     if (!isRecoveryFlow) {
-        console.log("[usePasswordRecovery] Not a recovery flow. Hook will stand down.");
-        setStatus('UNAUTHENTICATED'); // Set a safe default
-        return;
+      console.log("[usePasswordRecovery] Not a recovery flow. Hook will stand down.");
+      setStatus('UNAUTHENTICATED'); // Set a safe default
+      router.replace('/login');
+      return;
     }
 
     // --- 2. Auth State Listener ---
