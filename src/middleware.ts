@@ -98,9 +98,13 @@ export async function middleware(request: NextRequest) {
     // Protect all dashboard routes.
     if (protectedRoutePrefixes.some(r => pathname.startsWith(r))) {
       console.log(`[Middleware] ❌ Unauthenticated user on protected route. REDIRECTING to /login.`);
-      return NextResponse.redirect(new URL('/', request.url));
+      // Correctly build the redirect URL with the `redirectTo` parameter.
+      const redirectUrl = new URL('/login', request.url);
+      redirectUrl.searchParams.set('redirectTo', pathname);
+      return NextResponse.redirect(redirectUrl);
     }
   }
+  console.log("[Middleware] ✅ No rules matched. ALLOWING request to proceed.");
   return response;
 }
 

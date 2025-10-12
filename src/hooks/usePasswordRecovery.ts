@@ -26,7 +26,7 @@ export function usePasswordRecovery(): RecoveryStatus {
     const hasRecoveryParams = searchParams.has('token') || searchParams.has('access_token');
     const isRecoveryFlow = hasRecoveryHash || hasRecoveryParams;
 
-    console.log(`[usePasswordRecovery] 🔍 Is this a recovery flow? ${hasRecoveryHash}`);
+    console.log(`[usePasswordRecovery] 🔍 Is this a recovery flow? ${isRecoveryFlow}`);
 
     // 2. Listen for Supabase auth events.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -83,7 +83,7 @@ export function usePasswordRecovery(): RecoveryStatus {
     // 4. Cleanup function to prevent memory leaks.
     return () => {
       console.log("[usePasswordRecovery] 🧹 Unsubscribing and cleaning up.");
-      
+
       subscription.unsubscribe();
       if (timeoutId.current) clearTimeout(timeoutId.current);
     };
