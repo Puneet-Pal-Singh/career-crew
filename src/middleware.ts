@@ -19,6 +19,7 @@ export async function middleware(request: NextRequest) {
   const response = NextResponse.next({
     request: { headers: request.headers },
   });
+  console.log(`[Middleware] ▶️ Path: "${request.nextUrl.pathname}"`);
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -45,12 +46,15 @@ export async function middleware(request: NextRequest) {
     // Our robust client-side `usePasswordRecovery` hook is the specialist responsible
     // for handling all logic on this page (redirecting normal users, handling recovery, etc.).
     // The middleware's job is to not interfere.
+    console.log(`[Middleware] ✅ User is AUTHENTICATED. User ID: ${user.id}`);
     if (specialHandlingRoutes.includes(pathname)) {
+      console.log(`[Middleware] 🚦 Path is a special handling route. ALLOWING.`);
       return response;
     }
 
     // RULE 1B: Redirect normal logged-in users away from public-only pages.
     if (publicOnlyRoutes.includes(pathname) || pathname === '/') {
+      console.log(`[Middleware] ❌ Authenticated user on public-only route. REDIRECTING to /dashboard.`);
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
     
@@ -90,17 +94,13 @@ export async function middleware(request: NextRequest) {
   } 
   // --- Rule 2: Handle Unauthenticated Users ---
   else {
+    console.log("[Middleware] 👻 User is UNAUTHENTICATED.");
     // Protect all dashboard routes.
     if (protectedRoutePrefixes.some(r => pathname.startsWith(r))) {
-      const redirectUrl = new URL('/login', request.url);
-      redirectUrl.searchParams.set('redirectTo', pathname);
-      return NextResponse.redirect(redirectUrl);
+      console.log(`[Middleware] ❌ Unauthenticated user on protected route. REDIRECTING to /login.`);
+      return NextResponse.redirect(new URL('/', request.url));
     }
-    
-    // An unauthenticated user MUST be allowed to reach `/update-password`.
-    // By having no rule here, we implicitly allow them to pass.
   }
-
   return response;
 }
 
