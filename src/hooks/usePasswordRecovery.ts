@@ -4,15 +4,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
-// ✅ 1. ADD THIS IMPORT STATEMENT at the top of the file.
 import { exchangeCodeForSession } from '@/lib/supabase/authHelpers';
 
 type RecoveryStatus = 'LOADING' | 'AUTHENTICATED' | 'UNAUTHENTICATED';
 
-/**
- * A robust hook to manage the client-side logic for the password recovery flow.
- * It now uses a dedicated helper to explicitly handle the PKCE code exchange.
- */
 export function usePasswordRecovery(): RecoveryStatus {
   const [status, setStatus] = useState<RecoveryStatus>('LOADING');
   const router = useRouter();
@@ -21,16 +16,11 @@ export function usePasswordRecovery(): RecoveryStatus {
   const hasProcessedRecovery = useRef(false);
 
   useEffect(() => {
-    // ✅ 2. REPLACE THE OLD `exchangeCode` block with this single line.
-    // This is the CRITICAL missing step, now correctly implemented.
-    exchangeCodeForSession();
-
-    // The rest of the hook's logic remains the same. It will now correctly
-    // receive the PASSWORD_RECOVERY event after the exchange helper runs.
-    
     const hasRecoveryCode = searchParams.has('code');
     const isRecoveryFlow = hasRecoveryCode;
 
+    // ✅ THE FINAL, BULLETPROOF FIX (from Coderabbit):
+    // 1. Establish the subscription FIRST to ensure we don't miss any events.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
         if (timeoutId.current) clearTimeout(timeoutId.current);
@@ -45,7 +35,7 @@ export function usePasswordRecovery(): RecoveryStatus {
 
       if (event === 'INITIAL_SESSION') {
         if (isRecoveryFlow) {
-          return; // Wait
+          return; // Wait for the exchange to trigger PASSWORD_RECOVERY
         }
         if (session) {
           router.replace('/dashboard');
@@ -55,7 +45,13 @@ export function usePasswordRecovery(): RecoveryStatus {
       }
     });
 
+    // 2. Now that we are subscribed, trigger the code exchange.
+    // We use `void` to explicitly tell TypeScript we are not awaiting the promise,
+    // as the onAuthStateChange listener is responsible for handling the result.
     if (isRecoveryFlow) {
+      void exchangeCodeForSession();
+
+      // 3. Set the fallback timeout.
       timeoutId.current = setTimeout(() => {
         if (!hasProcessedRecovery.current) {
           router.replace('/login?error=expired_token');
@@ -63,6 +59,7 @@ export function usePasswordRecovery(): RecoveryStatus {
       }, 5000);
     }
 
+    // 4. Cleanup.
     return () => {
       subscription.unsubscribe();
       if (timeoutId.current) clearTimeout(timeoutId.current);
