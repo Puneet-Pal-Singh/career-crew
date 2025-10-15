@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabaseClient';
  * It explicitly calls the necessary Supabase function instead of relying on
  * the client to do it automatically.
  */
-export async function exchangeCodeForSession() {
+export async function exchangeCodeForSession(): Promise<boolean> {
   const searchParams = new URLSearchParams(window.location.search);
   const code = searchParams.get('code');
 
