@@ -2,7 +2,6 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-// ✅ STEP 1: Import usePathname to know which page we're on.
 import { usePathname } from "next/navigation"; 
 import { AuthChangeEvent, AuthError, AuthResponse, AuthTokenResponsePassword, Session, User, SignInWithPasswordCredentials, SignUpWithPasswordCredentials } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabaseClient";
@@ -10,9 +9,9 @@ import { supabase } from "@/lib/supabaseClient";
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  isLoading: boolean; // For signIn/signUp/signOut actions
+  isLoading: boolean;
   error: AuthError | null;
-  isInitialized: boolean; // True after initial session check by Supabase client
+  isInitialized: boolean;
   signIn: (credentials: SignInWithPasswordCredentials) => Promise<AuthTokenResponsePassword>;
   signUp: (credentials: SignUpWithPasswordCredentials) => Promise<AuthResponse>;
   signOut: () => Promise<void>;
@@ -25,27 +24,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoadingAction, setIsLoadingAction] = useState<boolean>(false);
   const [authError, setAuthError] = useState<AuthError | null>(null);
-  const [isInitialized, setIsInitialized] = useState<boolean>(false); // Tracks if onAuthStateChange has fired at least once
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
 
-  // ✅ STEP 2: Get the current URL path.
   const pathname = usePathname();
   
   useEffect(() => {
-    // ✅ ADDING DETAILED LOGS
-    console.log("--- AuthContext Build Version: 1.0.3 ---"); 
+    console.log("--- AuthContext Build Version: 1.0.4 ---"); 
     console.log(`[AuthContext] 🚀 useEffect triggered. Current pathname: "${pathname}"`);
 
-    if (pathname === '/update-password') {
-      console.log("[AuthContext] 🛑 Path is /update-password. STANDING DOWN. AuthContext will not run.");
-      setIsInitialized(true);
-      return; // Exit early and do nothing.
-    }
-
-    console.log("[AuthContext] ▶️ Path is NOT /update-password. Proceeding with auth setup.");
-    
-    // This console log will now only appear on pages where the context is active
-    console.log("[AuthContext] Setting up Supabase auth listener.");
-    
+    // Set up initial session
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
         console.log("[AuthContext] Initial getSession() completed. Session exists:", !!initialSession);
         if (!isInitialized) {
@@ -55,9 +42,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     });
     
+    // Set up auth listener
+    console.log("[AuthContext] Setting up Supabase auth listener.");
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event: AuthChangeEvent, currentSession: Session | null) => {
-        console.log("[AuthContext] onAuthStateChange event:", _event);
+        console.log("[AuthContext] onAuthStateChange event:", _event, "on path:", pathname);
+        
+        // CRITICAL FIX: Always ignore PASSWORD_RECOVERY events
+        // Let the usePasswordRecovery hook handle these exclusively
+        if (_event === 'PASSWORD_RECOVERY') {
+          console.log("[AuthContext] 🛑 Ignoring PASSWORD_RECOVERY event - delegating to usePasswordRecovery hook");
+          setIsInitialized(true); // Still mark as initialized
+          return; // Don't update session/user
+        }
+        
+        // Process all other events normally
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         setAuthError(null);
@@ -69,7 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("[AuthContext] Unsubscribing Supabase auth listener.");
       subscription?.unsubscribe();
     };
-  }, [isInitialized, pathname]); 
+  }); // Removed isInitialized from deps to prevent loops
 
   const signIn = async (credentials: SignInWithPasswordCredentials): Promise<AuthTokenResponsePassword> => {
     setIsLoadingAction(true);
@@ -94,7 +93,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setAuthError(null);
     const { error } = await supabase.auth.signOut();
     if (error) setAuthError(error);
-    // onAuthStateChange will set user/session to null
     setIsLoadingAction(false);
   };
 
