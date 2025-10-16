@@ -33,8 +33,14 @@ export function usePasswordRecovery(): RecoveryStatus {
         
         // Immediately scrub the token from the URL after it has been validated.
         if (typeof window !== 'undefined') {
-          const cleanUrl = `${window.location.pathname}${window.location.search}`;
-          window.history.replaceState({}, document.title, cleanUrl);
+          const url = new URL(window.location.href);
+          url.hash = ''; // Clear the hash
+
+          // Define all known sensitive params and delete them
+          const sensitiveParams = ['code', 'token', 'access_token', 'refresh_token', 'expires_in', 'token_type', 'provider_token'];
+          sensitiveParams.forEach(param => url.searchParams.delete(param));
+
+          window.history.replaceState({}, document.title, `${url.pathname}${url.search}`);
         }
         setStatus('AUTHENTICATED');
         return;
