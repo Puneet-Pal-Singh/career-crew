@@ -1,32 +1,52 @@
 // src/app/update-password/UpdatePasswordPageClient.tsx
 "use client";
 
-import { usePasswordRecovery } from '@/hooks/usePasswordRecovery';
-import UpdatePasswordForm from '@/components/auth/UpdatePasswordForm';
+import { useRecoverySession } from '@/lib/auth/hooks/useRecoverySession';
+import { useUpdatePassword } from '@/lib/auth/hooks/useUpdatePassword';
+import UpdatePasswordForm from '@/components/auth/password-reset/UpdatePasswordForm';
+import PasswordUpdateSuccess from '@/components/auth/password-reset/PasswordUpdateSuccess'; // Import the new component
 import { Loader2 } from 'lucide-react';
 
-/**
- * This is the client-side orchestrator for the update password page.
- * Its single responsibility is to use the `usePasswordRecovery` hook
- * to determine the auth state and then render the correct component.
- */
 export default function UpdatePasswordPageClient() {
-  const status = usePasswordRecovery();
+  const verificationStatus = useRecoverySession();
+  const {
+    form,
+    isLoading,
+    isSuccess,
+    error,
+    onSubmit,
+    handleContinueToLogin,
+  } = useUpdatePassword();
 
-  if (status === 'LOADING') {
+  if (verificationStatus === 'VERIFYING') {
     return (
-      <div className="flex justify-center items-center py-8">
+      <div className="flex flex-col justify-center items-center py-8 text-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-4 text-muted-foreground">Verifying your link...</p>
+        <p className="mt-4 text-muted-foreground">Verifying your recovery link...</p>
       </div>
     );
   }
 
-  if (status === 'AUTHENTICATED') {
-    return <UpdatePasswordForm />;
+  // CLEANED UP: Now uses the dedicated success component.
+  if (isSuccess) {
+    return <PasswordUpdateSuccess onContinue={handleContinueToLogin} />;
+  }
+  
+  if (verificationStatus === 'VERIFIED') {
+    return (
+      <UpdatePasswordForm
+        form={form}
+        onSubmit={onSubmit}
+        isLoading={isLoading}
+        error={error}
+      />
+    );
   }
 
-  // If the status is 'UNAUTHENTICATED', the hook has already handled the redirect,
-  // so we can just render null here while the page transitions.
-  return null;
+  return (
+    <div className="flex flex-col justify-center items-center py-8 text-center">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <p className="mt-4 text-muted-foreground">Redirecting...</p>
+    </div>
+  );
 }
