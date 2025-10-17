@@ -4,7 +4,7 @@
 import React, { ReactNode } from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import type { ThemeProviderProps } from "next-themes";
-import { AuthProvider } from "@/contexts/AuthContext"; // Core Auth
+import { AuthProvider } from "@/lib/auth/contexts/AuthContext"; // Core Auth
 import { UserProfileProvider } from "@/contexts/UserProfileContext"; // NEW: Profile Data
 
 interface AppProvidersProps {

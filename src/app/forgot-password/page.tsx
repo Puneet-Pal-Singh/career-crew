@@ -1,6 +1,6 @@
 // src/app/forgot-password/page.tsx
 import type { Metadata } from 'next';
-import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
+import ForgotPasswordForm from '@/components/auth/forgot-password/ForgotPasswordForm';
 
 export const metadata: Metadata = {
   title: 'Forgot Password - CareerCrew',

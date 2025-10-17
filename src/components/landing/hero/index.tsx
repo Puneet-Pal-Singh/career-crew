@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles} from 'lucide-react';
 // import { ArrowRight, Sparkles, Users, Briefcase, TrendingUp } from 'lucide-react';
 import AnimatedGradientBackground from '@/components/ui/AnimatedGradientBackground';
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/lib/auth/contexts/AuthContext";
 import { useEffect, useState } from 'react';
 
 // JSON-LD Structured Data for SEO

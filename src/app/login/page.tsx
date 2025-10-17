@@ -1,6 +1,6 @@
 // src/app/login/page.tsx
-import SignInForm from "@/components/auth/SignInForm";
-import AuthPageLayout from "@/components/auth/AuthPageLayout";
+import SignInForm from "@/components/auth/sign-in/SignInForm";
+import AuthPageLayout from "@/components/auth/layout/AuthPageLayout";
 import { createPageMetadata } from '@/lib/seo';
 
 export const metadata = createPageMetadata({

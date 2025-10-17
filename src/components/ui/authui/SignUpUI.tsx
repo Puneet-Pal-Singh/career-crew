@@ -2,7 +2,7 @@
 "use client";
 
 import type { UseFormReturn } from 'react-hook-form';
-import type { FormValues as SignUpFormValues } from '@/components/auth/SignUpForm';
+import type { FormValues as SignUpFormValues } from '@/components/auth/sign-up/SignUpForm';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
