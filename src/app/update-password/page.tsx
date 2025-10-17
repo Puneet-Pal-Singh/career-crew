@@ -1,5 +1,5 @@
 // /app/update-password/page.tsx
-import AuthPageLayout from '@/components/auth/AuthPageLayout';
+import AuthPageLayout from '@/components/auth/layout/AuthPageLayout';
 import UpdatePasswordPageClient from './UpdatePasswordPageClient'; // Import our new client component
 import type { Metadata } from 'next';
 

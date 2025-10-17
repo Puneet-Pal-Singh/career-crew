@@ -1,6 +1,6 @@
 // src/app/employer/signup/page.tsx
-import SignUpForm from "@/components/auth/SignUpForm";
-import AuthPageLayout from "@/components/auth/AuthPageLayout";
+import SignUpForm from "@/components/auth/sign-up/SignUpForm";
+import AuthPageLayout from "@/components/auth/layout/AuthPageLayout";
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
