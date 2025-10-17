@@ -11,6 +11,7 @@ import {
   seekerRoutePrefixes,
   adminRoutePrefixes,
 } from './routeMatchers';
+import { isValidInternalPath } from '@/lib/utils'; 
 
 /**
  * SRP: Handles all routing logic for an authenticated user.
@@ -66,11 +67,18 @@ export function handleAuthenticatedUser(
 export function handleUnauthenticatedUser(
   request: NextRequest
 ): NextResponse | null {
-  const { pathname } = request.nextUrl;
+  const { pathname, searchParams } = request.nextUrl;
 
   if (protectedRoutePrefixes.some(r => pathname.startsWith(r))) {
     const redirectUrl = new URL('/login', request.url);
     redirectUrl.searchParams.set('redirectTo', pathname);
+
+    // THE FIX: Validate the redirectTo parameter before using it.
+    const redirectTo = searchParams.get('redirectTo');
+    if (isValidInternalPath(redirectTo)) {
+      redirectUrl.searchParams.set('redirectTo', redirectTo);
+    }
+
     return NextResponse.redirect(redirectUrl);
   }
 

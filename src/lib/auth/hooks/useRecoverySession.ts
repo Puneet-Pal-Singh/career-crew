@@ -3,28 +3,26 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient'; // CORRECTED IMPORT
+import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
-import type { AuthChangeEvent } from '@supabase/supabase-js'; // IMPORT TYPE FOR EVENT
+import type { AuthChangeEvent } from '@supabase/supabase-js';
 
 type VerificationStatus = 'VERIFYING' | 'VERIFIED' | 'FAILED';
 
-/**
- * SRP: This hook's ONLY responsibility is to verify if the user is in a
- * valid password recovery session. It handles the PKCE code exchange and
- * listens to auth state, returning a simple status.
- */
 export const useRecoverySession = (): VerificationStatus => {
   const router = useRouter();
-  // No need to call a function, use the imported client directly.
   const [verificationStatus, setVerificationStatus] = useState<VerificationStatus>('VERIFYING');
+  // THE FIX: Add state to track if a code exchange is in progress
+  const [isExchangingCode, setIsExchangingCode] = useState(false);
 
   useEffect(() => {
     const exchangeCode = async () => {
       const searchParams = new URLSearchParams(window.location.search);
       const code = searchParams.get('code');
       if (code) {
+        setIsExchangingCode(true); // Mark exchange as started
         const { error } = await supabase.auth.exchangeCodeForSession(code);
+        setIsExchangingCode(false); // Mark exchange as finished
         if (error) {
           console.error('Password Recovery Error:', error.message);
           toast({
@@ -39,7 +37,6 @@ export const useRecoverySession = (): VerificationStatus => {
     };
     exchangeCode();
 
-    // CORRECTLY TYPED EVENT PARAMETER
     const { data: authListener } = supabase.auth.onAuthStateChange((event: AuthChangeEvent) => {
       if (event === 'PASSWORD_RECOVERY') {
         setVerificationStatus('VERIFIED');
@@ -52,6 +49,9 @@ export const useRecoverySession = (): VerificationStatus => {
 
   useEffect(() => {
     const checkInitialSession = async () => {
+      // THE FIX: Only run this check if we are not currently exchanging a code.
+      if (isExchangingCode) return;
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         const searchParams = new URLSearchParams(window.location.search);
@@ -60,9 +60,10 @@ export const useRecoverySession = (): VerificationStatus => {
         }
       }
     };
-    const timer = setTimeout(checkInitialSession, 1000); 
+    
+    const timer = setTimeout(checkInitialSession, 1000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [isExchangingCode]); // Re-run this check when the exchange finishes
 
   useEffect(() => {
     if (verificationStatus === 'FAILED') {

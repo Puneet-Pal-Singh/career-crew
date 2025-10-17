@@ -1,4 +1,4 @@
-// src/components/auth/PasswordUpdateSuccess.tsx
+// src/components/auth/password-reset/PasswordUpdateSuccess.tsx
 "use client";
 
 import { Button } from '@/components/ui/button';
