@@ -1,18 +1,26 @@
 // src/lib/auth/contexts/AuthContext.tsx
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-// ✅ STEP 1: Import usePathname to know which page we're on.
-import { usePathname } from "next/navigation"; 
-import { AuthChangeEvent, AuthError, AuthResponse, AuthTokenResponsePassword, Session, User, SignInWithPasswordCredentials, SignUpWithPasswordCredentials } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabaseClient";
+import React, { createContext, useContext, useState, ReactNode } from "react";
+import { 
+  AuthError, 
+  AuthResponse, 
+  AuthTokenResponsePassword, 
+  Session, 
+  User, 
+  SignInWithPasswordCredentials, 
+  SignUpWithPasswordCredentials 
+} from "@supabase/supabase-js";
+import { useAuthSession } from "../hooks/useAuthSession";
+import { signInWithPassword, signUpWithPassword, signOut as signOutAction } from "../authActions";
 
+// The context shape remains the same for consumers of the hook.
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  isLoading: boolean; // For signIn/signUp/signOut actions
+  isLoading: boolean;
   error: AuthError | null;
-  isInitialized: boolean; // True after initial session check by Supabase client
+  isInitialized: boolean;
   signIn: (credentials: SignInWithPasswordCredentials) => Promise<AuthTokenResponsePassword>;
   signUp: (credentials: SignUpWithPasswordCredentials) => Promise<AuthResponse>;
   signOut: () => Promise<void>;
@@ -20,95 +28,57 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * SRP: This provider's ONLY responsibility is to orchestrate the auth state.
+ * 1. It uses `useAuthSession` to get the live session.
+ * 2. It manages the loading/error state for auth actions.
+ * 3. It wraps the stateless functions from `authActions` with state management.
+ */
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [isLoadingAction, setIsLoadingAction] = useState<boolean>(false);
-  const [authError, setAuthError] = useState<AuthError | null>(null);
-  const [isInitialized, setIsInitialized] = useState<boolean>(false); // Tracks if onAuthStateChange has fired at least once
+  const { user, session, isInitialized } = useAuthSession();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<AuthError | null>(null);
 
-  // ✅ STEP 2: Get the current URL path.
-  const pathname = usePathname();
-  
-  // CACHE BUSTER: Version 1.0.3 - FORCE NEW BUILD
-  console.log("--- AuthContext Build Version: 1.0.3 ---"); 
-  
-  useEffect(() => {
-    // ✅ ADDING DETAILED LOGS
-    console.log(`[AuthContext] 🚀 useEffect triggered. Current pathname: "${pathname}"`);
-
-    if (pathname === '/update-password') {
-      console.log("[AuthContext] 🛑 Path is /update-password. STANDING DOWN. AuthContext will not run.");
-      setIsInitialized(true);
-      return; // Exit early and do nothing.
-    }
-
-    console.log("[AuthContext] ▶️ Path is NOT /update-password. Proceeding with auth setup.");
-    
-    // This console log will now only appear on pages where the context is active
-    console.log("[AuthContext] Setting up Supabase auth listener.");
-    
-    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
-        console.log("[AuthContext] Initial getSession() completed. Session exists:", !!initialSession);
-        if (!isInitialized) {
-            setSession(initialSession);
-            setUser(initialSession?.user ?? null);
-            setIsInitialized(true);
-        }
-    });
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event: AuthChangeEvent, currentSession: Session | null) => {
-        console.log("[AuthContext] onAuthStateChange event:", _event);
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        setAuthError(null);
-        setIsInitialized(true);
-      }
-    );
-
-    return () => {
-      console.log("[AuthContext] Unsubscribing Supabase auth listener.");
-      subscription?.unsubscribe();
-    };
-  }, [isInitialized, pathname]); 
-
-  const signIn = async (credentials: SignInWithPasswordCredentials): Promise<AuthTokenResponsePassword> => {
-    setIsLoadingAction(true);
-    setAuthError(null);
-    const response = await supabase.auth.signInWithPassword(credentials);
-    if (response.error) setAuthError(response.error);
-    setIsLoadingAction(false);
+  const signIn = async (credentials: SignInWithPasswordCredentials) => {
+    setIsLoading(true);
+    setError(null);
+    const response = await signInWithPassword(credentials);
+    if (response.error) setError(response.error);
+    setIsLoading(false);
     return response;
   };
 
-  const signUp = async (credentials: SignUpWithPasswordCredentials): Promise<AuthResponse> => {
-    setIsLoadingAction(true);
-    setAuthError(null);
-    const response = await supabase.auth.signUp(credentials);
-    if (response.error) setAuthError(response.error);
-    setIsLoadingAction(false);
+  const signUp = async (credentials: SignUpWithPasswordCredentials) => {
+    setIsLoading(true);
+    setError(null);
+    const response = await signUpWithPassword(credentials);
+    if (response.error) setError(response.error);
+    setIsLoading(false);
     return response;
   };
 
-  const signOut = async (): Promise<void> => {
-    setIsLoadingAction(true);
-    setAuthError(null);
-    const { error } = await supabase.auth.signOut();
-    if (error) setAuthError(error);
-    // onAuthStateChange will set user/session to null
-    setIsLoadingAction(false);
+  const signOut = async () => {
+    setIsLoading(true);
+    setError(null);
+    await signOutAction();
+    // The onAuthStateChange listener in useAuthSession will handle clearing the user/session.
+    setIsLoading(false);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, isLoading: isLoadingAction, error: authError, isInitialized, signIn, signUp, signOut }}>
+    <AuthContext.Provider 
+      value={{ user, session, isLoading, error, isInitialized, signIn, signUp, signOut }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
+// The consumer hook remains unchanged.
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
-  if (context === undefined) throw new Error("useAuth must be used within an AuthProvider");
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
   return context;
 };
