@@ -1,7 +1,7 @@
 // src/lib/middleware/middlewareHandlers.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import type { UserRole } from '@/types';
-import type { User } from './middleware.types';
+import type { User } from '@/lib/middleware/middleware.types';
 import {
   publicOnlyRoutes,
   onboardingRoute,
@@ -10,7 +10,7 @@ import {
   employerRoutePrefixes,
   seekerRoutePrefixes,
   adminRoutePrefixes,
-} from './routeMatchers';
+} from '@/lib/middleware/routeMatchers';
 import { isValidInternalPath } from '@/lib/utils';
 
 // FIX 2: Create a type guard to safely validate the user role.

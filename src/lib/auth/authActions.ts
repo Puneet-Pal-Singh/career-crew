@@ -2,11 +2,11 @@
 
 "use client";
 
-import { 
+import type { 
   AuthResponse, 
   AuthTokenResponsePassword, 
   SignInWithPasswordCredentials, 
-  SignUpWithPasswordCredentials 
+  SignUpWithPasswordCredentials,
 } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabaseClient";
 
