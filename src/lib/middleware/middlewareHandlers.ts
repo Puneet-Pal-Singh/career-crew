@@ -28,6 +28,24 @@ export function handleAuthenticatedUser(
 ): NextResponse | null {
   const { pathname } = request.nextUrl;
 
+  // --- THE DEFINITIVE FIX ---
+  // This is the new, high-priority check for the special recovery session.
+  // It MUST run before any other logic for an authenticated user.
+  const amr = user.amr || [];
+  const isPasswordRecovery = amr.some(entry => entry.method === 'recovery');
+  
+  // If the user is in the middle of a password recovery flow...
+  if (isPasswordRecovery) {
+    // ...they MUST be allowed to access the update-password page.
+    if (pathname === '/update-password') {
+      return null; // Returning null allows the request to proceed.
+    }
+    // ...and they MUST be redirected back to it if they try to go anywhere else.
+    // This "traps" them in the recovery flow until it's completed.
+    return NextResponse.redirect(new URL('/update-password', request.url));
+  }
+  // --- END OF FIX ---
+
   if (specialHandlingRoutes.includes(pathname)) {
     return null;
   }
