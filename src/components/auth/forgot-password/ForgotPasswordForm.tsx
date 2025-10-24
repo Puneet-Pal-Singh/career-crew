@@ -1,4 +1,4 @@
-// src/components/auth/ForgotPasswordForm.tsx
+// src/components/auth/forgot-password/ForgotPasswordForm.tsx
 "use client";
 
 import { useState } from 'react';

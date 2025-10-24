@@ -12,7 +12,6 @@ type VerificationStatus = 'VERIFYING' | 'VERIFIED' | 'FAILED';
 export const useRecoverySession = (): VerificationStatus => {
   const router = useRouter();
   const [verificationStatus, setVerificationStatus] = useState<VerificationStatus>('VERIFYING');
-  // THE FIX: Add state to track if a code exchange is in progress
   const [isExchangingCode, setIsExchangingCode] = useState(false);
 
   useEffect(() => {
@@ -20,9 +19,9 @@ export const useRecoverySession = (): VerificationStatus => {
       const searchParams = new URLSearchParams(window.location.search);
       const code = searchParams.get('code');
       if (code) {
-        setIsExchangingCode(true); // Mark exchange as started
+        setIsExchangingCode(true);
         const { error } = await supabase.auth.exchangeCodeForSession(code);
-        setIsExchangingCode(false); // Mark exchange as finished
+        setIsExchangingCode(false);
         if (error) {
           console.error('Password Recovery Error:', error.message);
           toast({
@@ -49,7 +48,6 @@ export const useRecoverySession = (): VerificationStatus => {
 
   useEffect(() => {
     const checkInitialSession = async () => {
-      // THE FIX: Only run this check if we are not currently exchanging a code.
       if (isExchangingCode) return;
 
       const { data: { session } } = await supabase.auth.getSession();
@@ -63,7 +61,7 @@ export const useRecoverySession = (): VerificationStatus => {
     
     const timer = setTimeout(checkInitialSession, 1000);
     return () => clearTimeout(timer);
-  }, [isExchangingCode]); // Re-run this check when the exchange finishes
+  }, [isExchangingCode]);
 
   useEffect(() => {
     if (verificationStatus === 'FAILED') {

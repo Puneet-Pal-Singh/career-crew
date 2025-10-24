@@ -37,7 +37,14 @@ export const useAuthSession = (): AuthSession => {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, currentSession) => {
+      (event, currentSession) => {
+        // THE CRITICAL FIX: The global listener must ignore the special
+        // password recovery event. This allows the dedicated useRecoverySession
+        // hook to handle it without interference.
+        if (event === 'PASSWORD_RECOVERY') {
+          return;
+        }
+
         // Only update state if the component is still mounted
         if (isMounted.current) {
           setSession(currentSession);
