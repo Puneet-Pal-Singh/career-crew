@@ -1,4 +1,7 @@
 // src/lib/auth/authActions.ts
+
+"use client";
+
 import { 
   AuthResponse, 
   AuthTokenResponsePassword, 
@@ -28,8 +31,9 @@ export const signUpWithPassword = (
 export const signOut = async (): Promise<{ error: null }> => {
   const { error } = await supabase.auth.signOut();
   if (error) {
-    console.error("Error signing out:", error);
-    // Even if there's an error, we proceed as if successful on the client.
+    console.error("Critical: Failed to sign out on server:", error);
+    // Note: We still return success to clear client state,
+    // but the error is logged for monitoring.
   }
   return { error: null }; // Ensure consistent return shape
 };
