@@ -4,7 +4,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 // FIX: Using the correct import path from YOUR file structure
 import { supabase } from "@/lib/supabaseClient"; 
-import { useAuth } from "./AuthContext";
+import { useAuth } from "@/lib/auth/contexts/AuthContext";
 import type { UserProfile } from '@/types';
 
 interface UserProfileContextType {
