@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth/contexts/AuthContext'; // Import our global auth hook
 import { Loader2 } from 'lucide-react';
+import { isValidInternalPath } from '@/lib/utils';
 
 export default function AuthCallbackPage() {
   const { user, isInitialized } = useAuth(); // Get the user state from the global context
@@ -20,8 +21,10 @@ export default function AuthCallbackPage() {
 
     // If our global context now has a user, the magic link was successful.
     if (user) {
-      const next = searchParams.get('next') || '/dashboard';
-      router.replace(next); // Redirect to the intended page (e.g., /update-password)
+      // THE FIX: Validate the 'next' parameter before redirecting.
+      const rawNext = searchParams.get('next');
+      const nextPath = isValidInternalPath(rawNext) ? rawNext : '/dashboard';
+      router.replace(nextPath); // Redirect to the intended page (e.g., /update-password)
     } else {
       // If auth is initialized but there's no user, the link was likely invalid or expired.
       console.error("Auth callback: User not found after initialization. The link may be invalid.");

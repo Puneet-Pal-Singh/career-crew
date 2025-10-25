@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
+import { type UpdatePasswordFormData } from '@/lib/formSchemas';
 
 // Co-locate the schema with the hook that uses it.
 const updatePasswordFormSchema = z
@@ -23,7 +24,9 @@ const updatePasswordFormSchema = z
   });
 
 // Export the type for the dumb component to use.
-export type UpdatePasswordFormData = z.infer<typeof updatePasswordFormSchema>;
+// The schema is now imported, not defined here.
+// The exported type now uses the imported schema.
+export type { UpdatePasswordFormData };
 
 export const usePasswordUpdate = () => {
   const router = useRouter();

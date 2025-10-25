@@ -19,6 +19,12 @@ function isValidUserRole(role: unknown): role is UserRole {
   return typeof role === 'string' && ['JOB_SEEKER', 'EMPLOYER', 'ADMIN'].includes(role);
 }
 
+// THE NEW OTP LOGIC: CCheck if the user's session was created for both 'otp' and 'magiclink' for robustness.
+function isOtpSignIn(user: User): boolean {
+  const amr = user.amr || [];
+  return amr.some(entry => entry.method === 'otp' || entry.method === 'magiclink');
+}
+
 /**
  * SRP: This function's only job is to "jail" a user in a specific flow
  * if they authenticated via a method that requires an immediate action (like OTP).
@@ -26,12 +32,8 @@ function isValidUserRole(role: unknown): role is UserRole {
  */
 function handleAuthMethodJail(request: NextRequest, user: User): NextResponse | null {
   const { pathname } = request.nextUrl;
-  const amr = user.amr || [];
-  
-  // THE NEW OTP LOGIC: Check if the user's session was created via a magic link (otp).
-  const isOtpSignIn = amr.some(entry => entry.method === 'otp');
 
-  if (isOtpSignIn) {
+  if (isOtpSignIn(user)) {
     // If they used an OTP link, they are "jailed" to the /update-password page.
     if (pathname === '/update-password') {
       return null; // They are in the correct place, allow them to proceed.
@@ -96,6 +98,10 @@ export function handleAuthenticatedUser(request: NextRequest, user: User): NextR
   // Priority 1: The "Jail". This MUST run first.
   const jailResponse = handleAuthMethodJail(request, user);
   if (jailResponse) return jailResponse;
+
+  // THE FIX: Allow special handling routes (like /update-password) to proceed
+  // immediately after the jail check to prevent further redirects.
+  if (specialHandlingRoutes.includes(pathname)) return null;
 
   // Priority 2: Onboarding.
   const onboardingResponse = handleOnboardingRedirect(request, user);

@@ -1,19 +1,20 @@
 // src/components/auth/forgot-password/ForgotPasswordForm.tsx
 "use client";
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { ArrowLeft, Mail } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import Link from 'next/link';
-import { Mail, ArrowLeft } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabaseClient';
 
 const formSchema = z.object({
   email: z.string().email('Please enter a valid email address.'),
