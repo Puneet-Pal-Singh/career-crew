@@ -69,7 +69,7 @@ export default function ForgotPasswordForm() {
             </div>
             <CardTitle className="text-2xl">Check your email</CardTitle>
             <CardDescription>
-                We&apos;ve sent a magic link to <br/>
+                We&apos;ve sent a password reset link to <br/>
                 <span className="font-medium text-foreground">{submittedEmail}</span>
             </CardDescription>
         </CardHeader>
@@ -86,7 +86,7 @@ export default function ForgotPasswordForm() {
     <Card>
       <CardHeader className="text-center">
         <CardTitle className="text-2xl">Forgot password?</CardTitle>
-        <CardDescription>No worries, we&apos;ll send you a magic link to sign in.</CardDescription>
+        <CardDescription>No worries, we&apos;ll send you a secure link to reset it.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -105,7 +105,7 @@ export default function ForgotPasswordForm() {
               )}
             />
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Sending Link...' : 'Send Magic Link'}
+              {isLoading ? 'Sending Link...' : 'Send Reset Link'}
             </Button>
             <div className="text-center">
                 <Button variant="link" asChild className="text-muted-foreground">
