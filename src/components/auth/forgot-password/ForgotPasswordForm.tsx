@@ -13,7 +13,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabaseClient';
 
 const formSchema = z.object({
@@ -46,19 +45,16 @@ export default function ForgotPasswordForm() {
       },
     });
 
-    setIsLoading(false);
-
     if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      // For security, always show the success message to prevent email enumeration.
-      setSubmittedEmail(values.email);
-      setIsSuccess(true);
-    }
+      // We can still log the error for our own debugging purposes.
+      console.error("Forgot Password Error:", error.message);
+    } 
+    
+    // THE FIX: Always show the success UI to prevent email enumeration.
+    // This happens regardless of whether there was an error or not.
+    setSubmittedEmail(values.email);
+    setIsSuccess(true);
+    setIsLoading(false);
   };
 
   if (isSuccess) {

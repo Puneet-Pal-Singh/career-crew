@@ -125,12 +125,14 @@ export function handleAuthenticatedUser(request: NextRequest, user: User): NextR
  * SRP: Handles all routing logic for an unauthenticated user. (No changes needed here)
  */
 export function handleUnauthenticatedUser(request: NextRequest): NextResponse | null {
-  const { pathname } = request.nextUrl;
+  const { pathname, search } = request.nextUrl;
 
   if (protectedRoutePrefixes.some(r => pathname.startsWith(r))) {
     const redirectUrl = new URL('/login', request.url);
-    if (isValidInternalPath(pathname)) {
-      redirectUrl.searchParams.set('redirectTo', pathname);
+    // THE FIX: Preserve the full path, including query parameters.
+    const fullPath = `${pathname}${search}`;
+    if (isValidInternalPath(fullPath)) {
+      redirectUrl.searchParams.set('redirectTo', fullPath);
     }
     return NextResponse.redirect(redirectUrl);
   }
