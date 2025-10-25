@@ -67,13 +67,18 @@ export default function UserNav({ user, profile }: UserNavProps) {
   // };
 
   const handleSignOut = async () => {
-    // 1. Tell Supabase to sign the user out.
-    await supabase.auth.signOut();
+    try{
+      // 1. Tell Supabase to sign the user out.
+      await supabase.auth.signOut();
 
-    // 2. Force a hard navigation to the homepage.
-    // This is the most reliable way to clear all client and server state
-    // and fixes the mobile and redirect bugs.
-    window.location.href = '/';
+      // 2. Force a hard navigation to the homepage.
+      // This is the most reliable way to clear all client and server state
+      // and fixes the mobile and redirect bugs.
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Sign out failed:', error);
+      // Optionally: show toast/alert to user
+    }
   };
 
   // The logic is now much simpler. If this component renders, we know the user exists.
