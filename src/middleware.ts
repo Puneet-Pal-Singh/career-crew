@@ -5,11 +5,8 @@ import { handleAuthenticatedUser, handleUnauthenticatedUser } from './lib/middle
 import type { User } from './lib/middleware/middleware.types';
 
 export async function middleware(request: NextRequest) {
-  const response = NextResponse.next({
-    request: { headers: request.headers },
-  });
-
-  const supabase = createSupabaseMiddlewareClient(request, response);
+  // THE CRUCIAL CHANGE: Our helper now returns both the client and a response object.
+  const { supabase, response } = createSupabaseMiddlewareClient(request);
 
   const { data: { user: rawUser } } = await supabase.auth.getUser();
   const user = rawUser as User | null;
@@ -17,13 +14,14 @@ export async function middleware(request: NextRequest) {
   let result: NextResponse | null = null;
 
   if (user) {
+    // We pass the original request to the handlers.
     result = handleAuthenticatedUser(request, user);
   } else {
     result = handleUnauthenticatedUser(request);
   }
 
-  // If a handler returned a redirect response, return it.
-  // Otherwise, return the original response to continue the request.
+  // If a handler returned a redirect, we use that.
+  // Otherwise, we return the response object that the Supabase client may have modified.
   return result ?? response;
 }
 

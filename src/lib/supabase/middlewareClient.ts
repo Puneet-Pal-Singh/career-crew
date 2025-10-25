@@ -1,39 +1,52 @@
 // src/lib/supabase/middlewareClient.ts
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import { type NextRequest, type NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 /**
  * SRP: This file's ONLY responsibility is to create a Supabase client
- * specifically for use within Next.js middleware.
+ * specifically for use within Next.js middleware, following the documented
+ * pattern to ensure Edge Runtime compatibility.
  */
-export const createSupabaseMiddlewareClient = (
-  request: NextRequest,
-  response: NextResponse
-) => {
-  return createServerClient(
+export const createSupabaseMiddlewareClient = (request: NextRequest) => {
+  // The response object is created here and will be passed around.
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
+
+  const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        // THE FIX: Use the modern getAll/setAll API to avoid deprecation warnings.
-        // This is more efficient and aligns with the latest @supabase/ssr standards.
-        getAll() {
-          return request.cookies.getAll();
+        get(name: string) {
+          return request.cookies.get(name)?.value;
         },
-        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              request.cookies.set(name, value); // Required for Server Components to see the change
-              response.cookies.set({ name, value, ...options });
-            });
-          } catch (error) {
-            // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
-            console.error("Middleware: Failed to set cookies.", error)
-          }
+        set(name: string, value: string, options: CookieOptions) {
+          // The request and response cookies are updated together.
+          request.cookies.set({ name, value, ...options });
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          });
+          response.cookies.set({ name, value, ...options });
+        },
+        remove(name: string, options: CookieOptions) {
+          // The request and response cookies are updated together.
+          request.cookies.set({ name, value: '', ...options });
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          });
+          response.cookies.set({ name, value: '', ...options });
         },
       },
     }
   );
+
+  // Return both the client and the response object.
+  return { supabase, response };
 };
