@@ -5,12 +5,11 @@ import { ensureAdmin } from '@/app/actions/helpers/adminAuthUtils';
 import { adminSupabase } from '@/lib/supabase/adminClient'; // THE FIX: Import the client instance
 import type { UserProfile } from '@/types';
 
-interface ActionResult {
-  success: boolean;
-  error?: string;
-  profile?: UserProfile;
-}
-
+// THE FIX: Use a discriminated union for a stricter and safer return type.
+type ActionResult = 
+  | { success: true; profile: UserProfile }
+  | { success: false; error: string };
+  
 /**
  * Fetches the full profile for a specific user (employer).
  * Requires ADMIN privileges.

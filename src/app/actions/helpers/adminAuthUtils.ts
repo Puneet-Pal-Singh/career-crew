@@ -44,3 +44,22 @@ export const ensureAdmin = async (): Promise<{ user: UserProfile; error?: undefi
   // The user is a confirmed admin. Return their full profile.
   return { user: userProfile };
 };
+
+/**
+ * A lightweight helper to check if the current user is an admin.
+ * Does not throw an error, returns a boolean.
+ * Useful for permission checks, not for gatekeeping.
+ */
+export const checkIsAdmin = async (): Promise<boolean> => {
+  const supabase = await getSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single<{ role: string }>();
+    
+  return profile?.role === 'ADMIN';
+};

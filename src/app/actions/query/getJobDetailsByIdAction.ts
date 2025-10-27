@@ -2,9 +2,10 @@
 "use server";
 
 import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
-import type { JobDetailData, UserRole } from '@/types'; 
+import type { JobDetailData } from '@/types'; 
 // Make sure your mapper import path is correct after the folder refactor
 import { mapRawJobToJobDetailData, type RawJobDataForDetail } from '@/app/actions/helpers/jobDataMappers';
+import { checkIsAdmin } from '@/app/actions/helpers/adminAuthUtils'; 
 import { unstable_noStore as noStore } from 'next/cache';
 
 // Use a Discriminated Union
@@ -45,9 +46,8 @@ export async function getJobDetailsByIdAction(jobId: number): Promise<ActionResu
         return { success: true, job: mapRawJobToJobDetailData(rawJob) };
       }
 
-      // THE FIX: Rule 3: Allow any user with the 'ADMIN' role to see it.
-      const userRole = user.app_metadata?.role as UserRole;
-      if (userRole === 'ADMIN') {
+      // THE FIX: Rule 3: Use the centralized helper for the admin check.
+      if (await checkIsAdmin()) {
         return { success: true, job: mapRawJobToJobDetailData(rawJob) };
       }
     }

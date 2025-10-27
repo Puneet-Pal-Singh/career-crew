@@ -26,6 +26,9 @@ interface PendingJobFromDb {
   employer_id: string;
 }
 
+// THE FIX: Define an explicit result type for the function.
+type FetchPendingJobsResult = { data: PendingJobFromDb[]; error: null } | { data: null; error: Error };
+
 /**
  * Fetches the list of jobs pending approval by calling our dedicated PostgreSQL function.
  * This function does NOT perform any business logic or security checks. Its only job
@@ -33,7 +36,7 @@ interface PendingJobFromDb {
  * 
  * @returns {Promise<{ data: PendingJobFromDb[] | null; error: Error | null }>}
  */
-export const fetchPendingJobs = async () => {
+export const fetchPendingJobs = async (): Promise<FetchPendingJobsResult> => {
   // We use a specific, non-admin client here because the security is handled
   // by the PostgreSQL function itself (SECURITY DEFINER).
   const supabase = await getSupabaseServerClient();

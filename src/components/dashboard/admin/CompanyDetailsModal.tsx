@@ -54,7 +54,7 @@ export default function CompanyDetailsModal({ employerId, isOpen, onClose }: Com
 
       const fetchProfile = async () => {
         const result = await getEmployerProfileForAdminAction(employerId);
-        if (result.success && result.profile) {
+        if (result.success) {
           setProfile(result.profile);
         } else {
           setError(result.error || "Failed to fetch profile.");
