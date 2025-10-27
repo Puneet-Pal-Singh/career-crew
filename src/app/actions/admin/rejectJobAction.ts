@@ -12,48 +12,44 @@ interface AdminActionResult {
 
 /**
  * Rejects a job posting. Requires ADMIN privileges.
- * @param jobId - The ID (string or number) of the job to reject.
+ * @param {number} jobId - The ID of the job to reject.
  */
-// FIX: The function now accepts a string or a number for the jobId.
-export async function rejectJob(jobId: string | number): Promise<AdminActionResult> {
+export async function rejectJob(jobId: number): Promise<AdminActionResult> {
   if (!jobId) {
-    console.warn("rejectJob Action: No jobId provided.");
     return { success: false, error: "Job ID is required for rejection." };
   }
-  // Coerce to string for consistent use in Supabase client and logging.
-  const idAsString = String(jobId);
 
-  const supabase = await getSupabaseServerClient();
   const actionName = "rejectJob";
   
   try {
-    const adminCheckResult = await ensureAdmin(supabase);
-    if (adminCheckResult.error || !adminCheckResult.user) {
-      return { success: false, error: adminCheckResult.error || "Admin privileges required." };
+    // THE FIX: Call ensureAdmin() with no arguments, as per our refactor.
+    const { user: adminUser, error: adminError } = await ensureAdmin();
+    if (adminError || !adminUser) {
+      return { success: false, error: adminError };
     }
-    const adminUser = adminCheckResult.user;
 
+    const supabase = await getSupabaseServerClient();
     const { error } = await supabase
       .from('jobs')
       .update({ 
         status: 'REJECTED' as JobStatus, 
         updated_at: new Date().toISOString() 
       })
-      .eq('id', idAsString) // Use the string version here
+      .eq('id', jobId)
       .eq('status', 'PENDING_APPROVAL' as JobStatus);
 
     if (error) {
-      console.error(`Server Action (${actionName}): Error rejecting job ${idAsString}. Message:`, error.message);
+      console.error(`[${actionName}] Error rejecting job ${jobId}:`, error.message);
       return { success: false, error: `Failed to reject job: ${error.message}` };
     }
     
-    console.log(`Server Action (${actionName}): Job ${idAsString} rejected by admin ${adminUser.id}.`);
+    console.log(`[${actionName}] Job ${jobId} rejected by admin ${adminUser.id}.`);
     
     return { success: true };
 
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "An unexpected error occurred.";
-    console.error(`Server Action (${actionName}): Unexpected error for job ${idAsString}. Message:`, message, err);
+    console.error(`[${actionName}] Unexpected error for job ${jobId}:`, message);
     return { success: false, error: message };
   }
 }
