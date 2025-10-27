@@ -38,23 +38,31 @@ export const usePendingJobs = (initialJobs: AdminPendingJobData[]) => {
 
     setProcessingJobId(jobToProcess.id);
     startTransition(async () => {
-      const result = await action(jobToProcess.id);
-      if (result.success) {
-        setJobs(prevJobs => prevJobs.filter(job => job.id !== jobToProcess.id));
-        toast({
-          title: `Job ${confirmationType === 'approve' ? 'Approved' : 'Rejected'}`,
-          description: `"${jobToProcess.title}" has been ${confirmationType === 'approve' ? 'approved and is now live' : 'rejected'}.`,
-        });
-      } else {
-        toast({
-          title: `Action Failed`,
-          description: result.error || `Could not ${confirmationType} the job.`,
-          variant: "destructive",
-        });
-      }
-      setProcessingJobId(null);
-      setConfirmationJob(null);
-      setConfirmationType(null);
+        // THE FIX: Wrap the async call in a try/catch block.
+        try {
+            const result = await action(jobToProcess.id);
+            if (result.success) {
+                setJobs(prevJobs => prevJobs.filter(job => job.id !== jobToProcess.id));
+                toast({
+                title: `Job ${confirmationType === 'approve' ? 'Approved' : 'Rejected'}`,
+                description: `"${jobToProcess.title}" has been ${confirmationType === 'approve' ? 'approved' : 'rejected'}.`,
+                });
+            } else {
+                toast({
+                title: `Action Failed`,
+                description: result.error || `Could not ${confirmationType} the job.`,
+                variant: "destructive",
+            });
+        }
+        } catch {
+            toast({
+                title: "Action Failed",
+                description: "An unexpected network error occurred.",
+                variant: "destructive",
+            });
+        } finally {
+            setProcessingJobId(null);
+        }
     });
   };
 
