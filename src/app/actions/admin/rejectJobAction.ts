@@ -1,49 +1,55 @@
 // src/app/actions/admin/rejectJobAction.ts
 "use server";
 
-import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
+import { adminSupabase } from '@/lib/supabase/adminClient';
 import { ensureAdmin } from '@/app/actions/helpers/adminAuthUtils';
 import type { JobStatus } from '@/types';
+import { revalidatePath } from 'next/cache';
 
 interface AdminActionResult {
   success: boolean;
   error?: string;
 }
 
-/**
- * Rejects a job posting. Requires ADMIN privileges.
- * @param {number} jobId - The ID of the job to reject.
- */
 export async function rejectJob(jobId: number): Promise<AdminActionResult> {
   if (!jobId) {
-    return { success: false, error: "Job ID is required for rejection." };
+    return { success: false, error: "Job ID is required." };
   }
 
   const actionName = "rejectJob";
   
   try {
-    // THE FIX: Call ensureAdmin() with no arguments, as per our refactor.
     const { user: adminUser, error: adminError } = await ensureAdmin();
     if (adminError || !adminUser) {
       return { success: false, error: adminError };
     }
 
-    const supabase = await getSupabaseServerClient();
-    const { error } = await supabase
+    // THE FIX: Apply the same correct pattern here.
+    const { data, error } = await adminSupabase
       .from('jobs')
       .update({ 
         status: 'REJECTED' as JobStatus, 
         updated_at: new Date().toISOString() 
       })
       .eq('id', jobId)
-      .eq('status', 'PENDING_APPROVAL' as JobStatus);
+      .eq('status', 'PENDING_APPROVAL' as JobStatus)
+      .select('id'); // Returns the 'id' of the updated row(s)
 
     if (error) {
       console.error(`[${actionName}] Error rejecting job ${jobId}:`, error.message);
       return { success: false, error: `Failed to reject job: ${error.message}` };
     }
     
+    // THE FIX: The count is the length of the data array.
+    const count = data?.length ?? 0;
+
+    if (count === 0) {
+      return { success: false, error: "Job not found or it has already been processed." };
+    }
+
     console.log(`[${actionName}] Job ${jobId} rejected by admin ${adminUser.id}.`);
+    
+    revalidatePath('/dashboard/admin/pending-approvals');
     
     return { success: true };
 
