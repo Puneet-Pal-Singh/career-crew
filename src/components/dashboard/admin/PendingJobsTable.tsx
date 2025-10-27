@@ -2,11 +2,11 @@
 "use client";
 
 import React, { useState, useTransition } from 'react';
-import Link from 'next/link'; // NEW: Import the Link component
-import type { AdminPendingJobData } from '@/types';
+import Link from 'next/link';
+import type { AdminPendingJobData, JobStatus } from '@/types';
 import { approveJob } from '@/app/actions/admin/approveJobAction';
 import { rejectJob } from '@/app/actions/admin/rejectJobAction';
-import { generateJobSlug } from '@/lib/utils'; // NEW: Import our slug utility
+import { generateJobSlug } from '@/lib/utils';
 
 // Import components
 import {
@@ -19,12 +19,28 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { CheckCircle, XCircle, Loader2, Eye, Clock } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
 interface PendingJobsTableProps {
   initialJobs: AdminPendingJobData[];
 }
+
+const getStatusBadgeVariant = (status: JobStatus): "default" | "destructive" | "outline" | "secondary" | null | undefined => {
+  switch (status) {
+    case 'APPROVED': return 'default';
+    case 'PENDING_APPROVAL': case 'DRAFT': return 'secondary';
+    case 'REJECTED': return 'destructive';
+    case 'ARCHIVED': case 'FILLED': return 'outline';
+    default: return 'default';
+  }
+};
+
+const formatStatusText = (status: JobStatus): string => {
+  return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+};
 
 export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps) {
   const [jobs, setJobs] = useState<AdminPendingJobData[]>(initialJobs);
@@ -87,90 +103,270 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
   if (jobs.length === 0 && initialJobs.length > 0) {
     // This case handles when all initial jobs have been processed
     return (
-        <div className="text-center py-10 border rounded-lg bg-card mt-8">
-            <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
-            <h3 className="mt-2 text-lg font-medium text-foreground">All Clear!</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-            All pending jobs have been reviewed.
-            </p>
-        </div>
-    );
-  }
-  
-  // This should ideally be handled by the parent page if initialJobs is empty.
-  // But as a fallback if for some reason initialJobs is empty but the page rendered the table.
-  if (initialJobs.length === 0) {
-    return null; // Or a message, but page component should handle "no pending jobs"
-  }
+         <div className="text-center py-10 border rounded-lg bg-card">
+             <CheckCircle className="mx-auto h-12 w-12 text-green-500 mb-4" />
+             <h3 className="text-lg font-medium text-foreground mb-2">All Clear!</h3>
+             <p className="text-sm text-muted-foreground">
+               All pending jobs have been reviewed.
+             </p>
+         </div>
+     );
+   }
+
+   // This should ideally be handled by the parent page if initialJobs is empty.
+   // But as a fallback if for some reason initialJobs is empty but the page rendered the table.
+   if (initialJobs.length === 0) {
+     return (
+       <div className="text-center py-10 border rounded-lg bg-card">
+         <Clock className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+         <h3 className="text-lg font-medium text-foreground mb-2">No Pending Jobs</h3>
+         <p className="text-sm text-muted-foreground">
+           There are currently no job postings awaiting review.
+         </p>
+       </div>
+     );
+   }
 
 
   return (
-    <Table>
-      <TableCaption>Job postings awaiting approval.</TableCaption>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[40%]">Job Title</TableHead>
-          <TableHead className="w-[30%]">Company</TableHead>
-          <TableHead>Date Submitted</TableHead>
-          <TableHead className="text-right w-[150px]">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
+    <Card>
+      {/* DESKTOP VIEW - Large screens */}
+      <div className="hidden lg:block">
+        <Table>
+          <TableCaption>Job postings awaiting approval.</TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="min-w-[250px]">Job Title</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Company</TableHead>
+              <TableHead>Date Submitted</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {jobs.map((job) => {
+              const jobSlug = generateJobSlug(job.id, job.title);
+
+              return (
+                <TableRow key={job.id} className="hover:bg-muted/50">
+                  <TableCell className="font-medium">
+                    <Link
+                      href={`/jobs/${jobSlug}`}
+                      className="hover:underline text-primary"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Preview job post (opens in new tab)"
+                    >
+                      {job.title}
+                    </Link>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusBadgeVariant(job.status)}>
+                      {formatStatusText(job.status)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{job.companyName}</TableCell>
+                  <TableCell>{job.createdAt}</TableCell>
+                  <TableCell className="text-right space-x-1">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      asChild
+                      title="Preview Job"
+                      className="h-8 w-8"
+                    >
+                      <Link href={`/jobs/${jobSlug}`} >
+                        <Eye className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    {processingJobId === job.id && isProcessing ? (
+                      <Button variant="outline" size="icon" disabled className="h-8 w-8">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      </Button>
+                    ) : (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleApprove(job.id, job.title)}
+                          disabled={isProcessing}
+                          className="h-8 w-8 text-green-600 border-green-200 hover:bg-green-50"
+                          title="Approve Job"
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleReject(job.id, job.title)}
+                          disabled={isProcessing}
+                          className="h-8 w-8 text-red-600 border-red-200 hover:bg-red-50"
+                          title="Reject Job"
+                        >
+                          <XCircle className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* TABLET VIEW - Medium screens */}
+      <div className="hidden md:block lg:hidden">
+        <div className="p-4 space-y-3">
+          {jobs.map((job) => {
+            const jobSlug = generateJobSlug(job.id, job.title);
+
+            return (
+              <div key={job.id} className="border rounded-lg p-4 bg-card">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex-grow min-w-0">
+                    <div className="flex items-center gap-3 mb-2">
+                      <Link
+                        href={`/jobs/${jobSlug}`}
+                        className="font-semibold text-base hover:underline text-primary flex-shrink-0"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Preview job post (opens in new tab)"
+                      >
+                        {job.title}
+                      </Link>
+                      <Badge variant={getStatusBadgeVariant(job.status)} className="text-xs">
+                        {formatStatusText(job.status)}
+                      </Badge>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      <p>{job.companyName}</p>
+                      <p>Submitted: {job.createdAt}</p>
+                    </div>
+                  </div>
+                  <div className="flex-shrink-0 flex items-center gap-1">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      asChild
+                      title="Preview Job"
+                      className="h-8 w-8"
+                    >
+                      <Link href={`/jobs/${jobSlug}`} >
+                        <Eye className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    {processingJobId === job.id && isProcessing ? (
+                      <Button variant="outline" size="icon" disabled className="h-8 w-8">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      </Button>
+                    ) : (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleApprove(job.id, job.title)}
+                          disabled={isProcessing}
+                          className="h-8 w-8 text-green-600 border-green-200 hover:bg-green-50"
+                          title="Approve Job"
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleReject(job.id, job.title)}
+                          disabled={isProcessing}
+                          className="h-8 w-8 text-red-600 border-red-200 hover:bg-red-50"
+                          title="Reject Job"
+                        >
+                          <XCircle className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* MOBILE VIEW - Small screens */}
+      <div className="md:hidden space-y-3 p-4">
         {jobs.map((job) => {
-          // NEW: Generate the SEO-friendly slug for the preview link.
           const jobSlug = generateJobSlug(job.id, job.title);
 
           return (
-            <TableRow key={job.id}>
-              <TableCell className="font-medium">
-                {/* THE IMPLEMENTATION: The title is now a link. */}
-                <Link
-                  href={`/jobs/${jobSlug}`}
-                  className="hover:underline text-primary"
-                  // UX Improvement: Open in a new tab so the admin doesn't lose their place.
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="Preview job post (opens in new tab)"
-                >
-                  {job.title}
-                </Link>
-              </TableCell>
-              <TableCell>{job.companyName}</TableCell>
-              <TableCell>{job.createdAt}</TableCell>
-              <TableCell className="text-right space-x-2">
-                {processingJobId === job.id && isProcessing ? (
-                  <Loader2 className="h-5 w-5 animate-spin inline-block" />
-                ) : (
-                  <>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => handleApprove(job.id, job.title)}
-                      disabled={isProcessing}
-                      className="text-green-600 border-green-600 hover:bg-green-50 hover:text-green-700"
-                      title="Approve Job"
-                    >
-                      <CheckCircle className="h-4 w-4 mr-1 sm:mr-2" /> 
-                      <span className="hidden sm:inline">Approve</span>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => handleReject(job.id, job.title)}
-                      disabled={isProcessing}
-                      className="text-red-600 border-red-600 hover:bg-red-50 hover:text-red-700"
-                      title="Reject Job"
-                    >
-                      <XCircle className="h-4 w-4 mr-1 sm:mr-2" />
-                      <span className="hidden sm:inline">Reject</span>
-                    </Button>
-                  </>
-                )}
-              </TableCell>
-            </TableRow>
+            <div key={job.id} className="border rounded-lg p-4 bg-card">
+              <div className="space-y-3">
+                {/* Header with title and status */}
+                <div className="flex items-start justify-between gap-2">
+                  <Link
+                    href={`/jobs/${jobSlug}`}
+                    className="font-semibold text-base hover:underline text-primary flex-1"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Preview job post"
+                  >
+                    {job.title}
+                  </Link>
+                  <Badge variant={getStatusBadgeVariant(job.status)} className="text-xs">
+                    {formatStatusText(job.status)}
+                  </Badge>
+                </div>
+
+                {/* Company and date */}
+                <div className="text-sm text-muted-foreground">
+                  <p>{job.companyName}</p>
+                  <p>Submitted: {job.createdAt}</p>
+                </div>
+
+                 {/* Actions */}
+                 <div className="flex items-center gap-1 pt-2">
+                   <Button
+                     variant="outline"
+                     size="icon"
+                     asChild
+                     className="h-8 w-8"
+                   >
+                     <Link href={`/jobs/${jobSlug}`} >
+                       <Eye className="h-4 w-4" />
+                     </Link>
+                   </Button>
+
+                   {processingJobId === job.id && isProcessing ? (
+                     <Button variant="outline" size="icon" disabled className="h-8 w-8">
+                       <Loader2 className="h-4 w-4 animate-spin" />
+                     </Button>
+                   ) : (
+                     <>
+                       <Button
+                         variant="outline"
+                         size="icon"
+                         onClick={() => handleApprove(job.id, job.title)}
+                         disabled={isProcessing}
+                         className="h-8 w-8 text-green-600 border-green-200 hover:bg-green-50"
+                       >
+                         <CheckCircle className="h-4 w-4" />
+                       </Button>
+                       <Button
+                         variant="outline"
+                         size="icon"
+                         onClick={() => handleReject(job.id, job.title)}
+                         disabled={isProcessing}
+                         className="h-8 w-8 text-red-600 border-red-200 hover:bg-red-50"
+                       >
+                         <XCircle className="h-4 w-4" />
+                       </Button>
+                     </>
+                   )}
+                 </div>
+              </div>
+            </div>
           );
         })}
-      </TableBody>
-    </Table>
+      </div>
+    </Card>
   );
 }

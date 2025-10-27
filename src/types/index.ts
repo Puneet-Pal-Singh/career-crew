@@ -112,6 +112,7 @@ export interface AdminPendingJobData {
   title: string;
   companyName: string;
   createdAt: string; // Formatted date
+  status: JobStatus; // Add status field
 }
 
 // If your 'applications' table has a distinct status enum like 'application_status_option'

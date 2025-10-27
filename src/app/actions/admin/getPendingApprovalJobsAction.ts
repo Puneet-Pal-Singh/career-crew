@@ -3,7 +3,7 @@
 
 import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
 import { ensureAdmin } from '@/app/actions/helpers/adminAuthUtils'; // Import admin helper
-import type { AdminPendingJobData } from '@/types'; // Assuming AdminPendingJobData is in types
+import type { AdminPendingJobData, JobStatus } from '@/types'; // Assuming AdminPendingJobData is in types
 
 interface AdminActionResult { // Common result structure
   success: boolean;
@@ -32,7 +32,7 @@ export async function getPendingApprovalJobs(): Promise<GetPendingJobsResult> {
 
     const { data: pendingJobsData, error: fetchError } = await supabase
       .from('jobs')
-      .select('id, title, company_name, created_at') // Fields for AdminPendingJobData
+      .select('id, title, company_name, created_at, status') // Fields for AdminPendingJobData
       .eq('status', 'PENDING_APPROVAL')
       .order('created_at', { ascending: true }); // Oldest pending first
 
@@ -48,6 +48,7 @@ export async function getPendingApprovalJobs(): Promise<GetPendingJobsResult> {
       createdAt: new Date(job.created_at).toLocaleDateString('en-US', {
         year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
       }),
+      status: job.status as JobStatus,
     }));
     
     return { success: true, jobs: displayJobs };
