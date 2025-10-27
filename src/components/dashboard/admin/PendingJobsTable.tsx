@@ -23,6 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { CheckCircle, XCircle, Loader2, Eye, Clock } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import ConfirmationDialog from '@/components/shared/ConfirmationDialog';
 
 interface PendingJobsTableProps {
   initialJobs: AdminPendingJobData[];
@@ -47,10 +48,12 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
   const [isProcessing, startTransition] = useTransition();
   // FIX: The processing ID should be a number to match the job.id type.
   const [processingJobId, setProcessingJobId] = useState<number | null>(null);
+  const [confirmationJob, setConfirmationJob] = useState<AdminPendingJobData | null>(null);
+  const [confirmationType, setConfirmationType] = useState<'approve' | 'reject' | null>(null);
   const { toast } = useToast(); // For showing success/error messages
 
   // FIX: This handler now accepts a number for the jobId.
-  const handleApprove = async (jobId: number, jobTitle: string) => {
+  const handleApproveJob = async (jobId: number, jobTitle: string) => {
     setProcessingJobId(jobId);
     startTransition(async () => {
       // we used to Convert the numeric ID to a string before sending to the server action.
@@ -76,7 +79,7 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
   };
 
   // FIX: This handler now accepts a number for the jobId.
-  const handleReject = async (jobId: number, jobTitle: string) => {
+  const handleRejectJob = async (jobId: number, jobTitle: string) => {
     // Optional: Add a confirmation dialog before rejecting
     setProcessingJobId(jobId);
     startTransition(async () => {
@@ -100,18 +103,44 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
     });
   };
 
+  const handleApprove = (job: AdminPendingJobData) => {
+    setConfirmationJob(job);
+    setConfirmationType('approve');
+  };
+
+  const handleReject = (job: AdminPendingJobData) => {
+    setConfirmationJob(job);
+    setConfirmationType('reject');
+  };
+
+  const handleConfirmAction = () => {
+    if (!confirmationJob || !confirmationType) return;
+    if (confirmationType === 'approve') {
+      handleApproveJob(confirmationJob.id, confirmationJob.title);
+    } else if (confirmationType === 'reject') {
+      handleRejectJob(confirmationJob.id, confirmationJob.title);
+    }
+    setConfirmationJob(null);
+    setConfirmationType(null);
+  };
+
+  const handleCloseDialog = () => {
+    setConfirmationJob(null);
+    setConfirmationType(null);
+  };
+
   if (jobs.length === 0 && initialJobs.length > 0) {
     // This case handles when all initial jobs have been processed
     return (
-         <div className="text-center py-10 border rounded-lg bg-card">
-             <CheckCircle className="mx-auto h-12 w-12 text-green-500 mb-4" />
-             <h3 className="text-lg font-medium text-foreground mb-2">All Clear!</h3>
-             <p className="text-sm text-muted-foreground">
-               All pending jobs have been reviewed.
-             </p>
-         </div>
-     );
-   }
+      <div className="text-center py-10 border rounded-lg bg-card">
+          <CheckCircle className="mx-auto h-12 w-12 text-green-500 mb-4" />
+          <h3 className="text-lg font-medium text-foreground mb-2">All Clear!</h3>
+          <p className="text-sm text-muted-foreground">
+            All pending jobs have been reviewed.
+          </p>
+      </div>
+    );
+  }
 
    // This should ideally be handled by the parent page if initialJobs is empty.
    // But as a fallback if for some reason initialJobs is empty but the page rendered the table.
@@ -128,8 +157,9 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
    }
 
 
-  return (
-    <Card>
+   return (
+     <>
+       <Card>
       {/* DESKTOP VIEW - Large screens */}
       <div className="hidden lg:block">
         <Table>
@@ -165,7 +195,10 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
                       {formatStatusText(job.status)}
                     </Badge>
                   </TableCell>
-                  <TableCell>{job.companyName}</TableCell>
+                   <TableCell>
+                     <div>{job.companyName}</div>
+                     <div className="text-sm text-muted-foreground">{job.employerEmail}</div>
+                   </TableCell>
                   <TableCell>{job.createdAt}</TableCell>
                   <TableCell className="text-right space-x-1">
                     <Button
@@ -188,7 +221,7 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => handleApprove(job.id, job.title)}
+                          onClick={() => handleApprove(job)}
                           disabled={isProcessing}
                           className="h-8 w-8 text-green-600 border-green-200 hover:bg-green-50"
                           title="Approve Job"
@@ -198,7 +231,7 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => handleReject(job.id, job.title)}
+                          onClick={() => handleReject(job)}
                           disabled={isProcessing}
                           className="h-8 w-8 text-red-600 border-red-200 hover:bg-red-50"
                           title="Reject Job"
@@ -239,10 +272,11 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
                         {formatStatusText(job.status)}
                       </Badge>
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      <p>{job.companyName}</p>
-                      <p>Submitted: {job.createdAt}</p>
-                    </div>
+                     <div className="text-sm text-muted-foreground">
+                       <p>{job.companyName}</p>
+                       <p>{job.employerEmail}</p>
+                       <p>Submitted: {job.createdAt}</p>
+                     </div>
                   </div>
                   <div className="flex-shrink-0 flex items-center gap-1">
                     <Button
@@ -265,7 +299,7 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => handleApprove(job.id, job.title)}
+                          onClick={() => handleApprove(job)}
                           disabled={isProcessing}
                           className="h-8 w-8 text-green-600 border-green-200 hover:bg-green-50"
                           title="Approve Job"
@@ -275,7 +309,7 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => handleReject(job.id, job.title)}
+                          onClick={() => handleReject(job)}
                           disabled={isProcessing}
                           className="h-8 w-8 text-red-600 border-red-200 hover:bg-red-50"
                           title="Reject Job"
@@ -316,11 +350,12 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
                   </Badge>
                 </div>
 
-                {/* Company and date */}
-                <div className="text-sm text-muted-foreground">
-                  <p>{job.companyName}</p>
-                  <p>Submitted: {job.createdAt}</p>
-                </div>
+                 {/* Company and date */}
+                 <div className="text-sm text-muted-foreground">
+                   <p>{job.companyName}</p>
+                   <p>{job.employerEmail}</p>
+                   <p>Submitted: {job.createdAt}</p>
+                 </div>
 
                  {/* Actions */}
                  <div className="flex items-center gap-1 pt-2">
@@ -344,7 +379,7 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
                        <Button
                          variant="outline"
                          size="icon"
-                         onClick={() => handleApprove(job.id, job.title)}
+                         onClick={() => handleApprove(job)}
                          disabled={isProcessing}
                          className="h-8 w-8 text-green-600 border-green-200 hover:bg-green-50"
                        >
@@ -353,7 +388,7 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
                        <Button
                          variant="outline"
                          size="icon"
-                         onClick={() => handleReject(job.id, job.title)}
+                         onClick={() => handleReject(job)}
                          disabled={isProcessing}
                          className="h-8 w-8 text-red-600 border-red-200 hover:bg-red-50"
                        >
@@ -366,7 +401,17 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
             </div>
           );
         })}
-      </div>
-    </Card>
-  );
-}
+       </div>
+     </Card>
+
+     <ConfirmationDialog
+       isOpen={!!confirmationJob}
+       onClose={handleCloseDialog}
+       onConfirm={handleConfirmAction}
+       title={confirmationType === 'approve' ? 'Approve Job?' : 'Reject Job?'}
+       description={confirmationType === 'approve' ? `Are you sure you want to approve "${confirmationJob?.title}"? This will make the job live.` : `Are you sure you want to reject "${confirmationJob?.title}"?`}
+       confirmText={confirmationType === 'approve' ? 'Approve' : 'Reject'}
+     />
+   </>
+   );
+ }
