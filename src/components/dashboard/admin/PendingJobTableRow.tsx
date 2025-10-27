@@ -15,9 +15,10 @@ interface PendingJobTableRowProps {
   isProcessing: boolean;
   onApprove: (job: AdminPendingJobData) => void;
   onReject: (job: AdminPendingJobData) => void;
+  onCompanyClick: (employerId: string) => void;
 }
 
-export default function PendingJobTableRow({ job, isProcessing, onApprove, onReject }: PendingJobTableRowProps) {
+export default function PendingJobTableRow({ job, isProcessing, onApprove, onReject, onCompanyClick }: PendingJobTableRowProps) {
   const jobSlug = generateJobSlug(job.id, job.title);
 
   return (
@@ -39,7 +40,14 @@ export default function PendingJobTableRow({ job, isProcessing, onApprove, onRej
         </Badge>
       </TableCell>
       <TableCell>
-        <div>{job.companyName}</div>
+        {/* THE FIX: Company name is now a button to trigger the modal */}
+        <Button 
+          variant="link" 
+          onClick={() => onCompanyClick(job.employerId)} 
+          className="p-0 h-auto font-normal"
+        >
+          {job.companyName}
+        </Button>
       </TableCell>
       <TableCell>{job.createdAt}</TableCell>
       <TableCell className="text-right space-x-1">

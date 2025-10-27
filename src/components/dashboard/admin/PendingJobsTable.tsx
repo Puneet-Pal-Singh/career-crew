@@ -1,7 +1,7 @@
 // src/components/dashboard/admin/PendingJobsTable.tsx
 "use client";
 
-import React from 'react';
+import React, { useState }  from 'react';
 import { usePendingJobs } from '@/hooks/usePendingJobs'; // Import our new custom hook
 import type { AdminPendingJobData } from '@/types';
 
@@ -12,6 +12,7 @@ import PendingJobTableRow from './PendingJobTableRow';
 import PendingJobCard from './PendingJobCard';
 import PendingJobsEmptyState from './PendingJobsEmptyState';
 import ConfirmationDialog from '@/components/shared/ConfirmationDialog';
+import CompanyDetailsModal from './CompanyDetailsModal'; 
 
 interface PendingJobsTableProps {
   initialJobs: AdminPendingJobData[];
@@ -31,6 +32,17 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
     handleConfirmAction,
     handleCloseDialog,
   } = usePendingJobs(initialJobs);
+
+  // NEW: State management for the company details modal
+  const [selectedEmployerId, setSelectedEmployerId] = useState<string | null>(null);
+
+  const handleCompanyClick = (employerId: string) => {
+    setSelectedEmployerId(employerId);
+  };
+
+  const handleCloseCompanyModal = () => {
+    setSelectedEmployerId(null);
+  };
 
   // If there are no jobs to display, render the appropriate empty state.
   if (jobs.length === 0) {
@@ -62,6 +74,7 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
                   isProcessing={isProcessing && processingJobId === job.id}
                   onApprove={handleApprove}
                   onReject={handleReject}
+                  onCompanyClick={handleCompanyClick}
                 />
               ))}
             </TableBody>
@@ -77,6 +90,7 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
               isProcessing={isProcessing && processingJobId === job.id}
               onApprove={handleApprove}
               onReject={handleReject}
+              onCompanyClick={handleCompanyClick}
             />
           ))}
         </div>
@@ -90,6 +104,13 @@ export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps)
         title={confirmationType === 'approve' ? 'Approve Job?' : 'Reject Job?'}
         description={confirmationType === 'approve' ? `Are you sure you want to approve "${confirmationJob?.title}"? This will make the job live.` : `Are you sure you want to reject "${confirmationJob?.title}"?`}
         confirmText={confirmationType === 'approve' ? 'Approve' : 'Reject'}
+      />
+
+      {/* NEW: The Company Details Modal */}
+      <CompanyDetailsModal
+        isOpen={!!selectedEmployerId}
+        employerId={selectedEmployerId}
+        onClose={handleCloseCompanyModal}
       />
     </>
   );

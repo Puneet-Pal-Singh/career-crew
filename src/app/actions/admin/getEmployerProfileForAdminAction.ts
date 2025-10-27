@@ -2,7 +2,7 @@
 "use server";
 
 import { ensureAdmin } from '@/app/actions/helpers/adminAuthUtils';
-import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
+import { adminSupabase } from '@/lib/supabase/adminClient'; // THE FIX: Import the client instance
 import type { UserProfile } from '@/types';
 
 interface ActionResult {
@@ -33,24 +33,41 @@ export async function getEmployerProfileForAdminAction(employerId: string): Prom
       return { success: false, error: adminError };
     }
 
-    // 2. Data Fetching
-    const supabase = await getSupabaseServerClient();
-    const { data: profile, error: fetchError } = await supabase
+    // THE FIX: Use the imported adminSupabase client directly.
+    // 1. Fetch the core user data from auth.users.
+    const { data: { user: authUser }, error: authUserError } = await adminSupabase.auth.admin.getUserById(employerId);
+
+    if (authUserError) {
+      console.error(`[${actionName}] Error fetching user from auth.users:`, authUserError.message);
+      return { success: false, error: "Failed to fetch core user data." };
+    }
+    if (!authUser) {
+      return { success: false, error: `No user found in auth.users for ID ${employerId}.` };
+    }
+
+    // 2. Fetch the supplemental profile data from public.profiles.
+    const { data: profileData, error: profileError } = await adminSupabase
       .from('profiles')
-      .select('*')
+      .select('full_name, avatar_url, role, has_completed_onboarding, updated_at')
       .eq('id', employerId)
-      .single<UserProfile>();
+      .single();
 
-    if (fetchError) {
-      console.error(`[${actionName}] Error fetching profile for ID ${employerId}:`, fetchError.message);
-      return { success: false, error: "Failed to fetch employer profile." };
+    if (profileError && profileError.code !== 'PGRST116') { // Ignore "0 rows" error
+      console.warn(`[${actionName}] Could not fetch profile for user ${employerId}.`, profileError.message);
     }
+    
+    // 3. Combine the data.
+    const combinedProfile: UserProfile = {
+      id: authUser.id,
+      email: authUser.email || 'No email provided',
+      full_name: profileData?.full_name ?? 'N/A',
+      avatar_url: profileData?.avatar_url ?? null,
+      role: profileData?.role ?? 'JOB_SEEKER',
+      has_completed_onboarding: profileData?.has_completed_onboarding ?? false,
+      updated_at: profileData?.updated_at ?? authUser.updated_at ?? new Date().toISOString(),
+    };
 
-    if (!profile) {
-      return { success: false, error: `No profile found for employer ID ${employerId}.` };
-    }
-
-    return { success: true, profile };
+    return { success: true, profile: combinedProfile };
 
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "An unexpected error occurred.";

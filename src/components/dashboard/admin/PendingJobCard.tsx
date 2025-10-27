@@ -14,9 +14,10 @@ interface PendingJobCardProps {
   isProcessing: boolean;
   onApprove: (job: AdminPendingJobData) => void;
   onReject: (job: AdminPendingJobData) => void;
+  onCompanyClick: (employerId: string) => void;
 }
 
-export default function PendingJobCard({ job, isProcessing, onApprove, onReject }: PendingJobCardProps) {
+export default function PendingJobCard({ job, isProcessing, onApprove, onReject, onCompanyClick }: PendingJobCardProps) {
   const jobSlug = generateJobSlug(job.id, job.title);
 
   return (
@@ -38,7 +39,16 @@ export default function PendingJobCard({ job, isProcessing, onApprove, onReject 
         </div>
 
         <div className="text-sm text-muted-foreground">
-          <p>{job.companyName}</p>
+          {/* THE FIX: Company name is now a button */}
+          <p>
+            <Button 
+              variant="link" 
+              onClick={() => onCompanyClick(job.employerId)} 
+              className="p-0 h-auto text-muted-foreground font-normal"
+            >
+              {job.companyName}
+            </Button>
+          </p>
           <p>Submitted: {job.createdAt}</p>
         </div>
 
