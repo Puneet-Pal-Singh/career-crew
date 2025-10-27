@@ -5,7 +5,7 @@ import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
 import type { JobDetailData } from '@/types'; 
 // Make sure your mapper import path is correct after the folder refactor
 import { mapRawJobToJobDetailData, type RawJobDataForDetail } from '@/app/actions/helpers/jobDataMappers';
-import { checkIsAdmin } from '@/app/actions/helpers/adminAuthUtils'; 
+import { ensureAdmin } from '@/app/actions/helpers/adminAuthUtils'; 
 import { unstable_noStore as noStore } from 'next/cache';
 
 // Use a Discriminated Union
@@ -47,7 +47,10 @@ export async function getJobDetailsByIdAction(jobId: number): Promise<ActionResu
       }
 
       // THE FIX: Rule 3: Use the centralized helper for the admin check.
-      if (await checkIsAdmin()) {
+      // THE FIX: Use the more robust ensureAdmin check.
+      const { error: adminError } = await ensureAdmin();
+      if (!adminError) {
+        // If ensureAdmin succeeds (no error), the user is a valid admin.
         return { success: true, job: mapRawJobToJobDetailData(rawJob) };
       }
     }

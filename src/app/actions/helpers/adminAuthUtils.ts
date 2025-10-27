@@ -29,15 +29,16 @@ export const ensureAdmin = async (): Promise<{ user: UserProfile; error?: undefi
     .single<UserProfile>();
 
   if (profileError) {
-    console.error("ensureAdmin: Error fetching profile for user:", authUser.id, profileError.message);
+    console.error("ensureAdmin: Error fetching profile.", profileError.message);
     return { error: "Failed to retrieve user profile to verify admin status." };
   }
+
   if (!userProfile) {
     return { error: "User profile not found. Cannot verify admin status." };
   }
 
   if (userProfile.role !== 'ADMIN' || !userProfile.has_completed_onboarding) {
-    console.warn(`ensureAdmin: User ${authUser.id} with role '${userProfile.role}' attempted an admin action. Access denied.`);
+    console.warn(`ensureAdmin: Non-admin attempted admin action.`, { role: userProfile.role });
     return { error: "Admin privileges required for this action." };
   }
   

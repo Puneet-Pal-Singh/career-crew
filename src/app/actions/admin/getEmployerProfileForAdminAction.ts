@@ -3,7 +3,7 @@
 
 import { ensureAdmin } from '@/app/actions/helpers/adminAuthUtils';
 import { adminSupabase } from '@/lib/supabase/adminClient'; // THE FIX: Import the client instance
-import type { UserProfile } from '@/types';
+import type { UserProfile, UserRole } from '@/types';
 
 // THE FIX: Use a discriminated union for a stricter and safer return type.
 type ActionResult = 
@@ -52,7 +52,7 @@ export async function getEmployerProfileForAdminAction(employerId: string): Prom
       .single();
 
     if (profileError && profileError.code !== 'PGRST116') { // Ignore "0 rows" error
-      console.warn(`[${actionName}] Could not fetch profile for user ${employerId}.`, profileError.message);
+      console.warn(`[${actionName}] Could not fetch profile for a user.`, profileError.message);
     }
     
     // 3. Combine the data.
@@ -61,7 +61,8 @@ export async function getEmployerProfileForAdminAction(employerId: string): Prom
       email: authUser.email || 'No email provided',
       full_name: profileData?.full_name ?? 'N/A',
       avatar_url: profileData?.avatar_url ?? null,
-      role: profileData?.role ?? 'JOB_SEEKER',
+      // THE FIX: Add explicit cast for type safety.
+      role: (profileData?.role ?? 'JOB_SEEKER') as UserRole,
       has_completed_onboarding: profileData?.has_completed_onboarding ?? false,
       updated_at: profileData?.updated_at ?? authUser.updated_at ?? new Date().toISOString(),
     };
