@@ -113,6 +113,7 @@ export interface AdminPendingJobData {
   companyName: string;
   createdAt: string; // Formatted date
   status: JobStatus; // Add status field
+  employerId: string; // NEW: The UUID of the employer who posted the job
 }
 
 // If your 'applications' table has a distinct status enum like 'application_status_option'
