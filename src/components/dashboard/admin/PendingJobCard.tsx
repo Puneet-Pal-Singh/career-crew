@@ -27,8 +27,8 @@ export default function PendingJobCard({ job, isProcessing, onApprove, onReject,
           <Link
             href={`/jobs/${jobSlug}`}
             className="font-semibold text-base hover:underline text-primary flex-1"
-            target="_blank"
-            rel="noopener noreferrer"
+            // target="_blank"
+            // rel="noopener noreferrer"
             title="Preview job post"
           >
             {job.title}
@@ -38,23 +38,25 @@ export default function PendingJobCard({ job, isProcessing, onApprove, onReject,
           </Badge>
         </div>
 
-        <div className="text-sm text-muted-foreground">
-          {/* THE FIX: Company name is now a button */}
-          <p>
-            <Button 
-              variant="link" 
-              onClick={() => onCompanyClick(job.employerId)} 
-              className="p-0 h-auto text-muted-foreground font-normal"
+       <div className="text-sm text-muted-foreground space-y-1">
+          <div>
+            <button
+              onClick={() => onCompanyClick(job.employerId)}
+              className="font-medium hover:underline text-primary text-left"
+              title="View company details"
             >
               {job.companyName}
-            </Button>
-          </p>
+            </button>
+          </div>
           <p>Submitted: {job.createdAt}</p>
         </div>
 
         <div className="flex items-center gap-1 pt-2">
           <Button asChild variant="outline" size="icon" className="h-8 w-8">
-            <Link href={`/jobs/${jobSlug}`} target="_blank">
+            <Link 
+                href={`/jobs/${jobSlug}`} 
+                // target="_blank"
+            >
               <Eye className="h-4 w-4" />
             </Link>
           </Button>

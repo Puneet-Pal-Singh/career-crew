@@ -27,8 +27,8 @@ export default function PendingJobTableRow({ job, isProcessing, onApprove, onRej
         <Link
           href={`/jobs/${jobSlug}`}
           className="hover:underline text-primary"
-          target="_blank"
-          rel="noopener noreferrer"
+        //   target="_blank"
+        //   rel="noopener noreferrer"
           title="Preview job post (opens in new tab)"
         >
           {job.title}
@@ -52,7 +52,10 @@ export default function PendingJobTableRow({ job, isProcessing, onApprove, onRej
       <TableCell>{job.createdAt}</TableCell>
       <TableCell className="text-right space-x-1">
         <Button asChild variant="outline" size="icon" title="Preview Job" className="h-8 w-8">
-          <Link href={`/jobs/${jobSlug}`} target="_blank">
+          <Link 
+            href={`/jobs/${jobSlug}`} 
+            // target="_blank"
+        >
             <Eye className="h-4 w-4" />
           </Link>
         </Button>
