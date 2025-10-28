@@ -2,9 +2,10 @@
 "use server";
 
 import { getSupabaseServerClient } from '@/lib/supabase/serverClient';
-import type { JobDetailData } from '@/types';
+import type { JobDetailData } from '@/types'; 
 // Make sure your mapper import path is correct after the folder refactor
 import { mapRawJobToJobDetailData, type RawJobDataForDetail } from '@/app/actions/helpers/jobDataMappers';
+import { ensureAdmin } from '@/app/actions/helpers/adminAuthUtils'; 
 import { unstable_noStore as noStore } from 'next/cache';
 
 // Use a Discriminated Union
@@ -32,15 +33,29 @@ export async function getJobDetailsByIdAction(jobId: number): Promise<ActionResu
       return { success: false, error: 'NOT_FOUND' };
     }
 
+    // Rule 1: Allow public access if the job is approved.
     if (rawJob.status === 'APPROVED') {
       return { success: true, job: mapRawJobToJobDetailData(rawJob) };
     }
 
-    if (user && user.id === rawJob.employer_id) {
-      // The mapper function needs to know the status, so we pass the whole rawJob
-      return { success: true, job: mapRawJobToJobDetailData(rawJob) };
+    // If the job is NOT approved, we now check for special permissions.
+    if (user) {
+      // Rule 2: Allow the employer who owns the job to see it.
+      if (user.id === rawJob.employer_id) {
+        // The mapper function needs to know the status, so we pass the whole rawJob
+        return { success: true, job: mapRawJobToJobDetailData(rawJob) };
+      }
+
+      // THE FIX: Rule 3: Use the centralized helper for the admin check.
+      // THE FIX: Use the more robust ensureAdmin check.
+      const { error: adminError } = await ensureAdmin();
+      if (!adminError) {
+        // If ensureAdmin succeeds (no error), the user is a valid admin.
+        return { success: true, job: mapRawJobToJobDetailData(rawJob) };
+      }
     }
 
+    // If none of the above rules are met, deny access.
     return { success: false, error: 'NOT_PERMITTED' };
 
   } catch (err) { // <-- FIX: Properly type the caught error

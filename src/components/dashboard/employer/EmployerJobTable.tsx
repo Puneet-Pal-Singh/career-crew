@@ -124,7 +124,7 @@ export default function EmployerJobTable({ jobs }: EmployerJobTableProps) {
                     <TableCell>{job.createdAt}</TableCell>
                     <TableCell className="text-right space-x-2">
                       <Button variant="outline" size="icon" asChild title={canBeViewedPublicly ? "View Public Listing" : "Preview Job"}>
-                        <Link href={`/jobs/${generateJobSlug(job.id, job.title)}`} target="_blank" rel="noopener noreferrer">
+                        <Link href={`/jobs/${generateJobSlug(job.id, job.title)}`} >
                           <Eye className="h-4 w-4" />
                         </Link>
                       </Button>
@@ -181,7 +181,7 @@ export default function EmployerJobTable({ jobs }: EmployerJobTableProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
-                          <Link href={`/jobs/${generateJobSlug(job.id, job.title)}`} target="_blank" rel="noopener noreferrer">
+                          <Link href={`/jobs/${generateJobSlug(job.id, job.title)}`} >
                             <Eye className="mr-2 h-4 w-4" />
                             {canBeViewedPublicly ? "View Listing" : "Preview Job"}
                           </Link>

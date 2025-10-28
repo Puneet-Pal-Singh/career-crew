@@ -1,156 +1,117 @@
 // src/components/dashboard/admin/PendingJobsTable.tsx
 "use client";
 
-import React, { useState, useTransition } from 'react';
-import type { AdminPendingJobData } from '@/types'; // Import type from action file
-import { approveJob } from '@/app/actions/admin/approveJobAction'; // Import actions
-import { rejectJob } from '@/app/actions/admin/rejectJobAction'; // Import actions
-// Import components
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
+import React, { useState }  from 'react';
+import { usePendingJobs } from '@/hooks/usePendingJobs'; // Import our new custom hook
+import type { AdminPendingJobData } from '@/types';
+
+// Import the dumb UI components we just created
+import { Table, TableBody, TableCaption, TableHeader, TableRow, TableHead } from "@/components/ui/table";
+import { Card } from '@/components/ui/card';
+import PendingJobTableRow from './PendingJobTableRow';
+import PendingJobCard from './PendingJobCard';
+import PendingJobsEmptyState from './PendingJobsEmptyState';
+import ConfirmationDialog from '@/components/shared/ConfirmationDialog';
+import CompanyDetailsModal from './CompanyDetailsModal'; 
 
 interface PendingJobsTableProps {
   initialJobs: AdminPendingJobData[];
 }
 
+// This is now an ORCHESTRATOR component. Its only job is to connect
+// the logic (hook) with the UI (dumb components).
 export default function PendingJobsTable({ initialJobs }: PendingJobsTableProps) {
-  const [jobs, setJobs] = useState<AdminPendingJobData[]>(initialJobs);
-  const [isProcessing, startTransition] = useTransition();
-  // FIX: The processing ID should be a number to match the job.id type.
-  const [processingJobId, setProcessingJobId] = useState<number | null>(null);
-  const { toast } = useToast(); // For showing success/error messages
+  const {
+    jobs,
+    isProcessing,
+    processingJobId,
+    confirmationJob,
+    confirmationType,
+    handleApprove,
+    handleReject,
+    handleConfirmAction,
+    handleCloseDialog,
+  } = usePendingJobs(initialJobs);
 
-  // FIX: This handler now accepts a number for the jobId.
-  const handleApprove = async (jobId: number, jobTitle: string) => {
-    setProcessingJobId(jobId);
-    startTransition(async () => {
-      // we used to Convert the numeric ID to a string before sending to the server action.
-      // FIX: Pass the numeric ID directly to the server action.
-      // The server action is now responsible for handling the type.
-      const result = await approveJob(jobId);
-      if (result.success) {
-        setJobs(prevJobs => prevJobs.filter(job => job.id !== jobId));
-        toast({
-          title: "Job Approved",
-          description: `"${jobTitle}" has been approved and is now live.`,
-          variant: "default", // Or "success" if you have it
-        });
-      } else {
-        toast({
-          title: "Approval Failed",
-          description: result.error || "Could not approve the job.",
-          variant: "destructive",
-        });
-      }
-      setProcessingJobId(null);
-    });
+  // NEW: State management for the company details modal
+  const [selectedEmployerId, setSelectedEmployerId] = useState<string | null>(null);
+
+  const handleCompanyClick = (employerId: string) => {
+    setSelectedEmployerId(employerId);
   };
 
-  // FIX: This handler now accepts a number for the jobId.
-  const handleReject = async (jobId: number, jobTitle: string) => {
-    // Optional: Add a confirmation dialog before rejecting
-    setProcessingJobId(jobId);
-    startTransition(async () => {
-      // FIX: Convert the numeric ID to a string before sending to the server action.
-      // FIX: Pass the numeric ID directly to the server action.
-      const result = await rejectJob(jobId);
-      if (result.success) {
-        setJobs(prevJobs => prevJobs.filter(job => job.id !== jobId));
-        toast({
-          title: "Job Rejected",
-          description: `"${jobTitle}" has been rejected.`,
-        });
-      } else {
-        toast({
-          title: "Rejection Failed",
-          description: result.error || "Could not reject the job.",
-          variant: "destructive",
-        });
-      }
-      setProcessingJobId(null);
-    });
+  const handleCloseCompanyModal = () => {
+    setSelectedEmployerId(null);
   };
 
-  if (jobs.length === 0 && initialJobs.length > 0) {
-    // This case handles when all initial jobs have been processed
-    return (
-        <div className="text-center py-10 border rounded-lg bg-card mt-8">
-            <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
-            <h3 className="mt-2 text-lg font-medium text-foreground">All Clear!</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-            All pending jobs have been reviewed.
-            </p>
-        </div>
-    );
-  }
-  
-  // This should ideally be handled by the parent page if initialJobs is empty.
-  // But as a fallback if for some reason initialJobs is empty but the page rendered the table.
-  if (initialJobs.length === 0) {
-    return null; // Or a message, but page component should handle "no pending jobs"
+  // If there are no jobs to display, render the appropriate empty state.
+  if (jobs.length === 0) {
+    return <PendingJobsEmptyState wasInitiallyPopulated={initialJobs.length > 0} />;
   }
 
-
+  // If there are jobs, render the responsive layouts.
   return (
-    <Table>
-      <TableCaption>Job postings awaiting approval.</TableCaption>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[40%]">Job Title</TableHead>
-          <TableHead className="w-[30%]">Company</TableHead>
-          <TableHead>Date Submitted</TableHead>
-          <TableHead className="text-right w-[150px]">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {jobs.map((job) => (
-          <TableRow key={job.id}>
-            <TableCell className="font-medium">{job.title}</TableCell>
-            <TableCell>{job.companyName}</TableCell>
-            <TableCell>{job.createdAt}</TableCell>
-            <TableCell className="text-right space-x-2">
-              {processingJobId === job.id && isProcessing ? (
-                <Loader2 className="h-5 w-5 animate-spin inline-block" />
-              ) : (
-                <>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => handleApprove(job.id, job.title)} // Passes the number
-                    disabled={isProcessing}
-                    className="text-green-600 border-green-600 hover:bg-green-50 hover:text-green-700"
-                    title="Approve Job"
-                  >
-                    <CheckCircle className="h-4 w-4 mr-1 sm:mr-2" /> 
-                    <span className="hidden sm:inline">Approve</span>
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => handleReject(job.id, job.title)} // Passes the number
-                    disabled={isProcessing}
-                    className="text-red-600 border-red-600 hover:bg-red-50 hover:text-red-700"
-                    title="Reject Job"
-                  >
-                    <XCircle className="h-4 w-4 mr-1 sm:mr-2" />
-                    <span className="hidden sm:inline">Reject</span>
-                  </Button>
-                </>
-              )}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <>
+      <Card>
+        {/* DESKTOP VIEW */}
+        <div className="hidden lg:block">
+          <Table>
+            <TableCaption>Job postings awaiting approval.</TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="min-w-[250px]">Job Title</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Company</TableHead>
+                <TableHead>Date Submitted</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {jobs.map((job) => (
+                <PendingJobTableRow
+                  key={job.id}
+                  job={job}
+                  isProcessing={isProcessing && processingJobId === job.id}
+                  onApprove={handleApprove}
+                  onReject={handleReject}
+                  onCompanyClick={handleCompanyClick}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* MOBILE + TABLET VIEW */}
+        <div className="lg:hidden p-4 space-y-3">
+          {jobs.map((job) => (
+            <PendingJobCard
+              key={job.id}
+              job={job}
+              isProcessing={isProcessing && processingJobId === job.id}
+              onApprove={handleApprove}
+              onReject={handleReject}
+              onCompanyClick={handleCompanyClick}
+            />
+          ))}
+        </div>
+      </Card>
+
+      {/* MODAL (State is managed by the hook) */}
+      <ConfirmationDialog
+        isOpen={!!confirmationJob}
+        onClose={handleCloseDialog}
+        onConfirm={handleConfirmAction}
+        title={confirmationType === 'approve' ? 'Approve Job?' : 'Reject Job?'}
+        description={confirmationType === 'approve' ? `Are you sure you want to approve "${confirmationJob?.title}"? This will make the job live.` : `Are you sure you want to reject "${confirmationJob?.title}"?`}
+        confirmText={confirmationType === 'approve' ? 'Approve' : 'Reject'}
+      />
+
+      {/* NEW: The Company Details Modal */}
+      <CompanyDetailsModal
+        isOpen={!!selectedEmployerId}
+        employerId={selectedEmployerId}
+        onClose={handleCloseCompanyModal}
+      />
+    </>
   );
 }
