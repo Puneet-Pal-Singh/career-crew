@@ -1,5 +1,5 @@
 // src/app/actions/helpers/jobDataMappers.ts
-import type { JobCardData, JobTypeOption, JobStatus, JobDetailData } from '@/types';
+import type { JobCardData, JobTypeOption, JobStatus, JobDetailData, AdminJobRowData } from '@/types';
 import { JOB_TYPE_OPTIONS } from '@/lib/constants'; // <-- Import the constant
 // import { generateJobSlug } from '@/lib/utils';
 
@@ -86,5 +86,35 @@ export const mapRawJobToJobDetailData = (rawJob: RawJobDataForDetail): JobDetail
     tags: rawJob.tags || [],
     status: rawJob.status,
     employerId: rawJob.employer_id,
+  };
+};
+
+// Admin job data mapper
+// Define the shape of the raw data we expect for this specific mapping
+// This should match the columns returned by the `get_all_jobs_for_admin` function
+export interface RawAdminJobData {
+  id: number;
+  title: string;
+  company_name: string;
+  status: JobStatus;
+  created_at: string; // ISO string timestamp
+}
+
+/**
+ * Maps raw job data to the format needed for the admin's "Manage All Jobs" table.
+ * @param rawJob - The raw job data object from the database.
+ * @returns {AdminJobRowData} The formatted data for the admin table row.
+ */
+export const mapRawJobToAdminJobRowData = (rawJob: RawAdminJobData): AdminJobRowData => {
+  return {
+    id: rawJob.id,
+    title: rawJob.title,
+    companyName: rawJob.company_name,
+    status: rawJob.status,
+    createdAt: new Date(rawJob.created_at).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }),
   };
 };
