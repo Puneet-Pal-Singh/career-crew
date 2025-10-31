@@ -156,3 +156,12 @@ export interface RecentApplication {
   jobTitle: string;
   companyName: string;
 }
+
+// Admin types
+export interface AdminJobRowData {
+  id: number;
+  title: string;
+  companyName: string;
+  status: JobStatus;
+  createdAt: string; // Formatted date string
+}
