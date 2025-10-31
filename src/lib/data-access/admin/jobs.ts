@@ -7,6 +7,7 @@ import type { RawAdminJobData } from '@/app/actions/helpers/jobDataMappers';
 import type { JobDetailData } from '@/types';
 
 // The raw data from Supabase will match this shape
+// For now, let's keep it but define the result type based on what the new RPC returns.
 type RawJobDetail = Omit<JobDetailData, 'postedDate' | 'jobType' | 'companyName' | 'companyLogoUrl' | 'isRemote' | 'salaryMin' | 'salaryMax' | 'salaryCurrency' | 'employerId'> & {
   created_at: string,
   job_type: string,
@@ -39,20 +40,30 @@ export const fetchAllJobsForAdmin = async (): Promise<FetchAllJobsResult> => {
 };
 
 /**
- * Fetches a single raw job by its ID for an admin.
+ * Fetches a single raw job by its ID for an admin using the secure RPC function.
+ * This correctly bypasses RLS.
  */
 export const fetchJobByIdForAdmin = async (jobId: string): Promise<FetchJobByIdResult> => {
     const supabase = await getSupabaseServerClient();
+    
+    // Convert the string ID to a number for the RPC call.
+    const numericJobId = parseInt(jobId, 10);
+    if (isNaN(numericJobId)) {
+      return { data: null, error: new Error('Invalid job ID format.') };
+    }
+
     const { data, error } = await supabase
-      .from('jobs')
-      .select('*')
-      .eq('id', jobId)
-      .single();
+      .rpc('get_job_by_id_for_admin', { job_id_param: numericJobId })
+      .single(); // .single() is appropriate as we expect one or zero rows.
 
     if (error) {
       console.error(`Data-Access Error fetching job ${jobId}:`, error.message);
+      // Handle the "No rows found" case gracefully
+      if (error.code === 'PGRST116') {
+        return { data: null, error: new Error(`Job with ID ${jobId} not found.`) };
+      }
       return { data: null, error: new Error('Failed to fetch job data for editing.') };
     }
-
+  
     return { data: data as RawJobDetail, error: null };
 }
