@@ -2,7 +2,7 @@
 "use server";
 
 import { ensureAdmin } from '@/app/actions/helpers/adminAuthUtils';
-import { fetchPendingJobs } from '@/lib/data-access/admin';
+import { fetchPendingJobs } from '@/lib/data-access/admin/pending-jobs';
 import type { AdminPendingJobData } from '@/types';
 
 interface GetPendingJobsResult {
