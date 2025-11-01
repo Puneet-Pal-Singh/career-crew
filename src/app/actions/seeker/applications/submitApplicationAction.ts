@@ -50,8 +50,8 @@ export async function submitApplicationAction(formData: FormData): Promise<Actio
     return { success: true, applicationId: newApplicationId };
 
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : "An unexpected server error occurred.";
-    console.error("submitApplicationAction Error:", errorMessage);
+    const technicalError = err instanceof Error ? err.message : "An unexpected server error occurred.";
+    console.error("submitApplicationAction Error:", technicalError);
 
     // Cleanup: If a resume was uploaded but the DB insert failed, remove the orphaned file.
     if (resumeFilePath) {
@@ -59,6 +59,6 @@ export async function submitApplicationAction(formData: FormData): Promise<Actio
       console.log(`Cleanup: Removed orphaned file ${resumeFilePath}`);
     }
 
-    return { success: false, error: errorMessage };
+    return { success: false, error: "We couldn't submit your application at this time. Please try again." };
   }
 }
