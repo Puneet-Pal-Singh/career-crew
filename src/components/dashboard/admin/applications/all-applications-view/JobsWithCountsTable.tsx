@@ -1,4 +1,4 @@
-// src/components/dashboard/admin/applications/JobsWithCountsTable.tsx
+// src/components/dashboard/admin/applications/all-applications-view/JobsWithCountsTable.tsx
 'use client';
 
 import React from 'react';

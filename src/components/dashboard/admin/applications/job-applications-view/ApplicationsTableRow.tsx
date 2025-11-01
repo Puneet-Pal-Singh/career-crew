@@ -1,4 +1,4 @@
-// src/components/dashboard/admin/applications/ApplicationsTableRow.tsx
+// src/components/dashboard/admin/applications/job-applications-view/ApplicationsTableRow.tsx
 'use client';
 
 import React from 'react';
@@ -11,14 +11,10 @@ import { Eye } from 'lucide-react';
 
 interface ApplicationsTableRowProps {
   application: AdminApplicationForJob;
+  onViewDetails: (applicationId: string) => void;
 }
 
-export default function ApplicationsTableRow({ application }: ApplicationsTableRowProps) {
-  // TODO: Add onClick handler to open the detail modal
-  const handleViewClick = () => {
-    alert(`TODO: Open modal for application ID: ${application.applicationId}`);
-  };
-
+export default function ApplicationsTableRow({ application, onViewDetails }: ApplicationsTableRowProps) {
   return (
     <TableRow>
       <TableCell className="font-medium">{application.seekerFullName}</TableCell>
@@ -30,7 +26,7 @@ export default function ApplicationsTableRow({ application }: ApplicationsTableR
       </TableCell>
       <TableCell>{application.dateApplied}</TableCell>
       <TableCell className="text-right">
-        <Button variant="outline" size="sm" onClick={handleViewClick}>
+        <Button variant="outline" size="sm" onClick={() => onViewDetails(application.applicationId)}>
           <Eye className="mr-2 h-4 w-4" /> View Details
         </Button>
       </TableCell>

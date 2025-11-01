@@ -1,4 +1,4 @@
-// src/components/dashboard/admin/applications/ApplicationsCard.tsx
+// src/components/dashboard/admin/applications/job-applications-view/ApplicationsCard.tsx
 'use client';
 
 import React from 'react';
@@ -11,14 +11,10 @@ import { Eye } from 'lucide-react';
 
 interface ApplicationsCardProps {
   application: AdminApplicationForJob;
+  onViewDetails: (applicationId: string) => void;
 }
 
-export default function ApplicationsCard({ application }: ApplicationsCardProps) {
-  // TODO: Add onClick handler to open the detail modal
-  const handleViewClick = () => {
-    alert(`TODO: Open modal for application ID: ${application.applicationId}`);
-  };
-
+export default function ApplicationsCard({ application, onViewDetails }: ApplicationsCardProps) {
   return (
     <Card className="p-4 space-y-3">
       <div className="flex justify-between items-start">
@@ -32,7 +28,8 @@ export default function ApplicationsCard({ application }: ApplicationsCardProps)
       </div>
       <div className="flex justify-between items-center text-sm text-muted-foreground">
         <span>Applied: {application.dateApplied}</span>
-        <Button variant="outline" size="sm" onClick={handleViewClick}>
+        {/* 2. Call the prop function onClick */}
+        <Button variant="outline" size="sm" onClick={() => onViewDetails(application.applicationId)}>
           <Eye className="mr-2 h-4 w-4" /> View
         </Button>
       </div>

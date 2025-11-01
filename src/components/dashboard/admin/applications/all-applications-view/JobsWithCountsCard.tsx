@@ -1,4 +1,4 @@
-// src/components/dashboard/admin/applications/JobsWithCountsCard.tsx
+// src/components/dashboard/admin/applications/all-applications-view/JobsWithCountsCard.tsx
 'use client';
 
 import React from 'react';
