@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import type { JobDetailData } from '@/types';
 import type { User } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
-import ApplicationModal from '@/components/jobs/ApplicationModal';
+import ApplicationModal from '@/components/jobs/application-form/ApplicationModal';
 import JobDetailHeaderCard from './job-detail/JobDetailHeaderCard';
 import JobDetailAbout from './job-detail/JobDetailAbout';
 // --- NEW IMPORTS ---
