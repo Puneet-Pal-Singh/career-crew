@@ -50,8 +50,8 @@ export async function submitApplicationAction(formData: FormData): Promise<Actio
     return { success: true, applicationId: newApplicationId };
 
   } catch (err) {
-    const technicalError = err instanceof Error ? err.message : "An unexpected server error occurred.";
-    console.error("submitApplicationAction Error:", technicalError);
+    // Log the full error object for better context.
+    console.error("submitApplicationAction Error:", err); 
 
     // Cleanup: If a resume was uploaded but the DB insert failed, remove the orphaned file.
     if (resumeFilePath) {
