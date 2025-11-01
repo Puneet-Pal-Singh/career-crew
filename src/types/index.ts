@@ -165,3 +165,18 @@ export interface AdminJobRowData {
   status: JobStatus;
   createdAt: string; // Formatted date string
 }
+
+export interface AdminJobWithApplicationCount {
+  jobId: number;
+  jobTitle: string;
+  companyName: string;
+  applicationCount: number;
+}
+
+export interface AdminApplicationForJob {
+  applicationId: string; // This is a uuid
+  seekerFullName: string;
+  seekerEmail: string;
+  status: ApplicationStatusOption;
+  dateApplied: string; // Formatted date string
+}
