@@ -12,7 +12,7 @@ import PendingJobTableRow from './PendingJobTableRow';
 import PendingJobCard from './PendingJobCard';
 import PendingJobsEmptyState from './PendingJobsEmptyState';
 import ConfirmationDialog from '@/components/shared/ConfirmationDialog';
-import CompanyDetailsModal from './CompanyDetailsModal'; 
+import CompanyDetailsModal from '../shared/CompanyDetailsModal'; 
 
 interface PendingJobsTableProps {
   initialJobs: AdminPendingJobData[];

@@ -4,8 +4,8 @@
 import { useState, useTransition } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import type { AdminPendingJobData } from '@/types';
-import { approveJob } from '@/app/actions/admin/approveJobAction';
-import { rejectJob } from '@/app/actions/admin/rejectJobAction';
+import { approveJob } from '@/app/actions/admin/pending-approvals/approveJobAction';
+import { rejectJob } from '@/app/actions/admin/pending-approvals/rejectJobAction';
 
 /**
  * SRP: This hook's Single Responsibility is to manage all the state and business logic
