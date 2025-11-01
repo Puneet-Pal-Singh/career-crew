@@ -9,8 +9,9 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 // This function is needed for dynamic metadata based on the job title
-export async function generateMetadata({ params }: { params: { jobId: string } }): Promise<Metadata> {
-  const numericJobId = parseInt(params.jobId, 10);
+export async function generateMetadata({ params }: { params: Promise<{ jobId: string }> }): Promise<Metadata> {
+  const { jobId } = await params; // Await params
+  const numericJobId = parseInt(jobId, 10);
   if (isNaN(numericJobId)) {
     return { title: 'Invalid Job - Admin Dashboard' };
   }
@@ -21,8 +22,9 @@ export async function generateMetadata({ params }: { params: { jobId: string } }
 
 export const dynamic = 'force-dynamic';
 
-export default async function JobApplicationsPage({ params }: { params: { jobId: string } }) {
-  const numericJobId = parseInt(params.jobId, 10);
+export default async function JobApplicationsPage({ params }: { params: Promise<{ jobId: string }> }) {
+  const { jobId } = await params; // Await params
+  const numericJobId = parseInt(jobId, 10);
 
   if (isNaN(numericJobId)) {
     // Handle the case where jobId is not a number
@@ -55,7 +57,7 @@ export default async function JobApplicationsPage({ params }: { params: { jobId:
         </Button>
         <h1 className="text-3xl font-bold flex items-center">
           <FileText className="mr-3 h-8 w-8 text-primary" />
-          Applications for &quot;{result.jobTitle}&quot;;
+          Applications for &quot;{result.jobTitle}&quot;
         </h1>
       </div>
       
