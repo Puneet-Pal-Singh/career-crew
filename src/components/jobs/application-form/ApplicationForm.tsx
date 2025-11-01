@@ -13,12 +13,14 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Upload, FileText, Send, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+// import { toast } from 'sonner';
 
 // Define props for the new component
+// Update the props to include the new error callback
 interface ApplicationFormProps {
   jobId: string;
   onApplicationSuccess: () => void;
+  onApplicationError: (message: string) => void; // <-- NEW PROP
   onCancel: () => void;
 }
 
@@ -39,7 +41,7 @@ const applicationSchema = z.object({
 
 type ApplicationFormValues = z.infer<typeof applicationSchema>;
 
-export default function ApplicationForm({ jobId, onApplicationSuccess, onCancel }: ApplicationFormProps) {
+export default function ApplicationForm({ jobId, onApplicationSuccess, onApplicationError, onCancel }: ApplicationFormProps) {
   const [isPending, startTransition] = useTransition();
   const { userProfile } = useUserProfile();
 
@@ -72,14 +74,13 @@ export default function ApplicationForm({ jobId, onApplicationSuccess, onCancel 
     // Note: We no longer send fullName and email in FormData as they are derived from the authenticated user on the server.
     
     startTransition(() => {
-      toast.info("Submitting application...");
+      // We no longer use toast here
       submitApplicationAction(formData).then(result => {
         if (result.success) {
-          toast.success("Application submitted successfully!");
-          onApplicationSuccess(); // Notify the parent modal to show the success view
+          onApplicationSuccess(); // Notify parent of success
         } else {
-          // IMPROVEMENT 1: Give clear feedback for "Already Applied" and other errors.
-          toast.error(result.error);
+          // THE FIX: Notify the parent of the specific error
+          onApplicationError(result.error);
         }
       });
     });

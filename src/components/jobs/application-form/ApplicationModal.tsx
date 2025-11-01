@@ -1,14 +1,14 @@
-// src/components/jobs/ApplicationModal.tsx
+// src/components/jobs/application-form/ApplicationModal.tsx
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from '@/components/ui/drawer';
 
-// Import our new, SOLID-compliant child components
 import ApplicationForm from './ApplicationForm';
 import ApplicationSuccessView from './ApplicationSuccessView';
+import ApplicationErrorView from './ApplicationErrorView'; // <-- 1. Import the new error view
 
 interface ApplicationModalProps {
   isOpen: boolean;
@@ -17,37 +17,47 @@ interface ApplicationModalProps {
   jobTitle: string;
 }
 
-// This component is now a clean "Orchestrator".
-// Its only responsibilities are to manage state and render the correct children.
 export default function ApplicationModal({ isOpen, onOpenChange, jobId, jobTitle }: ApplicationModalProps) {
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [view, setView] = useState<'form' | 'success' | 'error'>('form'); // <-- 2. State now manages the view
+  const [errorMessage, setErrorMessage] = useState('');
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
-  // Effect to reset the view back to the form when the modal is reopened.
   useEffect(() => {
     if (isOpen) {
-      setIsSuccess(false);
+      setView('form'); // Reset to the form view when opened
+      setErrorMessage('');
     }
   }, [isOpen]);
 
-  const handleApplicationSuccess = () => {
-    setIsSuccess(true);
+  const handleApplicationSuccess = () => setView('success');
+  const handleApplicationError = (message: string) => {
+    setErrorMessage(message);
+    setView('error');
+  };
+  const handleRetry = () => setView('form');
+  const handleClose = () => onOpenChange(false);
+
+  // 3. Conditionally render the content based on the `view` state
+  const renderContent = () => {
+    switch (view) {
+      case 'success':
+        return <ApplicationSuccessView onClose={handleClose} />;
+      case 'error':
+        return <ApplicationErrorView message={errorMessage} onClose={handleClose} onRetry={handleRetry} />;
+      case 'form':
+      default:
+        return (
+          <ApplicationForm
+            jobId={jobId}
+            onApplicationSuccess={handleApplicationSuccess}
+            onApplicationError={handleApplicationError}
+            onCancel={handleClose}
+          />
+        );
+    }
   };
 
-  const handleClose = () => {
-    onOpenChange(false);
-  };
-
-  // The content is now conditionally rendered based on the success state.
-  const modalContent = isSuccess ? (
-    <ApplicationSuccessView onClose={handleClose} />
-  ) : (
-    <ApplicationForm
-      jobId={jobId}
-      onApplicationSuccess={handleApplicationSuccess}
-      onCancel={handleClose}
-    />
-  );
+  const showDescription = view === 'form';
 
   if (isDesktop) {
     return (
@@ -55,12 +65,9 @@ export default function ApplicationModal({ isOpen, onOpenChange, jobId, jobTitle
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-2xl">Apply to: {jobTitle}</DialogTitle>
-            {!isSuccess && (
-              <DialogDescription>Please fill in your details below. Good luck!</DialogDescription>
-            )}
+            {showDescription && <DialogDescription>Please fill in your details below. Good luck!</DialogDescription>}
           </DialogHeader>
-          <div className="py-4">{modalContent}</div>
-          {/* Footer is no longer needed here, as buttons are inside the children */}
+          <div className="py-4">{renderContent()}</div>
         </DialogContent>
       </Dialog>
     );
@@ -71,12 +78,9 @@ export default function ApplicationModal({ isOpen, onOpenChange, jobId, jobTitle
       <DrawerContent>
         <DrawerHeader className="text-left">
           <DrawerTitle className="text-2xl">Apply to: {jobTitle}</DrawerTitle>
-          {!isSuccess && (
-            <DrawerDescription>Please fill in your details below. Good luck!</DrawerDescription>
-          )}
+          {showDescription && <DrawerDescription>Please fill in your details below. Good luck!</DrawerDescription>}
         </DrawerHeader>
-        <div className="p-4">{modalContent}</div>
-        {/* Footer is no longer needed here */}
+        <div className="p-4">{renderContent()}</div>
       </DrawerContent>
     </Drawer>
   );
