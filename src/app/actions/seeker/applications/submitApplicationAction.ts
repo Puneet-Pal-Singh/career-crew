@@ -50,15 +50,27 @@ export async function submitApplicationAction(formData: FormData): Promise<Actio
     return { success: true, applicationId: newApplicationId };
 
   } catch (err) {
-    // Log the full error object for better context.
-    console.error("submitApplicationAction Error:", err); 
+    // Log the full technical error for our own debugging in all cases.
+    console.error("submitApplicationAction Error:", err);
 
-    // Cleanup: If a resume was uploaded but the DB insert failed, remove the orphaned file.
+    // Cleanup logic remains the same.
     if (resumeFilePath) {
       await supabase.storage.from('resumes').remove([resumeFilePath]);
       console.log(`Cleanup: Removed orphaned file ${resumeFilePath}`);
     }
 
-    return { success: false, error: "We couldn't submit your application at this time. Please try again." };
+    // THE BOT'S IMPROVEMENT: Preserve user-friendly errors, sanitize technical ones.
+    const rawErrorMessage = err instanceof Error ? err.message : "An unexpected server error occurred.";
+
+    // Check if the error message is one of our known technical errors.
+    const isTechnicalError = rawErrorMessage.includes("Storage Error:") || 
+                             rawErrorMessage.includes("Database Insert Error:");
+
+    // If it's a technical error, show a generic message. Otherwise, show the original validation message.
+    const finalErrorMessage = isTechnicalError
+      ? "We couldn't submit your application at this time. Please try again."
+      : rawErrorMessage;
+
+    return { success: false, error: finalErrorMessage };
   }
 }
