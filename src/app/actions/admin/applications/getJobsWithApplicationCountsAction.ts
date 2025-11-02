@@ -14,7 +14,7 @@ const mapRawDataToAdminJobWithApplicationCount = (raw: RawJobWithApplicationCoun
   jobId: raw.job_id,
   jobTitle: raw.job_title,
   companyName: raw.company_name,
-  applicationCount: Number(raw.application_count), // Ensure count is a number
+  applicationCount: raw.application_count, // Ensure count is a number
 });
 
 export async function getJobsWithApplicationCounts(): Promise<ActionResult> {
