@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { getEmployerProfileForAdminAction } from '@/app/actions/admin/getEmployerProfileForAdminAction';
+import { getEmployerProfileForAdminAction } from '@/app/actions/admin/pending-approvals/getEmployerProfileForAdminAction';
 import type { UserProfile } from '@/types';
 import { Mail, User, Calendar, CheckCircle } from 'lucide-react';
 

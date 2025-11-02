@@ -5,7 +5,7 @@ import type { AdminJobRowData } from '@/types';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import AllJobsTableActions from './AllJobsTableActions';
-import { getStatusBadgeVariant, formatStatusText } from '../utils';
+import { getStatusBadgeVariant, formatStatusText } from '../shared/utils';
 
 interface AllJobsCardProps {
   job: AdminJobRowData;

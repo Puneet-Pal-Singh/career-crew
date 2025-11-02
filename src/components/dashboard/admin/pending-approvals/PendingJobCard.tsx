@@ -7,7 +7,7 @@ import { generateJobSlug } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, Loader2, Eye } from 'lucide-react';
-import { formatStatusText, getStatusBadgeVariant } from './utils';
+import { formatStatusText, getStatusBadgeVariant } from '@/components/dashboard/admin/shared/utils';
 
 interface PendingJobCardProps {
   job: AdminPendingJobData;

@@ -30,6 +30,7 @@ export const getNavLinksForRole = (role?: UserRole): DashboardNavLink[] => {
         { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
         { href: "/dashboard/admin/pending-approvals", label: "Pending Jobs", icon: ShieldCheck },
         { href: "/dashboard/admin/jobs", label: "Manage Jobs", icon: Briefcase }, 
+        { href: "/dashboard/admin/applications", label: "All Applications", icon: FileText },
       ];
     default:
       return []; // Return empty for unknown or loading roles
