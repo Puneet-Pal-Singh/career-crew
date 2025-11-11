@@ -1,4 +1,4 @@
-// src/components/dashboard/admin/utils.ts
+// src/components/dashboard/shared/utils.ts
 
 import type { JobStatus, ApplicationStatusOption } from '@/types';
 
@@ -43,9 +43,39 @@ export const getApplicationStatusBadgeVariant = (status: ApplicationStatusOption
     case 'INTERVIEWING':
       return 'secondary';
     case 'REJECTED':
-      return 'destructive';
+      return 'outline';
     case 'VIEWED':
     default:
       return 'outline';
+  }
+};
+
+/**
+ * =================================================================
+ * APPLICATION STATUS DISPLAY MAPPING
+ * =================================================================
+ * This is the dedicated "Display Layer" mapping for ApplicationStatusOption.
+ * Its Single Responsibility is to convert the raw application status
+ * enum into a professional, user-friendly string for the UI.
+ */
+export const formatApplicationStatusDisplay = (status: ApplicationStatusOption): string => {
+  switch (status) {
+    case 'SUBMITTED':
+      return 'Submitted';
+    case 'VIEWED':
+      return 'Viewed';
+    case 'INTERVIEWING':
+      return 'Interviewing';
+    case 'OFFERED':
+      return 'Offered';
+    case 'HIRED':
+      return 'Hired';
+    case 'REJECTED':
+      // This is the key business logic change for UX.
+      return 'Not Selected';
+    default:
+      // This ensures the function is exhaustive and handles any future status additions.
+      const exhaustiveCheck: never = status;
+      return exhaustiveCheck;
   }
 };
