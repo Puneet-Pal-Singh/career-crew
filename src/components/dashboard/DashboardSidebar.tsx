@@ -11,9 +11,20 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Briefcase, PanelLeft, PanelRight } from 'lucide-react';
 import { getNavLinksForRole } from '@/lib/dashboardNavLinks';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useUserProfile } from '@/contexts/UserProfileContext'; 
 
-function DashboardSidebarNav({ isCollapsed, role }: { isCollapsed: boolean, role?: UserRole }) {
+function DashboardSidebarNav({ isCollapsed, role, isLoading }: { isCollapsed: boolean, role?: UserRole, isLoading: boolean }) {
   const pathname = usePathname();
+  // If we are loading, show skeletons.
+  if (isLoading) {
+    return (
+      <div className="space-y-1 px-3">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    );
+  }
   const availableLinks = getNavLinksForRole(role);
 
   if (!role) {
@@ -62,7 +73,11 @@ interface DashboardSidebarProps {
   role?: UserRole;
 }
 
-export default function DashboardSidebar({ isCollapsed, setIsCollapsed, role }: DashboardSidebarProps) {
+export default function DashboardSidebar({ isCollapsed, setIsCollapsed }: DashboardSidebarProps) {
+  // Get the profile directly from the client-side context.
+  const { userProfile, isLoadingProfile } = useUserProfile();
+  const role = userProfile?.role;
+  
   return (
     <div className="flex h-full max-h-screen flex-col w-full">
       <div className="flex h-14 items-center px-4 lg:h-[60px] lg:px-6">
@@ -73,7 +88,12 @@ export default function DashboardSidebar({ isCollapsed, setIsCollapsed, role }: 
       </div>
       
       <nav className="flex-1 space-y-1 overflow-auto py-4 px-3">
-        <DashboardSidebarNav isCollapsed={isCollapsed} role={role} />
+
+        {/* 
+          CRITICAL FIX: Don't render the nav until the profile is explicitly loaded on the client.
+          Pass the isLoadingProfile state down to the nav component.
+        */}
+        <DashboardSidebarNav isCollapsed={isCollapsed} role={role} isLoading={isLoadingProfile} />
       </nav>
       
       <div className="mt-auto border-t p-3">

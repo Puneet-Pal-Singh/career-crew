@@ -25,10 +25,13 @@ export default function DashboardLayoutClient({ children, user, profile }: Dashb
           isCollapsed ? "w-[70px]" : "w-[220px] lg:w-[280px]"
         )}
       >
+        {/*
+          THE CHANGE: We no longer pass the `role` prop.
+          The sidebar will now get it from the client-side context itself.
+        */}
         <DashboardSidebar 
           isCollapsed={isCollapsed} 
           setIsCollapsed={setIsCollapsed}
-          role={profile?.role}
         />
       </aside>
       
