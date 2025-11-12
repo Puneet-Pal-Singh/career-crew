@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { type JobOption } from '@/app/actions/employer/jobs/getEmployerJobOptionsAction';
-import { APPLICATION_STATUS_OPTIONS, type ApplicationStatusOption } from '@/types';
+import { APPLICATION_STATUS_OPTIONS } from '@/types';
 import { formatApplicationStatusDisplay } from '@/components/dashboard/shared/utils';
 import { Filter } from 'lucide-react';
+import { COMING_SOON_APPLICATION_STATUSES } from '@/lib/constants';
 
 interface ApplicationFiltersProps {
   jobOptions: JobOption[];
@@ -19,9 +20,6 @@ interface ApplicationFiltersProps {
   onApplyFilters: () => void;
   isPending: boolean;
 }
-
-// We need the same list of "coming soon" statuses here
-const comingSoonStatuses: ApplicationStatusOption[] = ['INTERVIEWING', 'OFFERED', 'HIRED'];
 
 export const ApplicationFilters = ({
   jobOptions,
@@ -62,7 +60,7 @@ export const ApplicationFilters = ({
                 {/* Filter */}
                 <SelectItem value="all">All Statuses</SelectItem>
                 {APPLICATION_STATUS_OPTIONS.map(status => {
-                  const isComingSoon = comingSoonStatuses.includes(status);
+                  const isComingSoon = COMING_SOON_APPLICATION_STATUSES.includes(status);
                   return (
                     <SelectItem key={status} value={status} disabled={isComingSoon}>
                       <div className="flex justify-between items-center w-full">

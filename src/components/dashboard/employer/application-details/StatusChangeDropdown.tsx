@@ -9,15 +9,13 @@ import { ChevronDown } from 'lucide-react';
 import { APPLICATION_STATUS_OPTIONS, type ApplicationStatusOption } from '@/types';
 // Import our new, dedicated formatting function from its new shared location
 import { formatApplicationStatusDisplay } from '@/components/dashboard/shared/utils';
+import { COMING_SOON_APPLICATION_STATUSES } from '@/lib/constants';
 
 interface StatusChangeDropdownProps {
   currentStatus: ApplicationStatusOption;
   isPending: boolean;
   onStatusChange: (newStatus: ApplicationStatusOption) => void;
 }
-
-// These are the statuses that are not yet implemented for the MVP.
-const comingSoonStatuses: ApplicationStatusOption[] = ['INTERVIEWING', 'OFFERED', 'HIRED'];
 
 export const StatusChangeDropdown = ({ currentStatus, isPending, onStatusChange }: StatusChangeDropdownProps) => {
   return (
@@ -34,7 +32,7 @@ export const StatusChangeDropdown = ({ currentStatus, isPending, onStatusChange 
           <DropdownMenuLabel>Change Status</DropdownMenuLabel>
           <DropdownMenuSeparator />
           {APPLICATION_STATUS_OPTIONS.map(status => {
-            const isComingSoon = comingSoonStatuses.includes(status);
+            const isComingSoon = COMING_SOON_APPLICATION_STATUSES.includes(status); 
             const isDisabled = isPending || currentStatus === status || isComingSoon;
 
             // Handle the "Coming Soon" statuses with a disabled item and a tooltip

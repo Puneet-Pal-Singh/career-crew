@@ -73,10 +73,11 @@ export const formatApplicationStatusDisplay = (status: ApplicationStatusOption):
     case 'REJECTED':
       // This is the key business logic change for UX.
       return 'Not Selected';
-    default:
+    default: {
       // This ensures the function is exhaustive and handles any future status additions.
       const exhaustiveCheck: never = status;
       return exhaustiveCheck;
+    }
   }
 };
 

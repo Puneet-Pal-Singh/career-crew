@@ -1,5 +1,6 @@
 // src/lib/constants.ts
 import type { JobTypeOption } from "@/types"; // Import the raw enum type
+import type { ApplicationStatusOption } from '@/types';
 
 /**
  * A centralized array defining the job type options for the entire application.
@@ -34,4 +35,14 @@ export const PLATFORM_STATS: StatItem[] = [
   { value: '30+', label: 'Companies Hiring' },
   { value: '500+', label: 'Active Job Seekers' },
   { value: '95%', label: 'Placement Success' },
+];
+
+/**
+ * The set of application statuses that are part of the V2 ATS features.
+ * These are disabled in the UI for the MVP.
+ */
+export const COMING_SOON_APPLICATION_STATUSES: ApplicationStatusOption[] = [
+  'INTERVIEWING',
+  'OFFERED',
+  'HIRED',
 ];
