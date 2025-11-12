@@ -1,4 +1,4 @@
-// src/components/dashboard/admin/PendingJobTableRow.tsx
+// src/components/dashboard/admin/pending-approvals/PendingJobTableRow.tsx
 "use client";
 
 import Link from 'next/link';
@@ -8,7 +8,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
 import { CheckCircle, XCircle, Loader2, Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { formatStatusText, getStatusBadgeVariant } from '@/components/dashboard/admin/shared/utils'; // We'll create this utils file next
+import { formatStatusText, getStatusBadgeVariant } from '@/components/dashboard/shared/utils'; // We'll create this utils file next
 
 interface PendingJobTableRowProps {
   job: AdminPendingJobData;

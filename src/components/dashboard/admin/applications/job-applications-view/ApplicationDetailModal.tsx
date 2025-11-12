@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { getApplicationDetailsForAdminAction, type AdminApplicationDetails } from '@/app/actions/admin/applications/getApplicationDetailsForAdminAction';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, ExternalLink, Mail, Linkedin } from 'lucide-react';
-import { getApplicationStatusBadgeVariant, formatStatusText } from '@/components/dashboard/admin/shared/utils';
+import { getApplicationStatusBadgeVariant, formatStatusText } from '@/components/dashboard/shared/utils';
 
 interface ApplicationDetailModalProps {
   applicationId: string | null;

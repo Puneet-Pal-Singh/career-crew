@@ -5,7 +5,7 @@ import React from 'react';
 import type { AdminApplicationForJob } from '@/types';
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
-import { getApplicationStatusBadgeVariant, formatStatusText } from '@/components/dashboard/admin/shared/utils'; 
+import { getApplicationStatusBadgeVariant, formatStatusText } from '@/components/dashboard/shared/utils'; 
 import { Button } from '@/components/ui/button';
 import { Eye } from 'lucide-react';
 

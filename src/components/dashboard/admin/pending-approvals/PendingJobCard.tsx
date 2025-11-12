@@ -1,4 +1,4 @@
-// src/components/dashboard/admin/PendingJobCard.tsx
+// src/components/dashboard/admin/pending-approvals/PendingJobCard.tsx
 "use client";
 
 import Link from 'next/link';
@@ -7,7 +7,7 @@ import { generateJobSlug } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, Loader2, Eye } from 'lucide-react';
-import { formatStatusText, getStatusBadgeVariant } from '@/components/dashboard/admin/shared/utils';
+import { formatStatusText, getStatusBadgeVariant } from '@/components/dashboard/shared/utils';
 
 interface PendingJobCardProps {
   job: AdminPendingJobData;
