@@ -121,19 +121,19 @@ export interface AdminPendingJobData {
 export type ApplicationStatusOption = 
   | "SUBMITTED" 
   | "VIEWED" 
+  | "REJECTED"
   | "INTERVIEWING" 
   | "OFFERED" 
-  | "HIRED" 
-  | "REJECTED";
+  | "HIRED";
 
 // This is the single source of truth for the list of available statuses.
 export const APPLICATION_STATUS_OPTIONS: ApplicationStatusOption[] = [
   "SUBMITTED", 
   "VIEWED", 
+  "REJECTED",
   "INTERVIEWING", 
   "OFFERED", 
-  "HIRED", 
-  "REJECTED"
+  "HIRED"
 ];  
   
 // Interface for displaying a seeker's application in their dashboard
