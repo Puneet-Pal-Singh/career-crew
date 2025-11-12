@@ -17,9 +17,10 @@ interface ApplicationDetailViewProps {
   details: ApplicationDetails;
   isPending: boolean;
   onStatusChange: (newStatus: ApplicationStatusOption) => void;
+  onViewResume: () => void;
 }
 
-export const ApplicationDetailView = ({ details, isPending, onStatusChange }: ApplicationDetailViewProps) => {
+export const ApplicationDetailView = ({ details, isPending, onStatusChange, onViewResume }: ApplicationDetailViewProps) => {
   return (
     <div className="p-4">
       <dl>
@@ -45,7 +46,14 @@ export const ApplicationDetailView = ({ details, isPending, onStatusChange }: Ap
           label="Resume" 
           value={
             details.resumeUrl ? (
-              <a href={details.resumeUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline font-medium">
+              // 2. Attach the new callback to the onClick handler
+              <a 
+                href={details.resumeUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="flex items-center gap-2 text-primary hover:underline font-medium"
+                onClick={onViewResume}
+              >
                 View Resume <ExternalLink className="h-4 w-4" />
               </a>
             ) : "No resume submitted"

@@ -47,8 +47,33 @@ export default function ApplicationDetailModal({ applicationId, isOpen, onClose,
     }
   }, [isOpen, applicationId]);
 
+  // THE NEW FEATURE LOGIC: This handler is now responsible for the auto-update.
+  const handleViewResume = () => {
+    if (!details || details.status !== 'SUBMITTED') {
+      // If the status is not 'SUBMITTED', do nothing. Just let the link open.
+      return;
+    }
+
+    console.log(`[ViewResume] Application is SUBMITTED. Updating to VIEWED.`);
+    // Silently call the update action in the background.
+    updateApplicationStatusAction(details.id, 'VIEWED').then(updateResult => {
+      if (updateResult.success) {
+        // Update local state and notify the parent table.
+        setDetails(prev => prev ? { ...prev, status: 'VIEWED' } : null);
+        onStatusChange(details.id, 'VIEWED');
+        console.log(`[ViewResume] Successfully updated status to VIEWED.`);
+      } else {
+        // If it fails, log it, but don't block the user from viewing the resume.
+        console.error("Failed to auto-update status to 'VIEWED':", updateResult.error);
+      }
+    });
+  };
+
   const handleStatusChange = (newStatus: ApplicationStatusOption) => {
     if (!details || details.status === newStatus) return;
+
+    // BUG HUNT: Log the exact value being sent to the server action.
+    console.log(`[handleStatusChange] Attempting to update status from "${details.status}" to "${newStatus}"`);
 
     startStatusUpdateTransition(() => {
       toast.promise(updateApplicationStatusAction(details.id, newStatus), {
@@ -81,6 +106,7 @@ export default function ApplicationDetailModal({ applicationId, isOpen, onClose,
         details={details}
         isPending={isStatusUpdatePending}
         onStatusChange={handleStatusChange}
+        onViewResume={handleViewResume}
       />
     );
     return null;
