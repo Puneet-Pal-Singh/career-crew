@@ -2,7 +2,7 @@
 import React from 'react';
 import { getAllApplicationsAction } from '@/app/actions/employer/applications/getAllApplicationsAction';
 import { getEmployerJobOptionsAction } from '@/app/actions/employer/jobs/getEmployerJobOptionsAction';
-import AllApplicationsTable from '@/components/dashboard/employer/AllApplicationsTable';
+import AllApplicationsTableClient from '@/components/dashboard/employer/AllApplicationsTableClient';
 import type { ApplicationStatusOption } from '@/types';
 import { Users } from 'lucide-react';
 
@@ -54,7 +54,7 @@ export default async function AllApplicationsPage({ searchParams: searchParamsPr
         </div>
       </div>
 
-      <AllApplicationsTable 
+      <AllApplicationsTableClient 
         initialApplications={initialData.applications}
         initialTotalCount={initialData.totalCount}
         jobOptions={jobOptions}
