@@ -10,7 +10,7 @@ import { getApplicationDetailsAction, type ApplicationDetails } from '@/app/acti
 import { updateApplicationStatusAction } from '@/app/actions/employer/applications/updateApplicationStatusAction';
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle } from 'lucide-react';
 import type { ApplicationStatusOption } from '@/types';
 
 // Import our new SOLID components
@@ -29,6 +29,9 @@ export default function ApplicationDetailModal({ applicationId, isOpen, onClose,
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isStatusUpdatePending, startStatusUpdateTransition] = useTransition();
+
+  // 1. ADD NEW STATE to track the successful update
+  const [showUpdateSuccess, setShowUpdateSuccess] = useState(false);
 
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
@@ -82,7 +85,13 @@ export default function ApplicationDetailModal({ applicationId, isOpen, onClose,
           if (result.success) {
             setDetails(prev => prev ? { ...prev, status: newStatus } : null);
             onStatusChange(details.id, newStatus);
-            return result.message;
+
+            // 2. TRIGGER THE SUCCESS BANNER
+            setShowUpdateSuccess(true);
+            // Automatically hide the banner after a few seconds
+            setTimeout(() => setShowUpdateSuccess(false), 3000);
+
+            return result.message; // This will still show the toast as a secondary confirmation
           } else {
             throw new Error(result.error);
           }
@@ -102,12 +111,21 @@ export default function ApplicationDetailModal({ applicationId, isOpen, onClose,
       </Alert>
     );
     if (details) return (
-      <ApplicationDetailView 
-        details={details}
-        isPending={isStatusUpdatePending}
-        onStatusChange={handleStatusChange}
-        onViewResume={handleViewResume}
-      />
+      <>
+        {/* 3. RENDER THE BANNER conditionally */}
+        {showUpdateSuccess && (
+          <div className="p-3 mb-4 bg-green-50 dark:bg-green-900/50 border border-green-200 dark:border-green-800 rounded-md flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <p className="text-sm font-medium text-green-800 dark:text-green-200">Status updated successfully!</p>
+          </div>
+        )}
+        <ApplicationDetailView 
+          details={details}
+          isPending={isStatusUpdatePending}
+          onStatusChange={handleStatusChange}
+          onViewResume={handleViewResume}
+        />
+      </>
     );
     return null;
   };
