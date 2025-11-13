@@ -28,10 +28,14 @@ export default function ApplicationDetailModal({ applicationId, isOpen, onClose,
   const [details, setDetails] = useState<ApplicationDetails | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isStatusUpdatePending, startStatusUpdateTransition] = useTransition();
-
   // 1. ADD NEW STATE to track the successful update
   const [showUpdateSuccess, setShowUpdateSuccess] = useState(false);
+
+  // THE RACE CONDITION FIX: Use separate transitions
+  const [isManualUpdatePending, startManualUpdateTransition] = useTransition();
+  const [isAutoUpdatePending, startAutoUpdateTransition] = useTransition();
+  // A combined state to disable the entire UI during any update
+  const isUpdatingStatus = isManualUpdatePending || isAutoUpdatePending;
 
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
@@ -52,33 +56,36 @@ export default function ApplicationDetailModal({ applicationId, isOpen, onClose,
 
   // THE NEW FEATURE LOGIC: This handler is now responsible for the auto-update.
   const handleViewResume = () => {
-    if (!details || details.status !== 'SUBMITTED') {
+    // Prevent action if an update is already in progress
+    if (!details || details.status !== 'SUBMITTED' || isUpdatingStatus) {
       // If the status is not 'SUBMITTED', do nothing. Just let the link open.
       return;
     }
 
     console.log(`[ViewResume] Application is SUBMITTED. Updating to VIEWED.`);
-    // Silently call the update action in the background.
-    updateApplicationStatusAction(details.id, 'VIEWED').then(updateResult => {
-      if (updateResult.success) {
-        // Update local state and notify the parent table.
-        setDetails(prev => prev ? { ...prev, status: 'VIEWED' } : null);
-        onStatusChange(details.id, 'VIEWED');
-        console.log(`[ViewResume] Successfully updated status to VIEWED.`);
-      } else {
-        // If it fails, log it, but don't block the user from viewing the resume.
-        console.error("Failed to auto-update status to 'VIEWED':", updateResult.error);
-      }
+    startAutoUpdateTransition(() => {
+      // No toast needed for this silent, automatic action
+      updateApplicationStatusAction(details.id, 'VIEWED').then(updateResult => {
+        if (updateResult.success) {
+          setDetails(prev => prev ? { ...prev, status: 'VIEWED' } : null);
+          onStatusChange(details.id, 'VIEWED');
+        } else {
+          // If the silent update fails, show a toast so the user is aware
+          toast.error(`Failed to auto-update status: ${updateResult.error}`);
+          console.error("Failed to auto-update status to 'VIEWED':", updateResult.error);
+        }
+      });
     });
   };
 
   const handleStatusChange = (newStatus: ApplicationStatusOption) => {
-    if (!details || details.status === newStatus) return;
+    // Prevent action if an update is already in progress
+    if (!details || details.status === newStatus || isUpdatingStatus) return;
 
     // BUG HUNT: Log the exact value being sent to the server action.
     console.log(`[handleStatusChange] Attempting to update status from "${details.status}" to "${newStatus}"`);
 
-    startStatusUpdateTransition(() => {
+    startManualUpdateTransition(() => {
       toast.promise(updateApplicationStatusAction(details.id, newStatus), {
         loading: "Updating status...",
         success: (result) => {
@@ -121,7 +128,7 @@ export default function ApplicationDetailModal({ applicationId, isOpen, onClose,
         )}
         <ApplicationDetailView 
           details={details}
-          isPending={isStatusUpdatePending}
+          isPending={isUpdatingStatus}
           onStatusChange={handleStatusChange}
           onViewResume={handleViewResume}
         />

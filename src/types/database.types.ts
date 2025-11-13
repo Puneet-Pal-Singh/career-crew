@@ -7,10 +7,30 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -54,6 +74,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      feedback: {
+        Row: {
+          content: string
+          created_at: string
+          feedback_type: Database["public"]["Enums"]["feedback_type"]
+          id: number
+          is_resolved: boolean
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          feedback_type: Database["public"]["Enums"]["feedback_type"]
+          id?: never
+          is_resolved?: boolean
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          feedback_type?: Database["public"]["Enums"]["feedback_type"]
+          id?: never
+          is_resolved?: boolean
+          user_id?: string | null
+        }
+        Relationships: []
       }
       jobs: {
         Row: {
@@ -162,29 +209,87 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_employer_applications: {
-        Args:
-          | {
+      get_all_jobs_for_admin: {
+        Args: never
+        Returns: {
+          application_email: string
+          application_url: string
+          company_logo_url: string
+          company_name: string
+          created_at: string
+          description: string
+          employer_id: string
+          id: number
+          is_remote: boolean
+          job_type: Database["public"]["Enums"]["job_type_option"]
+          location: string
+          requirements: string
+          salary_currency: string
+          salary_max: number
+          salary_min: number
+          status: Database["public"]["Enums"]["job_status"]
+          tags: string[]
+          title: string
+          updated_at: string
+        }[]
+      }
+      get_application_details_for_admin: {
+        Args: { application_id_param: string }
+        Returns: {
+          applicant_email: string
+          applicant_name: string
+          applied_at: string
+          cover_letter_snippet: string
+          id: string
+          job_title: string
+          linkedin_profile_url: string
+          resume_file_path: string
+          status: Database["public"]["Enums"]["application_status_option"]
+        }[]
+      }
+      get_applications_for_job_for_admin: {
+        Args: { job_id_param: number }
+        Returns: {
+          application_id: string
+          date_applied: string
+          seeker_email: string
+          seeker_full_name: string
+          status: Database["public"]["Enums"]["application_status_option"]
+        }[]
+      }
+      get_employer_applications:
+        | {
+            Args: {
               employer_id_param: string
               job_id_filter?: number
               page_number: number
               page_size: number
               status_filter?: Database["public"]["Enums"]["application_status_option"]
             }
-          | {
+            Returns: {
+              applicant_name: string
+              applied_at: string
+              id: string
+              job_title: string
+              status: Database["public"]["Enums"]["application_status_option"]
+              total_count: number
+            }[]
+          }
+        | {
+            Args: {
               employer_id_param: string
               page_number: number
               page_size: number
             }
-        Returns: {
-          applicant_name: string
-          applied_at: string
-          id: string
-          job_title: string
-          status: Database["public"]["Enums"]["application_status_option"]
-          total_count: number
-        }[]
-      }
+            Returns: {
+              applicant_name: string
+              applied_at: string
+              id: string
+              job_title: string
+              status: Database["public"]["Enums"]["application_status_option"]
+              total_count: number
+            }[]
+          }
       get_employer_recent_applications: {
         Args: { employer_id_param: string }
         Returns: {
@@ -195,6 +300,50 @@ export type Database = {
           status: Database["public"]["Enums"]["application_status_option"]
         }[]
       }
+      get_job_by_id_for_admin: {
+        Args: { job_id_param: number }
+        Returns: {
+          application_email: string
+          application_url: string
+          company_logo_url: string
+          company_name: string
+          created_at: string
+          description: string
+          employer_id: string
+          id: number
+          is_remote: boolean
+          job_type: Database["public"]["Enums"]["job_type_option"]
+          location: string
+          requirements: string
+          salary_currency: string
+          salary_max: number
+          salary_min: number
+          status: Database["public"]["Enums"]["job_status"]
+          tags: string[]
+          title: string
+          updated_at: string
+        }[]
+      }
+      get_jobs_with_application_counts_for_admin: {
+        Args: never
+        Returns: {
+          application_count: number
+          company_name: string
+          job_id: number
+          job_title: string
+        }[]
+      }
+      get_pending_jobs_for_admin: {
+        Args: never
+        Returns: {
+          company_name: string
+          created_at: string
+          employer_id: string
+          id: number
+          status: Database["public"]["Enums"]["job_status"]
+          title: string
+        }[]
+      }
     }
     Enums: {
       application_status_option:
@@ -203,8 +352,9 @@ export type Database = {
         | "INTERVIEWING"
         | "OFFERED"
         | "HIRED"
-        | "REJECTED_BY_EMPLOYER"
+        | "REJECTED"
         | "WITHDRAWN_BY_SEEKER"
+      feedback_type: "ISSUE" | "IDEA"
       job_status:
         | "PENDING_APPROVAL"
         | "APPROVED"
@@ -344,6 +494,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       application_status_option: [
@@ -352,9 +505,10 @@ export const Constants = {
         "INTERVIEWING",
         "OFFERED",
         "HIRED",
-        "REJECTED_BY_EMPLOYER",
+        "REJECTED",
         "WITHDRAWN_BY_SEEKER",
       ],
+      feedback_type: ["ISSUE", "IDEA"],
       job_status: [
         "PENDING_APPROVAL",
         "APPROVED",
@@ -374,3 +528,4 @@ export const Constants = {
     },
   },
 } as const
+
