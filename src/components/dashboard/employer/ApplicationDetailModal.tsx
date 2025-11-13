@@ -63,18 +63,25 @@ export default function ApplicationDetailModal({ applicationId, isOpen, onClose,
     }
 
     console.log(`[ViewResume] Application is SUBMITTED. Updating to VIEWED.`);
-    startAutoUpdateTransition(() => {
-      // No toast needed for this silent, automatic action
-      updateApplicationStatusAction(details.id, 'VIEWED').then(updateResult => {
-        if (updateResult.success) {
-          setDetails(prev => prev ? { ...prev, status: 'VIEWED' } : null);
-          onStatusChange(details.id, 'VIEWED');
-        } else {
-          // If the silent update fails, show a toast so the user is aware
-          toast.error(`Failed to auto-update status: ${updateResult.error}`);
-          console.error("Failed to auto-update status to 'VIEWED':", updateResult.error);
-        }
-      });
+     startAutoUpdateTransition(() => {
+      // THE FIX: Add a .catch() block to the promise chain.
+      updateApplicationStatusAction(details.id, 'VIEWED')
+        .then(updateResult => {
+          if (updateResult.success) {
+            setDetails(prev => prev ? { ...prev, status: 'VIEWED' } : null);
+            onStatusChange(details.id, 'VIEWED');
+          } else {
+            // This handles a RESOLVED promise with a failure payload.
+            toast.error(`Failed to auto-update status: ${updateResult.error}`);
+            console.error("Failed to auto-update status to 'VIEWED':", updateResult.error);
+          }
+        })
+        .catch((error) => {
+          // This handles a REJECTED promise (e.g., network error).
+          const message = error instanceof Error ? error.message : "An unexpected error occurred.";
+          toast.error(`Failed to auto-update status: ${message}`);
+          console.error("Failed to auto-update status to 'VIEWED' (Promise rejected):", error);
+        });
     });
   };
 
