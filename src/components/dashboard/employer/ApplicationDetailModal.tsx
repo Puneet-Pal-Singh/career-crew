@@ -1,21 +1,17 @@
-// src/components/dashboard/employer/ApplicationDetailModal.tsx
 "use client";
 
-import React, { useState, useEffect, useTransition, useRef } from 'react';
+import React from 'react';
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerHeader, DrawerDescription, DrawerFooter, DrawerClose } from "@/components/ui/drawer";
 import { Button } from '@/components/ui/button';
-import { getApplicationDetailsAction, type ApplicationDetails } from '@/app/actions/employer/applications/getApplicationDetailsAction';
-import { updateApplicationStatusAction } from '@/app/actions/employer/applications/updateApplicationStatusAction';
-import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 import type { ApplicationStatusOption } from '@/types';
 
-// Import our new SOLID components
 import { ApplicationDetailSkeleton } from './application-details/ApplicationDetailSkeleton';
 import { ApplicationDetailView } from './application-details/ApplicationDetailView';
+import { useApplicationDetails } from '@/hooks/useApplicationDetails'; // <-- Import our new hook
 
 interface ApplicationDetailModalProps {
   applicationId: string | null;
@@ -25,117 +21,18 @@ interface ApplicationDetailModalProps {
 }
 
 export default function ApplicationDetailModal({ applicationId, isOpen, onClose, onStatusChange }: ApplicationDetailModalProps) {
-  const [details, setDetails] = useState<ApplicationDetails | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  // Track the successful update
-  const [showUpdateSuccess, setShowUpdateSuccess] = useState(false);
-
-  // Create a ref to hold the timer ID
-  const successBannerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // THE RACE CONDITION FIX: Use separate transitions
-  const [isManualUpdatePending, startManualUpdateTransition] = useTransition();
-  const [isAutoUpdatePending, startAutoUpdateTransition] = useTransition();
-  // A combined state to disable the entire UI during any update
-  const isUpdatingStatus = isManualUpdatePending || isAutoUpdatePending;
+  // All complex logic is now abstracted into the hook.
+  const {
+    details,
+    isLoading,
+    error,
+    isPending,
+    showUpdateSuccess,
+    handleViewResume,
+    handleStatusChange,
+  } = useApplicationDetails({ applicationId, isOpen, onStatusChange });
 
   const isDesktop = useMediaQuery("(min-width: 768px)");
-
-  // Add a useEffect for cleanup. This will run when the component unmounts.
-  useEffect(() => {
-    // This is the cleanup function.
-    return () => {
-      // If a timer is active when the modal is about to close, clear it.
-      if (successBannerTimerRef.current) {
-        clearTimeout(successBannerTimerRef.current);
-      }
-    };
-  }, []); // The empty dependency array means this effect runs only once on mount.
-
-  useEffect(() => {
-    if (isOpen && applicationId) {
-      setIsLoading(true);
-      setError(null);
-      setDetails(null);
-
-      getApplicationDetailsAction(applicationId)
-        .then(result => {
-          if (result.success && result.data) setDetails(result.data);
-          else setError(result.error || 'An unknown error occurred.');
-        })
-        .finally(() => setIsLoading(false));
-    }
-  }, [isOpen, applicationId]);
-
-  // THE NEW FEATURE LOGIC: This handler is now responsible for the auto-update.
-  const handleViewResume = () => {
-    // Prevent action if an update is already in progress
-    if (!details || details.status !== 'SUBMITTED' || isUpdatingStatus) {
-      // If the status is not 'SUBMITTED', do nothing. Just let the link open.
-      return;
-    }
-
-    console.log(`[ViewResume] Application is SUBMITTED. Updating to VIEWED.`);
-     startAutoUpdateTransition(() => {
-      // THE FIX: Add a .catch() block to the promise chain.
-      updateApplicationStatusAction(details.id, 'VIEWED')
-        .then(updateResult => {
-          if (updateResult.success) {
-            setDetails(prev => prev ? { ...prev, status: 'VIEWED' } : null);
-            onStatusChange(details.id, 'VIEWED');
-          } else {
-            // This handles a RESOLVED promise with a failure payload.
-            toast.error(`Failed to auto-update status: ${updateResult.error}`);
-            console.error("Failed to auto-update status to 'VIEWED':", updateResult.error);
-          }
-        })
-        .catch((error) => {
-          // This handles a REJECTED promise (e.g., network error).
-          const message = error instanceof Error ? error.message : "An unexpected error occurred.";
-          toast.error(`Failed to auto-update status: ${message}`);
-          console.error("Failed to auto-update status to 'VIEWED' (Promise rejected):", error);
-        });
-    });
-  };
-
-  const handleStatusChange = (newStatus: ApplicationStatusOption) => {
-    // Prevent action if an update is already in progress
-    if (!details || details.status === newStatus || isUpdatingStatus) return;
-
-    // BUG HUNT: Log the exact value being sent to the server action.
-    console.log(`[handleStatusChange] Attempting to update status from "${details.status}" to "${newStatus}"`);
-
-    startManualUpdateTransition(() => {
-      toast.promise(updateApplicationStatusAction(details.id, newStatus), {
-        loading: "Updating status...",
-        success: (result) => {
-          if (result.success) {
-            setDetails(prev => prev ? { ...prev, status: newStatus } : null);
-            onStatusChange(details.id, newStatus);
-
-            // THE ROBUST TIMER LOGIC
-            // First, clear any existing timer to prevent stacking.
-            if (successBannerTimerRef.current) {
-              clearTimeout(successBannerTimerRef.current);
-            }
-
-            // TRIGGER THE SUCCESS BANNER
-            setShowUpdateSuccess(true);
-            // Automatically hide the banner after a few seconds
-            successBannerTimerRef.current = setTimeout(() => {
-              setShowUpdateSuccess(false);
-            }, 3000);
-
-            return result.message; // This will still show the toast as a secondary confirmation
-          } else {
-            throw new Error(result.error);
-          }
-        },
-        error: (err) => err.message,
-      });
-    });
-  };
 
   const ModalContent = () => {
     if (isLoading) return <ApplicationDetailSkeleton />;
@@ -148,7 +45,6 @@ export default function ApplicationDetailModal({ applicationId, isOpen, onClose,
     );
     if (details) return (
       <>
-        {/* 3. RENDER THE BANNER conditionally */}
         {showUpdateSuccess && (
           <div className="p-3 mb-4 bg-green-50 dark:bg-green-900/50 border border-green-200 dark:border-green-800 rounded-md flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
@@ -157,7 +53,7 @@ export default function ApplicationDetailModal({ applicationId, isOpen, onClose,
         )}
         <ApplicationDetailView 
           details={details}
-          isPending={isUpdatingStatus}
+          isPending={isPending}
           onStatusChange={handleStatusChange}
           onViewResume={handleViewResume}
         />
@@ -187,7 +83,7 @@ export default function ApplicationDetailModal({ applicationId, isOpen, onClose,
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DrawerContent>
         <DrawerHeader className="text-left">
-          <DrawerTitle>Application Details</DrawerTitle>
+          <DialogTitle>Application Details</DialogTitle>
           <DrawerDescription>Review the candidate&apos;s information and update their status.</DrawerDescription>
         </DrawerHeader>
         <ModalContent />
