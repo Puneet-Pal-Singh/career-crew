@@ -1,7 +1,7 @@
 // src/components/dashboard/employer/ApplicationDetailModal.tsx
 "use client";
 
-import React, { useState, useEffect, useTransition } from 'react';
+import React, { useState, useEffect, useTransition, useRef } from 'react';
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose } from "@/components/ui/drawer";
@@ -28,8 +28,11 @@ export default function ApplicationDetailModal({ applicationId, isOpen, onClose,
   const [details, setDetails] = useState<ApplicationDetails | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // 1. ADD NEW STATE to track the successful update
+  // Track the successful update
   const [showUpdateSuccess, setShowUpdateSuccess] = useState(false);
+
+  // Create a ref to hold the timer ID
+  const successBannerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // THE RACE CONDITION FIX: Use separate transitions
   const [isManualUpdatePending, startManualUpdateTransition] = useTransition();
@@ -38,6 +41,17 @@ export default function ApplicationDetailModal({ applicationId, isOpen, onClose,
   const isUpdatingStatus = isManualUpdatePending || isAutoUpdatePending;
 
   const isDesktop = useMediaQuery("(min-width: 768px)");
+
+  // Add a useEffect for cleanup. This will run when the component unmounts.
+  useEffect(() => {
+    // This is the cleanup function.
+    return () => {
+      // If a timer is active when the modal is about to close, clear it.
+      if (successBannerTimerRef.current) {
+        clearTimeout(successBannerTimerRef.current);
+      }
+    };
+  }, []); // The empty dependency array means this effect runs only once on mount.
 
   useEffect(() => {
     if (isOpen && applicationId) {
@@ -100,10 +114,18 @@ export default function ApplicationDetailModal({ applicationId, isOpen, onClose,
             setDetails(prev => prev ? { ...prev, status: newStatus } : null);
             onStatusChange(details.id, newStatus);
 
-            // 2. TRIGGER THE SUCCESS BANNER
+            // THE ROBUST TIMER LOGIC
+            // First, clear any existing timer to prevent stacking.
+            if (successBannerTimerRef.current) {
+              clearTimeout(successBannerTimerRef.current);
+            }
+
+            // TRIGGER THE SUCCESS BANNER
             setShowUpdateSuccess(true);
             // Automatically hide the banner after a few seconds
-            setTimeout(() => setShowUpdateSuccess(false), 3000);
+            successBannerTimerRef.current = setTimeout(() => {
+              setShowUpdateSuccess(false);
+            }, 3000);
 
             return result.message; // This will still show the toast as a secondary confirmation
           } else {
