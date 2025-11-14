@@ -67,6 +67,7 @@ export const ApplicationList = ({ applications, onViewDetails }: ApplicationList
             {applications.map((app) => {
               const variant = getApplicationStatusBadgeVariant(app.status);
               const colorClassName = getApplicationStatusColorClasses(app.status);
+              const displayText = formatApplicationStatusDisplay(app.status);
               return (
                 <TableRow key={app.id} onClick={() => onViewDetails(app.id)} className="cursor-pointer transition-colors hover:bg-muted/50">
                   <TableCell className="py-4 pl-6">
@@ -81,7 +82,7 @@ export const ApplicationList = ({ applications, onViewDetails }: ApplicationList
                   <TableCell>{app.appliedAt}</TableCell>
                   <TableCell>
                     <Badge variant={variant} className={`font-medium ${colorClassName}`}>
-                      {formatApplicationStatusDisplay(app.status)}
+                      {displayText}
                     </Badge>
                   </TableCell>
                   <TableCell className="pr-6 text-right">
@@ -101,6 +102,7 @@ export const ApplicationList = ({ applications, onViewDetails }: ApplicationList
         {applications.map((app) => {
           const variant = getApplicationStatusBadgeVariant(app.status);
           const colorClassName = getApplicationStatusColorClasses(app.status);
+          const displayText = formatApplicationStatusDisplay(app.status);
           return (
             <div key={app.id} className="border rounded-lg p-4 space-y-3 cursor-pointer" onClick={() => onViewDetails(app.id)}>
               <div className="flex justify-between items-start">
@@ -114,7 +116,7 @@ export const ApplicationList = ({ applications, onViewDetails }: ApplicationList
                   </div>
                 </div>
                 <Badge variant={variant} className={`font-medium ${colorClassName}`}>
-                  {formatApplicationStatusDisplay(app.status)}
+                  {displayText}
                 </Badge>
               </div>
               <div className="text-xs text-muted-foreground pt-2 border-t flex items-center gap-1.5"><Calendar className="h-3 w-3" />Applied on: {app.appliedAt}</div>

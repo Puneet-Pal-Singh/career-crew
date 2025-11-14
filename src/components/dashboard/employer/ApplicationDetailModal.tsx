@@ -1,21 +1,17 @@
-// src/components/dashboard/employer/ApplicationDetailModal.tsx
 "use client";
 
-import React, { useState, useEffect, useTransition } from 'react';
+import React from 'react';
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerHeader, DrawerDescription, DrawerFooter, DrawerClose } from "@/components/ui/drawer";
 import { Button } from '@/components/ui/button';
-import { getApplicationDetailsAction, type ApplicationDetails } from '@/app/actions/employer/applications/getApplicationDetailsAction';
-import { updateApplicationStatusAction } from '@/app/actions/employer/applications/updateApplicationStatusAction';
-import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle } from 'lucide-react';
 import type { ApplicationStatusOption } from '@/types';
 
-// Import our new SOLID components
 import { ApplicationDetailSkeleton } from './application-details/ApplicationDetailSkeleton';
 import { ApplicationDetailView } from './application-details/ApplicationDetailView';
+import { useApplicationDetails } from '@/hooks/useApplicationDetails'; // <-- Import our new hook
 
 interface ApplicationDetailModalProps {
   applicationId: string | null;
@@ -25,47 +21,18 @@ interface ApplicationDetailModalProps {
 }
 
 export default function ApplicationDetailModal({ applicationId, isOpen, onClose, onStatusChange }: ApplicationDetailModalProps) {
-  const [details, setDetails] = useState<ApplicationDetails | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isStatusUpdatePending, startStatusUpdateTransition] = useTransition();
+  // All complex logic is now abstracted into the hook.
+  const {
+    details,
+    isLoading,
+    error,
+    isPending,
+    showUpdateSuccess,
+    handleViewResume,
+    handleStatusChange,
+  } = useApplicationDetails({ applicationId, isOpen, onStatusChange });
 
   const isDesktop = useMediaQuery("(min-width: 768px)");
-
-  useEffect(() => {
-    if (isOpen && applicationId) {
-      setIsLoading(true);
-      setError(null);
-      setDetails(null);
-
-      getApplicationDetailsAction(applicationId)
-        .then(result => {
-          if (result.success && result.data) setDetails(result.data);
-          else setError(result.error || 'An unknown error occurred.');
-        })
-        .finally(() => setIsLoading(false));
-    }
-  }, [isOpen, applicationId]);
-
-  const handleStatusChange = (newStatus: ApplicationStatusOption) => {
-    if (!details || details.status === newStatus) return;
-
-    startStatusUpdateTransition(() => {
-      toast.promise(updateApplicationStatusAction(details.id, newStatus), {
-        loading: "Updating status...",
-        success: (result) => {
-          if (result.success) {
-            setDetails(prev => prev ? { ...prev, status: newStatus } : null);
-            onStatusChange(details.id, newStatus);
-            return result.message;
-          } else {
-            throw new Error(result.error);
-          }
-        },
-        error: (err) => err.message,
-      });
-    });
-  };
 
   const ModalContent = () => {
     if (isLoading) return <ApplicationDetailSkeleton />;
@@ -77,11 +44,20 @@ export default function ApplicationDetailModal({ applicationId, isOpen, onClose,
       </Alert>
     );
     if (details) return (
-      <ApplicationDetailView 
-        details={details}
-        isPending={isStatusUpdatePending}
-        onStatusChange={handleStatusChange}
-      />
+      <>
+        {showUpdateSuccess && (
+          <div className="p-3 mb-4 bg-green-50 dark:bg-green-900/50 border border-green-200 dark:border-green-800 rounded-md flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <p className="text-sm font-medium text-green-800 dark:text-green-200">Status updated successfully!</p>
+          </div>
+        )}
+        <ApplicationDetailView 
+          details={details}
+          isPending={isPending}
+          onStatusChange={handleStatusChange}
+          onViewResume={handleViewResume}
+        />
+      </>
     );
     return null;
   };
@@ -107,7 +83,7 @@ export default function ApplicationDetailModal({ applicationId, isOpen, onClose,
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DrawerContent>
         <DrawerHeader className="text-left">
-          <DrawerTitle>Application Details</DrawerTitle>
+          <DialogTitle>Application Details</DialogTitle>
           <DrawerDescription>Review the candidate&apos;s information and update their status.</DrawerDescription>
         </DrawerHeader>
         <ModalContent />
