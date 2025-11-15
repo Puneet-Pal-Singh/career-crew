@@ -1,6 +1,6 @@
 // src/app/dashboard/seeker/applications/page.tsx
 import { getMyApplications } from '@/app/actions/seeker/applications/getMyApplicationsAction'; // Correct path
-import MyApplicationsTable from '@/components/dashboard/seeker/MyApplicationsTable'; // To be created
+import MyApplicationsClient from '@/components/dashboard/seeker/my-applications/MyApplicationsClient';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FileText } from 'lucide-react';
 
@@ -25,7 +25,7 @@ export default async function MyApplicationsPage() {
       <div className="container mx-auto py-8 px-4">
          <div className="flex items-center justify-between mb-6">
            <h1 className="text-2xl sm:text-3xl font-bold">
-             My Job Applications
+             Applications
            </h1>
          </div>
          <Alert variant="destructive">
@@ -45,14 +45,14 @@ export default async function MyApplicationsPage() {
      <div className="container mx-auto py-8 px-4">
           <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold">
-            My Job Applications
+           Applications
           </h1>
           <Button variant="outline" asChild className="hidden sm:flex">
               <Link href="/jobs">Browse More Jobs</Link>
           </Button>
         </div>
       {result.applications && result.applications.length > 0 ? (
-        <MyApplicationsTable applications={result.applications} />
+        <MyApplicationsClient initialApplications={result.applications} /> 
       ) : (
           <div className="text-center py-16">
             <div className="w-16 h-16 bg-muted/30 dark:bg-muted/10 rounded-full flex items-center justify-center mx-auto mb-4">

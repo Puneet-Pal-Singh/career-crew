@@ -142,7 +142,7 @@ export interface ApplicationViewData {
   jobId: number;         // ID from the 'jobs' table - This is a number
   jobTitle: string;
   companyName: string;
-  // companyLogoUrl?: string | null; // Optional, if you want to display it
+  companyLogoUrl?: string | null; // Optional, if you want to display it
   dateApplied: string;   // Formatted date string
   applicationStatus: ApplicationStatusOption;
 }
