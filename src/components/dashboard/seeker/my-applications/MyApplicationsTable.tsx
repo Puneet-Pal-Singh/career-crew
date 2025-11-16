@@ -1,4 +1,6 @@
 // src/components/dashboard/seeker/my-applications/MyApplicationsTable.tsx
+import Link from "next/link";
+import { Eye, Building2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -10,8 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // Import Avatar
-import { Eye, Building2 } from "lucide-react";
-import Link from "next/link";
 import { generateJobSlug } from "@/lib/utils";
 import type { ApplicationViewData } from "@/types";
 

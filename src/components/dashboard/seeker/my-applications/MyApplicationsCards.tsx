@@ -1,8 +1,8 @@
 // src/components/dashboard/seeker/my-applications/MyApplicationsCards.tsx
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { Building2, Calendar } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { generateJobSlug } from "@/lib/utils";
 import type { ApplicationViewData } from "@/types";
 import { Button } from "@/components/ui/button";
