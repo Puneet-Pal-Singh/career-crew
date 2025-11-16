@@ -1,58 +1,51 @@
 // src/components/dashboard/seeker/my-applications/MyApplicationsCards.tsx
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { Building2, Calendar } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { generateJobSlug } from "@/lib/utils";
 import type { ApplicationViewData } from "@/types";
-import { Button } from "@/components/ui/button";
+import { formatSeekerApplicationStatus } from "@/components/dashboard/shared/utils";
 
 interface MyApplicationsCardsProps {
   applications: ApplicationViewData[];
+  isArchivedView?: boolean;
 }
 
-export function MyApplicationsCards({ applications }: MyApplicationsCardsProps) {
-  const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+export function MyApplicationsCards({ applications, isArchivedView = false }: MyApplicationsCardsProps) {
+    const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-4 sm:grid-cols-2">
       {applications.map((app) => (
-        <Card key={app.applicationId} className="hover:shadow-md transition-shadow">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-4 mb-4">
-                {/* NEW: Company Logo Avatar */}
-                <Avatar>
-                    <AvatarImage src={app.companyLogoUrl || ''} alt={`${app.companyName} logo`} />
-                    <AvatarFallback>{app.companyName.charAt(0)}</AvatarFallback>
-                </Avatar>
-                
-                {/* Job Title and Company Name Block */}
-                <div className="flex-1">
+        <Card key={app.applicationId}>
+            <CardContent className="p-5">
+                <div className="mb-4">
                     <Link
-                        href={`/jobs/${generateJobSlug(app.jobId, app.jobTitle)}`}
-                        className="font-semibold text-foreground hover:text-primary transition-colors line-clamp-2"
+                    href={`/jobs/${generateJobSlug(app.jobId, app.jobTitle)}`}
+                    className="text-base font-semibold text-foreground hover:text-primary transition-colors line-clamp-2 mb-1 block"
                     >
-                        {app.jobTitle}
+                    {app.jobTitle}
                     </Link>
-                    <div className="text-sm text-muted-foreground flex items-center gap-1.5 mt-1">
-                        <Building2 className="w-3.5 h-3.5" />
-                        <span className="truncate">{app.companyName}</span>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Building2 className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">{app.companyName}</span>
                     </div>
                 </div>
-            </div>
 
-            <div className="flex items-center justify-between pt-3 border-t">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Calendar className="w-3.5 h-3.5" />
-                Applied on {formatDate(app.dateApplied)}
-              </div>
-              <Button variant="secondary" size="sm" asChild>
-                <Link href={`/jobs/${generateJobSlug(app.jobId, app.jobTitle)}`}>
-                  View Job
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
+                <div className="flex items-center justify-between pt-4 border-t">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Calendar className="w-3.5 h-3.5" />
+                        {formatDate(app.dateApplied)}
+                    </div>
+                    {/* --- CORRECTED STATUS LOGIC --- */}
+                    {isArchivedView ? (
+                        <Badge variant="outline">Archived</Badge>
+                    ) : (
+                       <Badge variant="outline">{formatSeekerApplicationStatus(app.applicationStatus)}</Badge>
+                    )}
+                </div>
+            </CardContent>
         </Card>
       ))}
     </div>

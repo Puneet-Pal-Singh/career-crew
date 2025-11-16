@@ -104,3 +104,25 @@ export const getApplicationStatusColorClasses = (status: ApplicationStatusOption
       return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700';
   }
 };
+
+/**
+ * =================================================================
+ * JOB SEEKER APPLICATION STATUS DISPLAY MAPPING
+ * =================================================================
+ * This function converts a raw application status into a simple,
+ * encouraging, and non-committal string for the job seeker's "Ongoing" view.
+ */
+export const formatSeekerApplicationStatus = (status: ApplicationStatusOption): string => {
+  switch (status) {
+    case 'SUBMITTED':
+      return 'Application Sent';
+    case 'VIEWED':
+    case 'INTERVIEWING':
+    case 'OFFERED':
+    case 'HIRED':
+      return 'In Review';
+    // We explicitly don't handle REJECTED here, as it will be in the "Archived" tab.
+    default:
+      return 'Pending';
+  }
+};
