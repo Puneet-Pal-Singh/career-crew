@@ -1,9 +1,10 @@
 // src/components/dashboard/seeker/RecentApplicationsPreview.tsx
 "use client"; // <-- This component now needs to be a client component for animations
 
-import type { RecentApplication, ApplicationStatusOption } from '@/types';
+import type { RecentApplication} from '@/types';
+// import type { RecentApplication, ApplicationStatusOption } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Badge } from "@/components/ui/badge";
+// import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
@@ -17,7 +18,7 @@ interface RecentApplicationsPreviewProps {
 
 // Copied from MyApplicationsTable - we can centralize these helpers later if needed
 // Function to get the badge variant based on application status
-type BadgeVariant = "default" | "destructive" | "outline" | "secondary" | null | undefined;
+// type BadgeVariant = "default" | "destructive" | "outline" | "secondary" | null | undefined;
 
 // Animation variants for the list container
 const containerVariants = {
@@ -43,21 +44,21 @@ const itemVariants = {
 };
 
 // Function to get the badge variant based on application status
-const getApplicationStatusBadgeVariant = (status: ApplicationStatusOption): BadgeVariant => {
-  switch (status) {
-    case 'SUBMITTED': return 'secondary';
-    case 'VIEWED': return 'secondary';
-    case 'INTERVIEWING': return 'outline';
-    case 'OFFERED': return 'default';
-    case 'HIRED': return 'default';
-    case 'REJECTED': return 'destructive';
-    default: return 'default';
-  }
-};
+// const getApplicationStatusBadgeVariant = (status: ApplicationStatusOption): BadgeVariant => {
+//   switch (status) {
+//     case 'SUBMITTED': return 'secondary';
+//     case 'VIEWED': return 'secondary';
+//     case 'INTERVIEWING': return 'outline';
+//     case 'OFFERED': return 'default';
+//     case 'HIRED': return 'default';
+//     case 'REJECTED': return 'destructive';
+//     default: return 'default';
+//   }
+// };
 
-const formatApplicationStatusText = (status: ApplicationStatusOption): string => {
-    return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-};
+// const formatApplicationStatusText = (status: ApplicationStatusOption): string => {
+//     return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+// };
 
 export default function RecentApplicationsPreview({ applications }: RecentApplicationsPreviewProps) {
   if (!applications || applications.length === 0) {
@@ -105,9 +106,9 @@ export default function RecentApplicationsPreview({ applications }: RecentApplic
                 </Link>
                 <p className="text-sm text-muted-foreground">{app.companyName}</p>
               </div>
-              <Badge variant={getApplicationStatusBadgeVariant(app.applicationStatus)}>
+              {/* <Badge variant={getApplicationStatusBadgeVariant(app.applicationStatus)}>
                 {formatApplicationStatusText(app.applicationStatus)}
-              </Badge>
+              </Badge> */}
             </motion.li>
           ))}
         </motion.ul>
