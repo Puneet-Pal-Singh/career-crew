@@ -1,6 +1,6 @@
 // src/components/dashboard/shared/utils.ts
 
-import type { JobStatus, ApplicationStatusOption } from '@/types';
+import type { JobStatus, ApplicationStatusOption, ApplicationViewData } from '@/types';
 
 /**
  * Determines the visual variant for a status badge based on the job status.
@@ -126,3 +126,87 @@ export const formatSeekerApplicationStatus = (status: ApplicationStatusOption): 
       return 'Pending';
   }
 };
+
+// =======================================================================
+// --- START: NEW CENTRALIZED SEEKER STATUS LOGIC ---
+// =======================================================================
+
+// NEW TYPE: Defines the possible display states for a seeker's application.
+export type SeekerStatusType = 'IN_REVIEW' | 'SENT' | 'NOT_ACCEPTED' | 'EXPIRED';
+
+// NEW TYPE: Defines the shape of the display attributes for a status.
+export interface SeekerStatusDisplay {
+  text: string;
+  className: string;
+}
+
+const ARCHIVE_THRESHOLD_DAYS = 21;
+
+/**
+ * The single source of truth for determining the seeker's application status type.
+ * This function contains all the business logic (e.g., 21-day expiry).
+ * @param app - The application data object.
+ * @returns The calculated status type.
+ */
+export const getSeekerApplicationStatusType = (app: ApplicationViewData): SeekerStatusType => {
+  const thresholdDate = new Date();
+  thresholdDate.setDate(thresholdDate.getDate() - ARCHIVE_THRESHOLD_DAYS);
+  const applicationDate = new Date(app.dateApplied);
+
+  if (app.applicationStatus === 'REJECTED') {
+    return 'NOT_ACCEPTED';
+  }
+
+  if (applicationDate < thresholdDate && (app.applicationStatus === 'SUBMITTED' || app.applicationStatus === 'VIEWED')) {
+    return 'EXPIRED';
+  }
+
+  if (app.applicationStatus === 'SUBMITTED') {
+    return 'SENT';
+  }
+
+  // Any other active status ('VIEWED', 'INTERVIEWING', etc.) is considered 'In Review'.
+  return 'IN_REVIEW';
+};
+
+/**
+ * Returns the correct text and Tailwind CSS classes for a given status type.
+ * This is a pure display mapping function.
+ * @param statusType - The calculated status type from the function above.
+ * @returns An object with the text and className for display.
+ */
+export const getSeekerStatusAttributes = (statusType: SeekerStatusType): SeekerStatusDisplay => {
+  switch (statusType) {
+    case 'SENT':
+      return {
+        text: 'Application Sent',
+        className: 'text-muted-foreground',
+      };
+    case 'IN_REVIEW':
+      return {
+        text: 'In Review',
+        className: 'text-blue-600 dark:text-blue-400',
+      };
+    case 'NOT_ACCEPTED':
+      return {
+        text: 'Not Accepted',
+        className: 'text-red-600 dark:text-red-500',
+      };
+    case 'EXPIRED':
+      return {
+        text: 'Expired',
+        className: 'text-amber-600 dark:text-amber-500',
+      };
+    default:
+      // Fallback for safety
+      return {
+        text: 'Pending',
+        className: 'text-muted-foreground',
+      };
+  }
+};
+// =======================================================================
+// --- END: NEW CENTRALIZED SEEKER STATUS LOGIC ---
+// =======================================================================
+
+// ... (keep the other existing functions below this)
