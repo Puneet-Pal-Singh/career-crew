@@ -138,6 +138,9 @@ export type SeekerStatusType = 'IN_REVIEW' | 'SENT' | 'NOT_ACCEPTED' | 'EXPIRED'
 export interface SeekerStatusDisplay {
   text: string;
   className: string;
+  dotClassName: string;
+  hoverTitle: string;
+  hoverDescription: string;
 }
 
 const ARCHIVE_THRESHOLD_DAYS = 21;
@@ -175,33 +178,52 @@ export const getSeekerApplicationStatusType = (app: ApplicationViewData): Seeker
  * @param statusType - The calculated status type from the function above.
  * @returns An object with the text and className for display.
  */
+/**
+ * REFINED HELPER: This function is now the single source of truth for all
+ * status display properties, including text, colors, and hover card content.
+ */
 export const getSeekerStatusAttributes = (statusType: SeekerStatusType): SeekerStatusDisplay => {
   switch (statusType) {
     case 'SENT':
       return {
         text: 'Application Sent',
         className: 'text-muted-foreground',
+        dotClassName: 'bg-blue-500',
+        hoverTitle: 'Your Application is on its Way!',
+        hoverDescription: 'The employer has received your application. We will notify you of any updates.'
       };
     case 'IN_REVIEW':
       return {
         text: 'In Review',
         className: 'text-blue-600 dark:text-blue-400',
+        dotClassName: 'bg-blue-500',
+        hoverTitle: 'Your Application is Being Reviewed',
+        hoverDescription: 'An employer is actively reviewing your application. This is a great sign!'
       };
     case 'NOT_ACCEPTED':
       return {
         text: 'Not Accepted',
         className: 'text-red-600 dark:text-red-500',
+        dotClassName: 'bg-red-500',
+        hoverTitle: 'Application Update',
+        // We use a placeholder here. The component will replace it with the actual company name.
+        hoverDescription: 'After reviewing, {{companyName}} has decided not to move forward at this time.'
       };
     case 'EXPIRED':
       return {
         text: 'Expired',
         className: 'text-amber-600 dark:text-amber-500',
+        dotClassName: 'bg-amber-500',
+        hoverTitle: 'Application Expired',
+        hoverDescription: 'This application has expired due to inactivity. We recommend focusing on newer opportunities to maintain momentum.'
       };
     default:
-      // Fallback for safety
       return {
         text: 'Pending',
         className: 'text-muted-foreground',
+        dotClassName: 'bg-gray-400',
+        hoverTitle: 'Application Pending',
+        hoverDescription: 'Your application is in the queue.'
       };
   }
 };
@@ -209,4 +231,25 @@ export const getSeekerStatusAttributes = (statusType: SeekerStatusType): SeekerS
 // --- END: NEW CENTRALIZED SEEKER STATUS LOGIC ---
 // =======================================================================
 
-// ... (keep the other existing functions below this)
+/**
+ * =================================================================
+ * NEW, CENTRALIZED DATE FORMATTING FUNCTION
+ * =================================================================
+ * Formats a date string into a user-friendly "Month Day, Year" format.
+ * e.g., "2025-11-16T10:00:00Z" -> "Nov 16, 2025"
+ * @param dateString - The date string to format (ISO 8601 format recommended).
+ * @returns A formatted date string, or a fallback if the date is invalid.
+ */
+export const formatDisplayDate = (dateString: string): string => {
+  try {
+    // We standardize on the format that includes the year for clarity.
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return "Invalid Date";
+  }
+};
