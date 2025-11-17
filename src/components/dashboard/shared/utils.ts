@@ -143,7 +143,7 @@ export interface SeekerStatusDisplay {
   hoverDescription: string;
 }
 
-const ARCHIVE_THRESHOLD_DAYS = 21;
+export const ARCHIVE_THRESHOLD_DAYS = 21;
 
 /**
  * The single source of truth for determining the seeker's application status type.
