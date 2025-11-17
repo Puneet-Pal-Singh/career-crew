@@ -241,15 +241,16 @@ export const getSeekerStatusAttributes = (statusType: SeekerStatusType): SeekerS
  * @returns A formatted date string, or a fallback if the date is invalid.
  */
 export const formatDisplayDate = (dateString: string): string => {
-  try {
-    // We standardize on the format that includes the year for clarity.
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  } catch (error) {
-    console.error("Error formatting date:", error);
+  const date = new Date(dateString);
+
+  if (isNaN(date.getTime())) {
+    console.error("Invalid date string:", dateString);
     return "Invalid Date";
   }
+  
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 };

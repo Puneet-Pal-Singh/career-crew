@@ -97,11 +97,11 @@ function ApplicationDisplay({ applications, isArchivedView = false }: Applicatio
     <div className="space-y-6">
       {/* Mobile Cards View */}
       <div className="lg:hidden">
-        <MyApplicationsCards applications={applications} isArchivedView={isArchivedView} />
+        <MyApplicationsCards applications={applications}/>
       </div>
       {/* Desktop Table View */}
       <div className="hidden lg:block">
-        <MyApplicationsTable applications={applications} isArchivedView={isArchivedView}/>
+        <MyApplicationsTable applications={applications}/>
       </div>
     </div>
   );

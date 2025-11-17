@@ -12,10 +12,9 @@ import { ApplicationStatusIndicator } from "./ApplicationStatusIndicator";
 
 interface MyApplicationsTableProps {
   applications: ApplicationViewData[];
-  isArchivedView?: boolean;
 }
 
-export function MyApplicationsTable({ applications, isArchivedView = false }: MyApplicationsTableProps) {
+export function MyApplicationsTable({ applications}: MyApplicationsTableProps) {
 
   return (
     <Card>
@@ -46,7 +45,7 @@ export function MyApplicationsTable({ applications, isArchivedView = false }: My
             </div>
 
             <div className="flex-shrink-0 w-48 text-sm text-left px-4">
-              <ApplicationStatusIndicator application={app} isArchivedView={isArchivedView} />
+              <ApplicationStatusIndicator application={app}/>
               <p className="mt-1 text-xs text-muted-foreground">
                 {/* Use the new centralized function */}
                 Applied on {formatDisplayDate(app.dateApplied)}

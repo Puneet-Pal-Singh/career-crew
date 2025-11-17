@@ -10,10 +10,9 @@ import { ApplicationStatusIndicator } from "./ApplicationStatusIndicator";
 
 interface MyApplicationsCardsProps {
   applications: ApplicationViewData[];
-  isArchivedView?: boolean;
 }
 
-export function MyApplicationsCards({ applications, isArchivedView = false }: MyApplicationsCardsProps) {
+export function MyApplicationsCards({ applications}: MyApplicationsCardsProps) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {applications.map((app) => (
@@ -38,7 +37,7 @@ export function MyApplicationsCards({ applications, isArchivedView = false }: My
                         {/* Use the new centralized function */}
                         {formatDisplayDate(app.dateApplied)}
                     </div>
-                    <ApplicationStatusIndicator application={app} isArchivedView={isArchivedView} />
+                    <ApplicationStatusIndicator application={app}/>
                 </div>
             </CardContent>
         </Card>

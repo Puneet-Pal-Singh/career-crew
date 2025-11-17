@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 
 interface ApplicationStatusIndicatorProps {
   application: ApplicationViewData;
-  isArchivedView?: boolean;
 }
 
 export function ApplicationStatusIndicator({ application}: ApplicationStatusIndicatorProps) {
