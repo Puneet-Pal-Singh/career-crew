@@ -156,6 +156,13 @@ export const getSeekerApplicationStatusType = (app: ApplicationViewData): Seeker
   thresholdDate.setDate(thresholdDate.getDate() - ARCHIVE_THRESHOLD_DAYS);
   const applicationDate = new Date(app.dateApplied);
 
+  // Validate the application date
+  if (isNaN(applicationDate.getTime())) {
+    console.error("Invalid dateApplied:", app.dateApplied);
+    // Treat invalid dates as SENT to avoid incorrectly marking as EXPIRED
+    return app.applicationStatus === 'REJECTED' ? 'NOT_ACCEPTED' : 'SENT';
+  }
+
   if (app.applicationStatus === 'REJECTED') {
     return 'NOT_ACCEPTED';
   }
