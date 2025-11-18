@@ -6,11 +6,16 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth/contexts/AuthContext'; // Import our global auth hook
 import { Loader2 } from 'lucide-react';
 import { isValidInternalPath } from '@/lib/utils';
+// Import our new, clean analytics hook
+import { useNewUserAnalytics } from '@/hooks/analytics/useNewUserAnalytics';
 
 export default function AuthCallbackPage() {
   const { user, isInitialized } = useAuth(); // Get the user state from the global context
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // ✅ Call our new analytics hook. It will handle its own logic internally.
+  useNewUserAnalytics(user, isInitialized);
 
   useEffect(() => {
     // isInitialized ensures we have received at least one auth event from Supabase,

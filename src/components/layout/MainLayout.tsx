@@ -7,6 +7,8 @@ import { AppProviders } from '@/components/providers/AppProviders';
 import ClientLayout from '@/components/layout/ClientLayout';
 import { Toaster } from "@/components/ui/toaster";
 import type { UserRole } from '@/types';
+// Import the PostHogProvider
+import { PostHogProvider } from '@/components/providers/PostHogProvider';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -22,9 +24,12 @@ interface MainLayoutProps {
 export default function MainLayout({ children, user, userRole }: MainLayoutProps) {
   return (
     <AppProviders>
-      <ClientLayout user={user} userRole={userRole}>
-        {children}
-      </ClientLayout>
+      {/* PostHogProvider now correctly wraps the client-side layout */}
+      <PostHogProvider>
+        <ClientLayout user={user} userRole={userRole}>
+          {children}
+        </ClientLayout>
+      </PostHogProvider>
       <Toaster />
     </AppProviders>
   );
