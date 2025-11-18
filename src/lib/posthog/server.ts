@@ -5,7 +5,7 @@ import { PostHog } from 'posthog-node';
 function PostHogClient() {
 
   // --- ADD THIS CRITICAL DEBUGGING LINE ---
-  console.log('SERVER-SIDE POSTHOG KEY BEING USED:', process.env.POSTHOG_API_KEY);
+  // console.log('SERVER-SIDE POSTHOG KEY BEING USED:', process.env.POSTHOG_API_KEY);
   // --- END DEBUGGING LINE ---
   
   const posthogClient = new PostHog(process.env.POSTHOG_API_KEY!, {

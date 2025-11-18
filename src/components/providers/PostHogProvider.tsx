@@ -7,8 +7,8 @@ import posthog from 'posthog-js';
 import { PostHogProvider as PHProvider } from 'posthog-js/react';
 
 // --- TEMPORARY DEBUGGING ---
-console.log("PostHog Key:", process.env.NEXT_PUBLIC_POSTHOG_KEY);
-console.log("PostHog Host:", process.env.NEXT_PUBLIC_POSTHOG_HOST);
+// console.log("PostHog Key:", process.env.NEXT_PUBLIC_POSTHOG_KEY);
+// console.log("PostHog Host:", process.env.NEXT_PUBLIC_POSTHOG_HOST);
 // --- END DEBUGGING ---
 
 // Initialize PostHog in the browser
