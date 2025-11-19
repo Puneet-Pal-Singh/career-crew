@@ -1,21 +1,24 @@
 // src/lib/posthog/server.ts
 import { PostHog } from 'posthog-node';
 
-// This function initializes and returns a new PostHog client instance.
 function PostHogClient() {
+  const apiKey = process.env.POSTHOG_API_KEY;
+  const apiHost = process.env.NEXT_PUBLIC_POSTHOG_HOST;
 
-  // --- ADD THIS CRITICAL DEBUGGING LINE ---
-  // console.log('SERVER-SIDE POSTHOG KEY BEING USED:', process.env.POSTHOG_API_KEY);
-  // --- END DEBUGGING LINE ---
-  
-  const posthogClient = new PostHog(process.env.POSTHOG_API_KEY!, {
-    host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+  // Safety check: Don't initialize if key is missing
+  if (!apiKey) {
+    console.warn('PostHog server-side key is missing. Analytics will be disabled.');
+    return undefined;
+  }
+
+  const posthogClient = new PostHog(apiKey, {
+    host: apiHost,
     flushAt: 1,
     flushInterval: 0,
   });
+  
   return posthogClient;
 }
 
-// Create a singleton instance of the PostHog client for server-side use.
-// This prevents creating a new client on every server action call.
+// Create a singleton instance
 export const posthogServerClient = PostHogClient();

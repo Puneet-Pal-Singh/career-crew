@@ -6,11 +6,11 @@ import { posthogServerClient } from '@/lib/posthog/server';
 /**
  * Tracks the successful submission of a job application.
  * This is a critical conversion event for the platform.
- * @param userId - The distinct ID of the user who applied.
- * @param jobId - The ID of the job they applied to.
- * @param applicationId - The newly created application ID.
  */
 export async function trackApplicationSubmitted(userId: string, jobId: number, applicationId: string): Promise<void> {
+  // Safety check in case client failed to initialize
+  if (!posthogServerClient) return;
+
   try {
     posthogServerClient.capture({
       distinctId: userId,
@@ -18,17 +18,14 @@ export async function trackApplicationSubmitted(userId: string, jobId: number, a
       properties: {
         jobId: jobId,
         applicationId: applicationId,
-        // You can add more properties here for deeper analysis, e.g.,
-        // 'submission_method': 'standard_form'
       },
     });
 
-    // IMPORTANT: Flush events to ensure they are sent before the serverless function might terminate.
-    await posthogServerClient.shutdown();
+    // FIX: Use flush() instead of shutdown(). 
+    // flush() ensures events are sent immediately without killing the client for future use.
+    await posthogServerClient.flush();
 
   } catch (error) {
-    // Log the error for debugging but do not throw.
-    // A failure in analytics should never block the main application flow.
     console.error("PostHog event tracking failed:", error);
   }
 }
