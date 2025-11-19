@@ -8,7 +8,7 @@ import { posthogServerClient } from '@/lib/posthog/server';
  * This is a critical conversion event for the platform.
  */
 export async function trackApplicationSubmitted(userId: string, jobId: number, applicationId: string): Promise<void> {
-  // Safety check in case client failed to initialize
+  // ✅ SAFETY CHECK: Prevents crash if API key is missing (Type Error Fix)
   if (!posthogServerClient) return;
 
   try {
@@ -21,8 +21,7 @@ export async function trackApplicationSubmitted(userId: string, jobId: number, a
       },
     });
 
-    // FIX: Use flush() instead of shutdown(). 
-    // flush() ensures events are sent immediately without killing the client for future use.
+    // Ensure events are sent before function termination
     await posthogServerClient.flush();
 
   } catch (error) {
