@@ -7,6 +7,10 @@ import { AppProviders } from '@/components/providers/AppProviders';
 import ClientLayout from '@/components/layout/ClientLayout';
 import { Toaster } from "@/components/ui/toaster";
 import type { UserRole } from '@/types';
+// Import the PostHogProvider
+import { PostHogProvider } from '@/components/providers/PostHogProvider';
+// Import the new clean hook
+import { usePostHogIdentify } from '@/hooks/analytics/usePostHogIdentify';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -20,11 +24,18 @@ interface MainLayoutProps {
  * the ClientLayout, which handles showing/hiding the global header/footer.
  */
 export default function MainLayout({ children, user, userRole }: MainLayoutProps) {
+
+  // ✅ ONE LINE: Identify the user for analytics
+  usePostHogIdentify(user, userRole);
+  
   return (
     <AppProviders>
-      <ClientLayout user={user} userRole={userRole}>
-        {children}
-      </ClientLayout>
+      {/* PostHogProvider now correctly wraps the client-side layout */}
+      <PostHogProvider>
+        <ClientLayout user={user} userRole={userRole}>
+          {children}
+        </ClientLayout>
+      </PostHogProvider>
       <Toaster />
     </AppProviders>
   );

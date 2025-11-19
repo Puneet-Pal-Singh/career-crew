@@ -6,6 +6,8 @@ import { revalidatePath } from 'next/cache';
 import { validateApplicationPayload, runBusinessLogicChecks } from './utils/validation';
 import { uploadResume } from './utils/storage';
 import { insertApplicationRecord } from './utils/database';
+// Import our new, clean analytics helper
+import { trackApplicationSubmitted } from './utils/analytics';
 
 type ActionResult = 
   | { success: true; applicationId: string }
@@ -42,6 +44,9 @@ export async function submitApplicationAction(formData: FormData): Promise<Actio
 
     // 5. Insert the application record into the database
     const newApplicationId = await insertApplicationRecord(payload, user.id, resumeFilePath, supabase);
+
+    // We fire and forget this. Analytics failures should not block the user.
+    trackApplicationSubmitted(user.id, payload.jobId, newApplicationId);
 
     // 6. On success, revalidate paths and return
     revalidatePath(`/jobs/${payload.jobId}`);
