@@ -19,7 +19,7 @@ export const getSupabaseServerClient = async () => {
           return cookieStoreInstance.getAll();
         },
         // ✅ FIX: Explicitly type the 'cookiesToSet' parameter
-        setAll(cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) {
+        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
           try {
             cookiesToSet.forEach(({ name, value, options }) => {
               cookieStoreInstance.set(name, value, options);
