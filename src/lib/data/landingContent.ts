@@ -65,11 +65,10 @@ export async function getHowItWorksStepsData(): Promise<HowItWorksStepData[]> {
 export async function getFeaturedCompaniesData(): Promise<FeaturedCompanyData[]> {
   // Ensure these paths are correct in your /public folder
   return [
-    { src: '/company-logos/placeholder-logo-1.svg', alt: 'Nova Dynamics' }, // Use actual or better placeholders
-    { src: '/company-logos/placeholder-logo-2.svg', alt: 'Zenith Solutions' },
-    { src: '/company-logos/placeholder-logo-3.svg', alt: 'QuantumLeap AI' },
-    { src: '/company-logos/placeholder-logo-4.svg', alt: 'Cybernetics Corp' },
-    { src: '/company-logos/placeholder-logo-5.svg', alt: 'EcoInnovate Hub' },
+    { src: '/company-logos/hbd-logo.svg', alt: 'HBD' }, // Use actual or better placeholders
+    { src: '/company-logos/Rezolution_logo.svg', alt: 'Rezolution' }, // Use actual or better placeholders
+    { src: '/company-logos/91trucks-logo.png', alt: '91Trucks' }, // Use actual or better placeholders
+    { src: '/company-logos/Reboot-Logo.webp', alt: 'Reboot' }, // Use actual or better placeholders
   ];
 }
 
