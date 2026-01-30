@@ -3,14 +3,16 @@
 
 import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
+import { ExternalLink } from 'lucide-react';
 
 interface JobDetailAboutProps {
   description: string;
   requirements?: string | null;
+  applicationUrl?: string | null;
   onApplyNow: () => void;
 }
 
-export default function JobDetailAbout({ description, requirements, onApplyNow }: JobDetailAboutProps) {
+export default function JobDetailAbout({ description, requirements, applicationUrl, onApplyNow }: JobDetailAboutProps) {
   const fullMarkdown = `${description}\n\n${requirements ? `## Requirements\n\n${requirements}` : ''}`;
 
   return (
@@ -23,7 +25,14 @@ export default function JobDetailAbout({ description, requirements, onApplyNow }
       </div>
       <div className="mt-8 text-center">
         <Button size="lg" onClick={onApplyNow} className="px-8">
-          Apply for this position
+          {applicationUrl ? (
+            <>
+              Apply on Company Site
+              <ExternalLink className="ml-2 h-4 w-4" />
+            </>
+          ) : (
+            "Apply for this position"
+          )}
         </Button>
       </div>
     </div>

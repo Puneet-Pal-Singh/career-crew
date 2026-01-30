@@ -311,8 +311,8 @@ export default function JobEditorForm({ mode, jobId, initialData }: JobEditorFor
               <CardHeader>
                 <SectionHeader 
                   Icon={Send}
-                  title="Application Method *"
-                  description="How should candidates apply? Provide an external URL or an email address."
+                  title="Application Method (Optional)"
+                  description="How should candidates apply? Provide an external site/ATS URL to redirect applicants; otherwise, Career Crew’s ATS will be used."
                 />
               </CardHeader>
               <CardContent>

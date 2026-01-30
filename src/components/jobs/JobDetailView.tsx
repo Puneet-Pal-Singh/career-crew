@@ -22,6 +22,11 @@ export default function JobDetailView({ job, user }: JobDetailViewProps) {
   const router = useRouter();
 
   const handleApplyNow = () => {
+    if (job.applicationUrl) {
+      window.open(job.applicationUrl, '_blank');
+      return;
+    }
+
     if (!user) {
       router.push(`/login?redirectTo=${window.location.pathname}`);
     } else {
@@ -56,6 +61,7 @@ export default function JobDetailView({ job, user }: JobDetailViewProps) {
           <JobDetailAbout
             description={job.description}
             requirements={job.requirements}
+            applicationUrl={job.applicationUrl}
             onApplyNow={handleApplyNow}
           />
         </div>

@@ -5,7 +5,7 @@ import type { JobDetailData } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
-import { MapPin } from 'lucide-react';
+import { MapPin, ExternalLink } from 'lucide-react';
 
 interface JobDetailHeaderCardProps {
   job: JobDetailData;
@@ -46,7 +46,14 @@ export default function JobDetailHeaderCard({ job, onApplyNow }: JobDetailHeader
         <div className="flex-1 lg:text-center">
           <h1 className="text-3xl lg:text-4xl font-bold tracking-tight mb-4">{job.title}</h1>
           <Button size="lg" onClick={onApplyNow} className="w-full lg:w-auto">
-            Apply Now
+            {job.applicationUrl ? (
+              <>
+                Apply on Company Site
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </>
+            ) : (
+              "Apply Now"
+            )}
           </Button>
         </div>
       </div>

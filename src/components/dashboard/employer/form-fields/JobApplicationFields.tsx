@@ -27,6 +27,9 @@ export default function JobApplicationFields({ register, errors }: JobApplicatio
         <div>
           <Label htmlFor="application_url">Application URL (External Link)</Label>
           <Input id="application_url" type="url" {...register("application_url")} placeholder="https://example.com/apply/job-id" />
+          <p className="text-[0.8rem] text-muted-foreground mt-1.5">
+            Candidates will be redirected to this URL to apply.
+          </p>
           {errors.application_url && <p className="text-sm text-destructive mt-1">{errors.application_url.message}</p>}
         </div>
         {/* Zod refine error specifically for application_email (if it's the target of the refine path for "at least one") */}
