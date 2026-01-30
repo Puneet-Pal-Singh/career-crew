@@ -3,10 +3,11 @@
 
 import type { JobCardData } from '@/types';
 import Link from 'next/link';
-import Image from 'next/image';
+// import Image from 'next/image'; // Replaced by JobLogo
 import { motion } from 'framer-motion';
 import { MapPin, Clock, Star, TrendingUp } from 'lucide-react';
 import { generateJobSlug, formatDatePosted } from '@/lib/utils';
+import JobLogo from '@/components/shared/JobLogo';
 
 interface JobListItemProps {
   job: JobCardData;
@@ -49,9 +50,10 @@ export default function JobListItem({ job, featured = false }: JobListItemProps)
             {/* Company Logo */}
             <div className="relative flex-shrink-0">
               <div className="w-14 h-14 rounded-xl border-2 border-border-light dark:border-border-dark bg-white dark:bg-slate-800 flex items-center justify-center overflow-hidden group-hover:border-primary/30 dark:group-hover:border-primary-dark/30 transition-colors duration-300">
-                <Image
-                  src={job.companyLogoUrl || '/company-logos/default-company-logo.svg'}
+                <JobLogo
+                  src={job.companyLogoUrl}
                   alt={`${job.companyName} logo`}
+                  title={job.title}
                   width={36}
                   height={36}
                   className="rounded-lg object-contain"

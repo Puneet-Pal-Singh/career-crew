@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Building2 } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
+// import Image from "next/image"; // Replaced by JobLogo
 import { generateJobSlug } from "@/lib/utils";
 import type { ApplicationViewData } from "@/types";
 // Import the new centralized date function
 import { formatDisplayDate } from '@/components/dashboard/shared/utils';
 import { ApplicationStatusIndicator } from "./ApplicationStatusIndicator";
+import JobLogo from '@/components/shared/JobLogo';
 
 interface MyApplicationsTableProps {
   applications: ApplicationViewData[];
@@ -22,9 +23,10 @@ export function MyApplicationsTable({ applications}: MyApplicationsTableProps) {
         {applications.map((app) => (
           <div key={app.applicationId} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
             <div className="flex-shrink-0 mr-4">
-              <Image 
-                src={'/company-logos/default-company-logo.svg'} 
+              <JobLogo 
+                src={app.companyLogoUrl} 
                 alt={`${app.companyName} logo`}
+                title={app.jobTitle}
                 width={40}
                 height={40}
                 className="rounded-md border bg-white"
