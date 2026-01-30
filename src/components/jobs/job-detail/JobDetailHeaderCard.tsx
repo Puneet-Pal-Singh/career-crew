@@ -53,19 +53,6 @@ export default function JobDetailHeaderCard({ job, onApplyNow }: JobDetailHeader
             </div>
           </div>
         </div>
-
-        <div className="w-full md:w-auto flex-shrink-0 pt-2">
-           <Button size="lg" onClick={onApplyNow} className="w-full md:w-auto px-8 shadow-sm h-12 text-base">
-             {job.applicationUrl ? (
-              <>
-                Apply on Company Site
-                <ExternalLink className="ml-2 h-4 w-4" />
-              </>
-            ) : (
-              "Apply Now"
-            )}
-           </Button>
-        </div>
       </div>
     </div>
   );

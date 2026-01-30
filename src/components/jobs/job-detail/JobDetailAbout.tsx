@@ -20,20 +20,6 @@ export default function JobDetailAbout({ description, requirements, applicationU
       <article className="prose dark:prose-invert max-w-none prose-headings:text-foreground prose-p:text-muted-foreground prose-li:text-muted-foreground prose-strong:text-foreground">
         <ReactMarkdown>{fullMarkdown}</ReactMarkdown>
       </article>
-      
-      <div className="pt-8 border-t mt-8">
-        <h3 className="text-lg font-semibold mb-4">Interested in this job?</h3>
-        <Button size="lg" onClick={onApplyNow} className="px-8">
-          {applicationUrl ? (
-            <>
-              Apply on Company Site
-              <ExternalLink className="ml-2 h-4 w-4" />
-            </>
-          ) : (
-            "Apply for this position"
-          )}
-        </Button>
-      </div>
     </div>
   );
 }
