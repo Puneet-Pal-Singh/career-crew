@@ -4,8 +4,8 @@
 import type { JobDetailData } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import Image from 'next/image';
 import { MapPin, ExternalLink } from 'lucide-react';
+import JobLogo from '@/components/shared/JobLogo';
 
 interface JobDetailHeaderCardProps {
   job: JobDetailData;
@@ -18,9 +18,10 @@ export default function JobDetailHeaderCard({ job, onApplyNow }: JobDetailHeader
       <div className="flex flex-col lg:flex-row lg:items-center gap-6">
         {/* Company Logo and Basic Info */}
         <div className="flex items-center gap-4">
-          <Image
-            src={job.companyLogoUrl || '/company-logos/default-company-logo.svg'}
+          <JobLogo
+            src={job.companyLogoUrl}
             alt={`${job.companyName} Logo`}
+            title={job.title}
             width={80}
             height={80}
             className="rounded-xl border bg-white flex-shrink-0"

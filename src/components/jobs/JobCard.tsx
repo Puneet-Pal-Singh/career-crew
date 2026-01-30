@@ -3,10 +3,11 @@
 
 import type { JobCardData } from '@/types';
 import Link from 'next/link';
-import Image from 'next/image';
+// import Image from 'next/image'; // Replaced by JobLogo
 import { motion } from 'framer-motion';
 import { MapPin, Clock, Star } from 'lucide-react'; 
 import { generateJobSlug, formatDatePosted } from '@/lib/utils';
+import JobLogo from '@/components/shared/JobLogo';
 
 // ✅ NEW: Import our new dynamic currency icon component
 import CurrencyIcon from '@/components/shared/CurrencyIcon';
@@ -74,9 +75,10 @@ export default function JobCard({ job, featured = false }: JobCardProps) {
             <div className="flex items-start gap-3 mb-3">
               <div className="relative flex-shrink-0">
                 <div className="w-10 h-10 rounded-lg border-2 border-border-light dark:border-border-dark bg-white dark:bg-slate-800 flex items-center justify-center overflow-hidden group-hover:border-primary/30 dark:group-hover:border-primary-dark/30 transition-colors duration-300">
-                  <Image
-                    src={job.companyLogoUrl || '/company-logos/default-company-logo.svg'}
+                  <JobLogo
+                    src={job.companyLogoUrl}
                     alt={`${job.companyName} logo`}
+                    title={job.title}
                     width={24}
                     height={24}
                     className="rounded object-contain"
