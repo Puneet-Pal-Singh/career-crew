@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import ApplicationModal from '@/components/jobs/application-form/ApplicationModal';
 import JobDetailHeaderCard from './job-detail/JobDetailHeaderCard';
 import JobDetailAbout from './job-detail/JobDetailAbout';
+import JobDetailSidebar from './job-detail/JobDetailSidebar';
 // --- NEW IMPORTS ---
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Eye } from "lucide-react";
@@ -40,11 +41,11 @@ export default function JobDetailView({ job, user }: JobDetailViewProps) {
 
   return (
     <>
-      <div className="bg-muted/30 min-h-screen">
+      <div className="bg-background min-h-screen pb-20">
         {/* --- NEW COMPONENT: PREVIEW BANNER --- */}
         {isPreview && (
           <div className="bg-yellow-100 text-yellow-800 sticky top-16 z-10 border-b">
-            <div className="container mx-auto max-w-5xl px-4 py-3">
+            <div className="container mx-auto max-w-6xl px-4 py-3">
               <Alert variant="default" className="border-yellow-300 bg-yellow-50">
                 <Eye className="h-4 w-4 !text-yellow-800" />
                 <AlertTitle className="font-semibold !text-yellow-900">Preview Mode</AlertTitle>
@@ -56,14 +57,27 @@ export default function JobDetailView({ job, user }: JobDetailViewProps) {
           </div>
         )}
 
-        <div className="container mx-auto max-w-5xl py-8 px-4">
+        <div className="container mx-auto max-w-6xl py-10 px-4">
           <JobDetailHeaderCard job={job} onApplyNow={handleApplyNow} />
-          <JobDetailAbout
-            description={job.description}
-            requirements={job.requirements}
-            applicationUrl={job.applicationUrl}
-            onApplyNow={handleApplyNow}
-          />
+          
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            {/* Main Content */}
+            <div className="lg:col-span-8">
+              <JobDetailAbout
+                description={job.description}
+                requirements={job.requirements}
+                applicationUrl={job.applicationUrl}
+                onApplyNow={handleApplyNow}
+              />
+            </div>
+
+            {/* Sidebar */}
+            <div className="lg:col-span-4">
+               <div className="sticky top-24">
+                  <JobDetailSidebar job={job} onApplyNow={handleApplyNow} />
+               </div>
+            </div>
+          </div>
         </div>
       </div>
 

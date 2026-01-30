@@ -4,8 +4,9 @@
 import type { JobDetailData } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, ExternalLink } from 'lucide-react';
+import { MapPin, ExternalLink, ArrowLeft } from 'lucide-react';
 import JobLogo from '@/components/shared/JobLogo';
+import Link from 'next/link';
 
 interface JobDetailHeaderCardProps {
   job: JobDetailData;
@@ -14,40 +15,48 @@ interface JobDetailHeaderCardProps {
 
 export default function JobDetailHeaderCard({ job, onApplyNow }: JobDetailHeaderCardProps) {
   return (
-    <div className="bg-card p-8 rounded-xl border shadow-sm">
-      <div className="flex flex-col lg:flex-row lg:items-center gap-6">
-        {/* Company Logo and Basic Info */}
-        <div className="flex items-center gap-4">
-          <JobLogo
+    <div className="mb-8">
+      <div className="mb-6">
+         <Link href="/jobs" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+            Back to Jobs
+         </Link>
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-6 items-start justify-between">
+        <div className="flex flex-col sm:flex-row items-start gap-5">
+           <JobLogo
             src={job.companyLogoUrl}
             alt={`${job.companyName} Logo`}
             title={job.title}
-            width={80}
-            height={80}
-            className="rounded-xl border bg-white flex-shrink-0"
+            width={72}
+            height={72}
+            className="rounded-xl border bg-white shadow-sm flex-shrink-0"
           />
           <div>
-            <p className="text-sm font-medium text-muted-foreground">{job.companyName}</p>
-            <div className="flex items-center gap-2 mt-1">
-              <MapPin className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">{job.location}</span>
-              {job.jobType && (
-                <>
-                  <span className="text-muted-foreground">•</span>
-                  <Badge variant="secondary" className="text-xs">
-                    {job.jobType}
-                  </Badge>
-                </>
-              )}
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-2 leading-tight">{job.title}</h1>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-muted-foreground text-sm sm:text-base">
+               <span className="font-semibold text-foreground">{job.companyName}</span>
+               <span className="hidden sm:inline">•</span>
+               <div className="flex items-center gap-1">
+                 <MapPin className="w-4 h-4" />
+                 <span>{job.location}</span>
+               </div>
+               {job.jobType && (
+                 <>
+                   <span className="hidden sm:inline">•</span>
+                   <Badge variant="secondary" className="font-normal">
+                     {job.jobType}
+                   </Badge>
+                 </>
+               )}
             </div>
           </div>
         </div>
 
-        {/* Job Title and Apply Button */}
-        <div className="flex-1 lg:text-center">
-          <h1 className="text-3xl lg:text-4xl font-bold tracking-tight mb-4">{job.title}</h1>
-          <Button size="lg" onClick={onApplyNow} className="w-full lg:w-auto">
-            {job.applicationUrl ? (
+        <div className="w-full md:w-auto flex-shrink-0 pt-2">
+           <Button size="lg" onClick={onApplyNow} className="w-full md:w-auto px-8 shadow-sm h-12 text-base">
+             {job.applicationUrl ? (
               <>
                 Apply on Company Site
                 <ExternalLink className="ml-2 h-4 w-4" />
@@ -55,20 +64,9 @@ export default function JobDetailHeaderCard({ job, onApplyNow }: JobDetailHeader
             ) : (
               "Apply Now"
             )}
-          </Button>
+           </Button>
         </div>
       </div>
-
-      {/* Skills / Tags Section */}
-      {job.tags && job.tags.length > 0 && (
-        <div className="mt-6 pt-6 border-t flex flex-wrap gap-2">
-          {job.tags.map(tag => (
-            <Badge key={tag} variant="secondary" className="font-medium">
-              {tag}
-            </Badge>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
