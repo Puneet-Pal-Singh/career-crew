@@ -50,7 +50,7 @@ export const mapRawJobToJobCardData = (rawJob: RawJobDataForCard): JobCardData =
     // slug: generateJobSlug(rawJob.id, rawJob.title), // Generate SEO-friendly slug
     title: rawJob.title,
     companyName: rawJob.company_name,
-    companyLogoUrl: rawJob.company_logo_url || '/company-logos/default-company-logo.svg',
+    companyLogoUrl: rawJob.company_logo_url,
     location: rawJob.location,
     isRemote: rawJob.is_remote,
     // salary: salaryDisplay,
