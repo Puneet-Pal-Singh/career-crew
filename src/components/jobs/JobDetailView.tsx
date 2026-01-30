@@ -11,7 +11,8 @@ import JobDetailAbout from './job-detail/JobDetailAbout';
 import JobDetailSidebar from './job-detail/JobDetailSidebar';
 // --- NEW IMPORTS ---
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Eye } from "lucide-react";
+import { Eye, ArrowLeft } from "lucide-react";
+import Link from 'next/link';
 
 interface JobDetailViewProps {
   job: JobDetailData;
@@ -58,9 +59,16 @@ export default function JobDetailView({ job, user }: JobDetailViewProps) {
         )}
 
         <div className="container mx-auto max-w-6xl py-10 px-4">
+          <div className="mb-8">
+            <Link href="/jobs" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors">
+              <ArrowLeft className="w-4 h-4" />
+              Back to Jobs
+            </Link>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
             {/* Main Content */}
-            <div className="lg:col-span-8">
+            <div className="lg:col-span-9">
               <JobDetailHeaderCard job={job} onApplyNow={handleApplyNow} />
               <JobDetailAbout
                 description={job.description}
@@ -71,7 +79,7 @@ export default function JobDetailView({ job, user }: JobDetailViewProps) {
             </div>
 
             {/* Sidebar */}
-            <div className="lg:col-span-4">
+            <div className="lg:col-span-3 lg:pt-1">
                <div className="sticky top-24">
                   <JobDetailSidebar job={job} onApplyNow={handleApplyNow} />
                </div>
