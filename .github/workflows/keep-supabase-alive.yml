@@ -2,8 +2,8 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    # Runs at 00:00 every 3rd day (well within the 7-day limit)
-    - cron: '0 0 */3 * *'
+    # Runs at 00:00 every 6th day (just before the 7-day inactivity limit)
+    - cron: '0 0 */6 * *'
   workflow_dispatch: # Allows you to run it manually from the Actions tab
 
 jobs:
