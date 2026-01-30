@@ -58,11 +58,10 @@ export default function JobDetailView({ job, user }: JobDetailViewProps) {
         )}
 
         <div className="container mx-auto max-w-6xl py-10 px-4">
-          <JobDetailHeaderCard job={job} onApplyNow={handleApplyNow} />
-          
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
             {/* Main Content */}
             <div className="lg:col-span-8">
+              <JobDetailHeaderCard job={job} onApplyNow={handleApplyNow} />
               <JobDetailAbout
                 description={job.description}
                 requirements={job.requirements}
