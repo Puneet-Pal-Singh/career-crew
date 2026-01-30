@@ -130,7 +130,7 @@ export default function JobCard({ job, featured = false }: JobCardProps) {
                 {job.tags.slice(0, 3).map((tag, idx) => (
                   <span
                     key={`${slug}-tag-${idx}`}
-                    className="px-2 py-0.5 text-xs font-medium rounded-md bg-secondary/10 dark:bg-secondary-dark/10 text-secondary dark:text-secondary-dark border border-secondary/20 dark:border-secondary-dark/20"
+                    className="px-2 py-0.5 text-xs font-medium rounded-md bg-muted/50 text-muted-foreground border border-border/50"
                   >
                     {tag}
                   </span>
