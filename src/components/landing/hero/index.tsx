@@ -4,8 +4,8 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles} from 'lucide-react';
-// import { ArrowRight, Sparkles, Users, Briefcase, TrendingUp } from 'lucide-react';
 import AnimatedGradientBackground from '@/components/ui/AnimatedGradientBackground';
+import FloatingCarousels from './FloatingCarousels';
 import { useAuth } from "@/lib/auth/contexts/AuthContext";
 import { useEffect, useState } from 'react';
 
@@ -96,16 +96,6 @@ export default function ModernHeroSection() {
     }
   };
 
-  // const floatingVariants = {
-  //   animate: {
-  //     y: [-10, 10, -10],
-  //     transition: {
-  //       duration: 6,
-  //       repeat: Infinity
-  //     }
-  //   }
-  // };
-
   return (
     <>
       {/* SEO Structured Data */}
@@ -123,32 +113,8 @@ export default function ModernHeroSection() {
           isHeroBackground={true}
         />
 
-        {/* Floating Elements */}
-        {/* <div className="absolute inset-0 pointer-events-none">
-          <motion.div
-            variants={floatingVariants}
-            animate="animate"
-            className="absolute top-1/4 left-1/4 text-primary/20 dark:text-primary-dark/20"
-          >
-            <Briefcase size={40} />
-          </motion.div>
-          <motion.div
-            variants={floatingVariants}
-            animate="animate"
-            className="absolute top-1/3 right-1/4 text-secondary/20 dark:text-secondary-dark/20"
-            style={{ animationDelay: '2s' }}
-          >
-            <Users size={36} />
-          </motion.div>
-          <motion.div
-            variants={floatingVariants}
-            animate="animate"
-            className="absolute bottom-1/3 left-1/3 text-primary/15 dark:text-primary-dark/15"
-            style={{ animationDelay: '4s' }}
-          >
-            <TrendingUp size={32} />
-          </motion.div>
-        </div> */}
+        {/* Floating Carousels */}
+        <FloatingCarousels />
 
         <div className="container mx-auto px-4 relative z-10 max-w-7xl">
           <motion.div
@@ -239,25 +205,6 @@ export default function ModernHeroSection() {
             </motion.div>
           </motion.div>
         </div>
-
-        {/* Scroll Indicator */}
-        {/* <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5, duration: 0.5 }}
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-        >
-          <div className="flex flex-col items-center gap-2 text-subtle-light dark:text-subtle-dark">
-            <span className="text-xs font-medium">Scroll to explore</span>
-            <div className="w-6 h-10 border-2 border-subtle-light dark:border-subtle-dark rounded-full flex justify-center">
-              <motion.div
-                animate={{ y: [0, 12, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                className="w-1 h-3 bg-subtle-light dark:bg-subtle-dark rounded-full mt-2"
-              />
-            </div>
-          </div>
-        </motion.div> */}
       </section>
     </>
   );
