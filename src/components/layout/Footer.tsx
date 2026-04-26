@@ -155,14 +155,19 @@ export default function Footer() {
                       <Mail className="text-primary" size={22} />
                     </div>
                     <div>
-                      <h4 className="font-bold text-foreground text-lg">Stay Updated</h4>
+                      <h4 className="font-bold text-foreground text-lg flex items-center gap-2">
+                        Stay Updated
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-medium uppercase tracking-wider">
+                          Coming Soon
+                        </span>
+                      </h4>
                       <p className="text-muted-foreground text-xs">Never miss an opportunity</p>
                     </div>
                   </div>
                   {submitted ? (
-                    <div className="text-center p-5 rounded-xl bg-gradient-to-br from-green-500/10 to-emerald-500/5 border border-green-500/20" role="status" aria-live="polite">
-                      <p className="font-semibold text-green-600 dark:text-green-400 text-sm">🎉 You&apos;re subscribed!</p>
-                      <p className="text-green-600/70 dark:text-green-400/70 text-xs mt-1">Check your inbox for a welcome email.</p>
+                    <div className="text-center p-5 rounded-xl bg-gradient-to-br from-blue-500/10 to-indigo-500/5 border border-blue-500/20" role="status" aria-live="polite">
+                      <p className="font-semibold text-blue-600 dark:text-blue-400 text-sm">🚀 Coming Soon!</p>
+                      <p className="text-blue-600/70 dark:text-blue-400/70 text-xs mt-1">We&apos;re preparing our newsletter. Stay tuned!</p>
                     </div>
                   ) : (
                     <form onSubmit={handleNewsletterSubmit} className="space-y-4">
